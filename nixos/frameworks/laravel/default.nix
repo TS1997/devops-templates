@@ -6,6 +6,8 @@
 }:
 let
   cfg = config.services.ts1997.laravelSites;
+  mkEnv = import ./scripts/generate-env.nix { inherit pkgs lib; };
+  mkSetFilePermissions = import ./scripts/set-file-permissions.nix { inherit pkgs lib; };
 in
 {
   options.services.ts1997.laravelSites = lib.mkOption {
@@ -53,6 +55,15 @@ in
       );
     };
 
+    system.activationScripts = lib.mkMerge (
+      lib.mapAttrsToList (name: siteCfg: {
+        "laravel-perms-${name}" = lib.stringAfter [ "users" "groups" ] ''
+          echo "Setting permissions for Laravel site: ${siteCfg.appName}"
+          ${mkSetFilePermissions name siteCfg}
+        '';
+      }) cfg
+    );
+
     services.ts1997.virtualHosts = lib.mapAttrs (name: siteCfg: {
       root = siteCfg.webRoot;
       serverName = siteCfg.domain;
@@ -92,6 +103,7 @@ in
     services.ts1997.phpPools = lib.mapAttrs (name: siteCfg: {
       user = siteCfg.user;
       phpPackage = siteCfg.phpPackage;
+      phpEnv = mkEnv name siteCfg;
     }) cfg;
 
     services.ts1997.mysql = lib.mkMerge (
@@ -99,7 +111,8 @@ in
         name: siteCfg:
         lib.mkIf (siteCfg.database.enable && siteCfg.database.connection == "mysql") {
           ${name} = {
-            dbUser = siteCfg.user;
+            dbUser = siteCfg.database.user;
+            dbName = siteCfg.database.name;
           };
         }
       ) cfg
@@ -110,7 +123,8 @@ in
         name: siteCfg:
         lib.mkIf (siteCfg.database.enable && siteCfg.database.connection == "pgsql") {
           ${name} = {
-            dbUser = siteCfg.user;
+            dbUser = siteCfg.database.user;
+            dbName = siteCfg.database.name;
           };
         }
       ) cfg
@@ -122,6 +136,7 @@ in
         lib.mkIf siteCfg.redis.enable {
           ${name} = {
             user = siteCfg.user;
+            unixSocket = siteCfg.redis.socket;
           };
         }
       ) cfg

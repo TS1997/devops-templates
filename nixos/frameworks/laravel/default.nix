@@ -6,8 +6,16 @@
 }:
 let
   cfg = config.services.ts1997.laravelSites;
-  mkEnv = import ./scripts/generate-env.nix { inherit pkgs lib; };
+  mkEnv = import ./scripts/build-env.nix { inherit pkgs lib; };
   mkSetFilePermissions = import ./scripts/set-file-permissions.nix { inherit pkgs lib; };
+  mkDeploy = import ./scripts/deploy.nix {
+    inherit
+      pkgs
+      lib
+      mkEnv
+      mkSetFilePermissions
+      ;
+  };
 in
 {
   options.services.ts1997.laravelSites = lib.mkOption {
@@ -19,6 +27,14 @@ in
 
           config._module.args = {
             inherit pkgs lib;
+          };
+
+          options = {
+            postDeployCommands = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = "List of shell commands to run after deploying the application.";
+            };
           };
         }
       )
@@ -55,14 +71,9 @@ in
       );
     };
 
-    system.activationScripts = lib.mkMerge (
-      lib.mapAttrsToList (name: siteCfg: {
-        "laravel-perms-${name}" = lib.stringAfter [ "users" "groups" ] ''
-          echo "Setting permissions for Laravel site: ${siteCfg.appName}"
-          ${mkSetFilePermissions name siteCfg}
-        '';
-      }) cfg
-    );
+    environment.systemPackages = lib.flatten [
+      (lib.mapAttrsToList (name: siteCfg: mkDeploy name siteCfg) cfg)
+    ];
 
     services.ts1997.virtualHosts = lib.mapAttrs (name: siteCfg: {
       root = siteCfg.webRoot;

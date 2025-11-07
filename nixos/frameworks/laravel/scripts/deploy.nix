@@ -1,17 +1,31 @@
 {
-  config,
   pkgs,
   lib,
+  mkEnv,
+  mkSetFilePermissions,
   ...
 }:
 let
-  mkGenerateEnvFile = import ./generate-env.nix { inherit config pkgs lib; };
-  mkSetFilePermissions = import ./file-permissions.nix { inherit pkgs; };
+  mkExportEnv =
+    env:
+    let
+      escapeShell =
+        v:
+        let
+          s = builtins.toString v;
+        in
+        "'${builtins.replaceStrings [ "'" ] [ "'\"'\"'" ] s}'";
+      exports = lib.mapAttrsToList (k: v: "export ${k}=${escapeShell v}") env;
+    in
+    builtins.concatStringsSep "\n" exports;
 in
 name: siteCfg:
 pkgs.writeShellScriptBin "deploy-${name}" ''
   export PATH="${lib.makeBinPath [ siteCfg.phpPackage ]}:$PATH"
   set -e
+
+  # Load environment variables
+  ${mkExportEnv (mkEnv name siteCfg)}
 
   ARCHIVE_PATH="''${1:-}"
 
@@ -37,10 +51,6 @@ pkgs.writeShellScriptBin "deploy-${name}" ''
   echo "Extracting application files..."
   tar -xzf "$ARCHIVE_PATH" -C ${siteCfg.workingDir}
   rm "$ARCHIVE_PATH"
-
-  # Restore .env
-  echo "Regenerating .env file..."
-  # ${mkGenerateEnvFile name siteCfg}
 
   # Set file permissions
   echo "Setting file permissions..."

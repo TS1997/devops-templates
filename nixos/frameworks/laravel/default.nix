@@ -112,7 +112,7 @@ in
     };
 
     services.ts1997.virtualHosts = lib.mapAttrs (name: siteCfg: {
-      forceWWW = lib.mkDefault true;
+      # forceWWW = lib.mkDefault true;
       root = lib.mkDefault siteCfg.webRoot;
       serverName = siteCfg.domain;
 

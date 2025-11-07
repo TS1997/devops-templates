@@ -22,6 +22,11 @@ in
               description = "Whether to force www redirection for Laravel sites.";
             };
 
+            domain = lib.mkOption {
+              type = lib.types.str;
+              description = "The domain name for the Laravel application.";
+            };
+
             user = lib.mkOption {
               type = lib.types.str;
               default = name;
@@ -109,6 +114,7 @@ in
     services.ts1997.virtualHosts = lib.mapAttrs (name: siteCfg: {
       forceWWW = lib.mkDefault true;
       root = lib.mkDefault siteCfg.webRoot;
+      serverName = siteCfg.domain;
 
       locations = {
         "/" = {

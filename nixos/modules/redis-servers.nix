@@ -5,7 +5,7 @@
   ...
 }:
 let
-  cfg = config.services.ts1997.redis;
+  cfg = config.services.ts1997.redisServers;
 in
 {
   options.services.ts1997.redisServers = options.services.redis.servers;

@@ -5,12 +5,12 @@
   ...
 }:
 let
-  cfg = config.services.ts1997.laravel;
+  cfg = config.services.ts1997.laravelSites;
   mkSetFilePermissions = import ./scripts/file-permissions.nix { inherit pkgs; };
   mkDeploy = import ./scripts/deploy.nix { inherit pkgs lib; };
 in
 {
-  options.services.ts1997.laravel = lib.mkOption {
+  options.services.ts1997.laravelSites = lib.mkOption {
     type = lib.types.attrsOf (
       lib.types.submodule (
         { config, name, ... }:

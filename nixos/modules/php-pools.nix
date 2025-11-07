@@ -6,7 +6,7 @@
   ...
 }:
 let
-  cfg = config.services.ts1997.php;
+  cfg = config.services.ts1997.phpPools;
   defaultPoolSettings = import ../../settings/phpfpm-settings.nix;
 in
 {

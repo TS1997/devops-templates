@@ -35,7 +35,7 @@ in
       package = pkgs.mariadb;
 
       initialDatabases = lib.mapAttrsToList (name: dbCfg: {
-        name = dbCfg.database.name;
+        name = dbCfg.dbName;
       }) cfg;
 
       ensureDatabases = lib.mapAttrsToList (name: dbCfg: dbCfg.dbName) cfg;

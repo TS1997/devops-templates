@@ -1,79 +1,81 @@
-{ pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
-  mkGenerateEnvFile = import ./generate-env.nix { inherit pkgs; };
+  mkGenerateEnvFile = import ./generate-env.nix { inherit config pkgs lib; };
   mkSetFilePermissions = import ./file-permissions.nix { inherit pkgs; };
 in
-{
-  mkDeploy =
-    name: siteCfg:
-    pkgs.writeShellScriptBin "deploy-${name}" ''
-      export PATH="${lib.makeBinPath [ siteCfg.phpVersion ]}:$PATH"
-      set -e
+name: siteCfg:
+pkgs.writeShellScriptBin "deploy-${name}" ''
+  export PATH="${lib.makeBinPath [ siteCfg.phpPackage ]}:$PATH"
+  set -e
 
-      ARCHIVE_PATH="''${1:-}"
+  ARCHIVE_PATH="''${1:-}"
 
-      if [ -z "$ARCHIVE_PATH" ]; then
-        echo "Usage: deploy-${name} <path/to/deployment-archive.tar.gz>"
-        exit 1
-      fi
+  if [ -z "$ARCHIVE_PATH" ]; then
+    echo "Usage: deploy-${name} <path/to/deployment-archive.tar.gz>"
+    exit 1
+  fi
 
-      if [ ! -f "$ARCHIVE_PATH" ]; then
-        echo "Error: File '$ARCHIVE_PATH' does not exist."
-        exit 1
-      fi
+  if [ ! -f "$ARCHIVE_PATH" ]; then
+    echo "Error: File '$ARCHIVE_PATH' does not exist."
+    exit 1
+  fi
 
-      echo "Starting deployment for ${siteCfg.appName}..."
+  echo "Starting deployment for ${siteCfg.appName}..."
 
-      cd ${siteCfg.workingDir}
+  cd ${siteCfg.workingDir}
 
-      # Put the application into maintenance mode
-      echo "Putting application into maintenance mode..."
-      sudo -u ${siteCfg.user} php artisan down || true
+  # Put the application into maintenance mode
+  echo "Putting application into maintenance mode..."
+  sudo -u ${siteCfg.user} php artisan down || true
 
-      # Extract the new version
-      echo "Extracting application files..."
-      tar -xzf "$ARCHIVE_PATH" -C ${siteCfg.workingDir}
-      rm "$ARCHIVE_PATH"
+  # Extract the new version
+  echo "Extracting application files..."
+  tar -xzf "$ARCHIVE_PATH" -C ${siteCfg.workingDir}
+  rm "$ARCHIVE_PATH"
 
-      # Restore .env
-      echo "Regenerating .env file..."
-      # ${mkGenerateEnvFile name siteCfg}
+  # Restore .env
+  echo "Regenerating .env file..."
+  # ${mkGenerateEnvFile name siteCfg}
 
-      # Set file permissions
-      echo "Setting file permissions..."
-      ${mkSetFilePermissions name siteCfg}
+  # Set file permissions
+  echo "Setting file permissions..."
+  ${mkSetFilePermissions name siteCfg}
 
-      # Run migrations
-      echo "Running database migrations..."
-      sudo -u ${siteCfg.user} php artisan migrate --force
+  # Run migrations
+  echo "Running database migrations..."
+  sudo -u ${siteCfg.user} php artisan migrate --force
 
-      # Clear and cache configurations
-      echo "Clearing and caching configurations..."
-      sudo -u ${siteCfg.user} php artisan optimize:clear
-      sudo -u ${siteCfg.user} php artisan optimize
-      sudo -u ${siteCfg.user} php artisan config:cache
-      sudo -u ${siteCfg.user} php artisan route:cache
-      sudo -u ${siteCfg.user} php artisan view:cache
-      sudo -u ${siteCfg.user} php artisan event:cache
+  # Clear and cache configurations
+  echo "Clearing and caching configurations..."
+  sudo -u ${siteCfg.user} php artisan optimize:clear
+  sudo -u ${siteCfg.user} php artisan optimize
+  sudo -u ${siteCfg.user} php artisan config:cache
+  sudo -u ${siteCfg.user} php artisan route:cache
+  sudo -u ${siteCfg.user} php artisan view:cache
+  sudo -u ${siteCfg.user} php artisan event:cache
 
-      # Restart services
-      echo "Restarting PHP-FPM and queue workers..."
-      systemctl reload phpfpm-${siteCfg.user}.service
-      systemctl restart laravel-queue-${siteCfg.user}-*.service || true
+  # Restart services
+  echo "Restarting PHP-FPM and queue workers..."
+  systemctl reload phpfpm-${siteCfg.user}.service
+  systemctl restart laravel-queue-${siteCfg.user}-*.service || true
 
-      # Run post-deployment commands if any
-      ${lib.optionalString (siteCfg.postDeployCommands != [ ]) ''
-        echo "Running post-deployment commands..."
-        ${lib.concatMapStringsSep "\n" (cmd: ''
-          echo "Executing: ${cmd}"
-          ${cmd}
-        '') siteCfg.postDeployCommands}
-      ''}
+  # Run post-deployment commands if any
+  ${lib.optionalString (siteCfg.postDeployCommands != [ ]) ''
+    echo "Running post-deployment commands..."
+    ${lib.concatMapStringsSep "\n" (cmd: ''
+      echo "Executing: ${cmd}"
+      ${cmd}
+    '') siteCfg.postDeployCommands}
+  ''}
 
-      # Bring the application out of maintenance mode
-      echo "Bringing application out of maintenance mode..."
-      sudo -u ${siteCfg.user} php artisan up
+  # Bring the application out of maintenance mode
+  echo "Bringing application out of maintenance mode..."
+  sudo -u ${siteCfg.user} php artisan up
 
-      echo "Deployment for ${siteCfg.appName} completed successfully."
-    '';
-}
+  echo "Deployment for ${siteCfg.appName} completed successfully."
+''

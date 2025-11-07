@@ -26,8 +26,8 @@
   DB_SOCKET=/run/mysqld/mysqld.sock
   DB_HOST=localhost
   DB_PORT=3306
-  DB_DATABASE="${siteCfg.database.name}"
-  DB_USERNAME="${siteCfg.database.user}"
+  DB_DATABASE="${name}"
+  DB_USERNAME="${siteCfg.user}"
 
   SESSION_DRIVER=database
   SESSION_LIFETIME=120

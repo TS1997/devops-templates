@@ -1,4 +1,8 @@
+{ user }:
 {
+  "listen.owner" = "nginx";
+  "listen.group" = user;
+  "listen.mode" = "0660";
   "clear_env" = "no";
   "pm" = "dynamic";
   "pm.max_children" = 10;

@@ -10,20 +10,24 @@ in
 {
   options.services.ts1997.mysql = lib.mkOption {
     type = lib.types.attrsOf (
-      lib.types.submodule {
-        options = {
-          user = lib.mkOption {
-            type = lib.types.str;
-            default = "mysql";
-            description = "The system user to run the MySQL instance under.";
-          };
+      lib.types.submodule (
+        { name, ... }:
+        {
+          options = {
+            dbName = lib.mkOption {
+              type = lib.types.str;
+              default = name;
+              description = "The name of the MySQL database.";
+            };
 
-          dbName = lib.mkOption {
-            type = lib.types.str;
-            description = "The name of the MySQL database.";
+            dbUser = lib.mkOption {
+              type = lib.types.str;
+              default = name;
+              description = "The MySQL user for this database.";
+            };
           };
-        };
-      }
+        }
+      )
     );
     default = { };
     description = "List of MySQL databases to enable.";
@@ -41,7 +45,7 @@ in
       ensureDatabases = lib.mapAttrsToList (name: dbCfg: dbCfg.dbName) cfg;
 
       ensureUsers = lib.mapAttrsToList (name: dbCfg: {
-        name = dbCfg.user;
+        name = dbCfg.dbUser;
         ensurePermissions = {
           "${dbCfg.dbName}.*" = "ALL PRIVILEGES";
         };

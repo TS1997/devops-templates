@@ -7,7 +7,7 @@
 let
   cfg = config.services.ts1997.laravelSites;
   mkSetFilePermissions = import ./scripts/file-permissions.nix { inherit pkgs; };
-  mkDeploy = import ./scripts/deploy.nix { inherit pkgs lib; };
+  mkDeploy = import ./scripts/deploy.nix { inherit config pkgs lib; };
 in
 {
   options.services.ts1997.laravelSites = lib.mkOption {
@@ -20,6 +20,22 @@ in
               type = lib.types.bool;
               default = true;
               description = "Whether to force www redirection for Laravel sites.";
+            };
+
+            appName = lib.mkOption {
+              type = lib.types.str;
+              default = name;
+              description = "The name of the Laravel application.";
+            };
+
+            environment = lib.mkOption {
+              type = lib.types.enum [
+                "production"
+                "local"
+                "staging"
+              ];
+              default = "production";
+              description = "The application environment.";
             };
 
             domain = lib.mkOption {
@@ -71,13 +87,19 @@ in
   };
 
   config = lib.mkIf (cfg != { }) {
-    system.activationScripts = lib.mkMerge (
-      lib.mapAttrs (name: siteCfg: {
-        "laravel-setup-${name}" = lib.stringAfter [ "users" "groups" "agenix" ] ''
+    system.activationScripts = lib.mapAttrs' (
+      name: siteCfg:
+      lib.nameValuePair "laravel-setup-${name}" {
+        deps = [
+          "users"
+          "groups"
+          "agenix"
+        ];
+        text = ''
           ${mkSetFilePermissions name siteCfg}
         '';
-      }) cfg
-    );
+      }
+    ) cfg;
 
     environment.systemPackages = lib.flatten [
       (lib.mapAttrsToList (name: siteCfg: mkDeploy name siteCfg) cfg)
@@ -111,7 +133,7 @@ in
     };
 
     services.ts1997.virtualHosts = lib.mapAttrs (name: siteCfg: {
-      # forceWWW = lib.mkDefault true;
+      forceWWW = lib.mkDefault true;
       root = lib.mkDefault siteCfg.webRoot;
       serverName = siteCfg.domain;
 
@@ -122,6 +144,7 @@ in
 
         "~ \\.php$" = {
           extraConfig = ''
+            fastcgi_pass unix:${config.services.phpfpm.pools.${siteCfg.user}.socket};
             fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
             fastcgi_index index.php;
             fastcgi_hide_header X-Powered-By;
@@ -147,17 +170,17 @@ in
 
     services.ts1997.phpPools = lib.mapAttrs (name: siteCfg: {
       user = siteCfg.user;
-      phpPackage = siteCfg.phpPackage;
+      # phpPackage = siteCfg.phpPackage;
     }) cfg;
 
     services.ts1997.mysql = lib.mapAttrs (name: siteCfg: {
-      user = siteCfg.user;
-      dbName = name;
+      # user = siteCfg.user;
+      # dbName = name;
     }) cfg;
 
     services.ts1997.redisServers = lib.mapAttrs (name: siteCfg: {
       user = siteCfg.user;
-      group = siteCfg.user;
+      # group = siteCfg.user;
     }) cfg;
   };
 }

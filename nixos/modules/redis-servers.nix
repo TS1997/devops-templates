@@ -15,8 +15,8 @@ in
       name: serverCfg:
       {
         enable = lib.mkDefault true;
-        user = lib.mkDefault "redis";
-        group = lib.mkDefault "redis";
+        user = serverCfg.user;
+        group = serverCfg.user;
         port = lib.mkDefault 0;
         unixSocket = lib.mkDefault "/run/redis-${name}/redis.sock";
         unixSocketPerm = lib.mkDefault 660;

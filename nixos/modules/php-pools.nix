@@ -19,6 +19,8 @@ in
       name: poolCfg:
       (mkFilterPoolCfg poolCfg)
       // {
+        group = lib.mkDefault poolCfg.user;
+
         settings = lib.mkMerge [
           (mkDefaultPoolSettings { user = poolCfg.user; })
           (poolCfg.settings or { })

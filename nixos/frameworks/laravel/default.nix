@@ -6,8 +6,6 @@
 }:
 let
   cfg = config.services.ts1997.laravelSites;
-  mkSetFilePermissions = import ./scripts/file-permissions.nix { inherit pkgs; };
-  mkDeploy = import ./scripts/deploy.nix { inherit config pkgs lib; };
 in
 {
   options.services.ts1997.laravelSites = lib.mkOption {
@@ -15,96 +13,19 @@ in
       lib.types.submodule (
         { config, name, ... }:
         {
-          options = {
-            forceWWW = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = "Whether to force www redirection for Laravel sites.";
-            };
+          imports = [ ../options/site-options.nix ];
 
-            appName = lib.mkOption {
-              type = lib.types.str;
-              default = name;
-              description = "The name of the Laravel application.";
-            };
-
-            environment = lib.mkOption {
-              type = lib.types.enum [
-                "production"
-                "local"
-                "staging"
-              ];
-              default = "production";
-              description = "The application environment.";
-            };
-
-            domain = lib.mkOption {
-              type = lib.types.str;
-              description = "The domain name for the Laravel application.";
-            };
-
-            user = lib.mkOption {
-              type = lib.types.str;
-              default = name;
-              description = "The system user to run the Laravel instance under.";
-            };
-
-            workingDir = lib.mkOption {
-              type = lib.types.str;
-              default = "/var/lib/${name}";
-              description = "The working directory of the Laravel application.";
-            };
-
-            webRoot = lib.mkOption {
-              type = lib.types.str;
-              default = "${config.workingDir}/public";
-              description = "The web root directory of the Laravel application.";
-            };
-
-            phpPackage = lib.mkOption {
-              type = lib.types.package;
-              default = pkgs.php83;
-              description = "The PHP package to use for the Laravel application.";
-            };
-
-            extraEnvs = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              description = "List of extra environment variables to set in the .env file.";
-            };
-
-            postDeployCommands = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              description = "List of shell commands to run after deployment.";
-            };
+          config._module.args = {
+            inherit pkgs lib;
           };
         }
       )
     );
     default = { };
-    description = "List of Laravel instances to enable.";
+    description = "Configuration options for Laravel sites.";
   };
 
   config = lib.mkIf (cfg != { }) {
-    system.activationScripts = lib.mapAttrs' (
-      name: siteCfg:
-      lib.nameValuePair "laravel-setup-${name}" {
-        deps = [
-          "users"
-          "groups"
-          "agenix"
-        ];
-        text = ''
-          ${mkSetFilePermissions name siteCfg}
-        '';
-      }
-    ) cfg;
-
-    environment.systemPackages = lib.flatten [
-      (lib.mapAttrsToList (name: siteCfg: mkDeploy name siteCfg) cfg)
-    ];
-
     users = {
       users = lib.mkMerge (
         lib.mapAttrsToList (name: siteCfg: {
@@ -133,9 +54,9 @@ in
     };
 
     services.ts1997.virtualHosts = lib.mapAttrs (name: siteCfg: {
-      forceWWW = lib.mkDefault true;
-      root = lib.mkDefault siteCfg.webRoot;
+      root = siteCfg.webRoot;
       serverName = siteCfg.domain;
+      forceWWW = siteCfg.forceWWW;
 
       locations = {
         "/" = {
@@ -160,7 +81,7 @@ in
         };
 
         "/storage/" = {
-          alias = "${siteCfg.webRoot}/storage/";
+          alias = "${siteCfg.workingDir}/storage/app/public/";
           extraConfig = ''
             expires 1y;
           '';
@@ -170,17 +91,40 @@ in
 
     services.ts1997.phpPools = lib.mapAttrs (name: siteCfg: {
       user = siteCfg.user;
-      # phpPackage = siteCfg.phpPackage;
+      phpPackage = siteCfg.phpPackage;
     }) cfg;
 
-    services.ts1997.mysql = lib.mapAttrs (name: siteCfg: {
-      # user = siteCfg.user;
-      # dbName = name;
-    }) cfg;
+    services.ts1997.mysql = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf (siteCfg.database.enable && siteCfg.database.connection == "mysql") {
+          ${name} = {
+            dbUser = siteCfg.user;
+          };
+        }
+      ) cfg
+    );
 
-    services.ts1997.redisServers = lib.mapAttrs (name: siteCfg: {
-      user = siteCfg.user;
-      # group = siteCfg.user;
-    }) cfg;
+    services.ts1997.pgsql = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf (siteCfg.database.enable && siteCfg.database.connection == "pgsql") {
+          ${name} = {
+            dbUser = siteCfg.user;
+          };
+        }
+      ) cfg
+    );
+
+    services.ts1997.redisServers = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf siteCfg.redis.enable {
+          ${name} = {
+            user = siteCfg.user;
+          };
+        }
+      ) cfg
+    );
   };
 }

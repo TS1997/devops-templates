@@ -147,7 +147,7 @@ in
       };
     }) cfg;
 
-    services.ts1997.php = lib.mapAttrs (name: siteCfg: {
+    services.ts1997.phpPools = lib.mapAttrs (name: siteCfg: {
       user = siteCfg.user;
       phpPackage = siteCfg.phpPackage;
     }) cfg;
@@ -157,7 +157,7 @@ in
       dbName = name;
     }) cfg;
 
-    services.ts1997.redis = lib.mapAttrs (name: siteCfg: {
+    services.ts1997.redisServers = lib.mapAttrs (name: siteCfg: {
       user = siteCfg.user;
       group = siteCfg.user;
     }) cfg;

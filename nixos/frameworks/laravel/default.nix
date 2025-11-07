@@ -122,7 +122,6 @@ in
 
         "~ \\.php$" = {
           extraConfig = ''
-            fastcgi_pass unix:${config.services.phpfpm.pools.${siteCfg.user}.socket};
             fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
             fastcgi_index index.php;
             fastcgi_hide_header X-Powered-By;

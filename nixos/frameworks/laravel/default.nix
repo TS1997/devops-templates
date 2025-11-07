@@ -30,13 +30,13 @@ in
 
             workingDir = lib.mkOption {
               type = lib.types.str;
-              default = "/var/www/${name}";
+              default = "/var/lib/${name}";
               description = "The working directory of the Laravel application.";
             };
 
             webRoot = lib.mkOption {
               type = lib.types.str;
-              default = "/var/www/${name}/public";
+              default = "${config.workingDir}/public";
               description = "The web root directory of the Laravel application.";
             };
 

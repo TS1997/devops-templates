@@ -14,7 +14,6 @@ in
 
   config = lib.mkIf (cfg != { }) {
     services.phpfpm = {
-      enable = true;
       pools = lib.mapAttrs (
         name: poolCfg:
         {

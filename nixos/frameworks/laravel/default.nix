@@ -101,7 +101,6 @@ in
       groups = lib.mkMerge (
         lib.mapAttrsToList (name: siteCfg: {
           ${siteCfg.user} = {
-            isSystemGroup = true;
             members = [
               siteCfg.user
               "nginx"

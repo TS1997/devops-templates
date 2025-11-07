@@ -40,7 +40,8 @@ in
           {
             enableACME = lib.mkDefault true;
             forceSSL = lib.mkDefault true;
-            serverName = if siteCfg.forceWWW then "www.${siteCfg.serverName}" else siteCfg.serverName;
+            serverName = siteCfg.serverName;
+            # serverName = if siteCfg.forceWWW then "www.${siteCfg.serverName}" else siteCfg.serverName;
 
             extraConfig = ''
               index index.html index.htm index.php;
@@ -63,17 +64,19 @@ in
         ) cfg)
 
         # WWW redirects
-        (lib.mapAttrs (
-          name: siteCfg:
-          lib.optionalAttrs siteCfg.forceWWW {
-            "${name}-redirect" = {
-              serverName = siteCfg.serverName;
-              enableACME = true;
-              forceSSL = true;
-              locations."/".return = "301 https://www.${siteCfg.serverName}$request_uri";
-            };
-          }
-        ) cfg)
+        /*
+          (lib.mapAttrs (
+            name: siteCfg:
+            lib.optionalAttrs siteCfg.forceWWW {
+              "${name}-redirect" = {
+                serverName = siteCfg.serverName;
+                enableACME = true;
+                forceSSL = true;
+                locations."/".return = "301 https://www.${siteCfg.serverName}$request_uri";
+              };
+            }
+          ) cfg)
+        */
       ];
     };
   };

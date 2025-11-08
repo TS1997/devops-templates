@@ -11,7 +11,10 @@ let
   };
 in
 {
-  imports = [ ./scheduler.nix ];
+  imports = [
+    ./scheduler.nix
+    ./queue.nix
+  ];
 
   options.services.ts1997.laravel.sites = lib.mkOption {
     type = lib.types.attrsOf (
@@ -40,6 +43,26 @@ in
               type = lib.types.bool;
               default = true;
               description = "Enable Laravel scheduler for this site.";
+            };
+
+            queue = {
+              enable = lib.mkOption {
+                type = lib.types.bool;
+                default = true;
+                description = "Enable Laravel queue worker for this site.";
+              };
+
+              name = lib.mkOption {
+                type = lib.types.str;
+                default = "default";
+                description = "Name of the queue to process.";
+              };
+
+              workers = lib.mkOption {
+                type = lib.types.int;
+                default = 1;
+                description = "Number of queue worker instances.";
+              };
             };
           };
         }
@@ -167,6 +190,22 @@ in
             workingDir = siteCfg.workingDir;
             phpPackage = siteCfg.phpPackage;
             appName = siteCfg.appName;
+          };
+        }
+      ) cfg
+    );
+
+    services.ts1997.laravel.queue = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf siteCfg.queue.enable {
+          ${name} = {
+            user = siteCfg.user;
+            workingDir = siteCfg.workingDir;
+            phpPackage = siteCfg.phpPackage;
+            appName = siteCfg.appName;
+            queue = siteCfg.queue.name;
+            workers = siteCfg.queue.workers;
           };
         }
       ) cfg

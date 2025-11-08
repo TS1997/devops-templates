@@ -2,13 +2,14 @@
   config,
   pkgs,
   lib,
+  name,
   ...
 }:
 {
   options = {
     user = lib.mkOption {
       type = lib.types.str;
-      default = "nginx";
+      default = name;
       description = "The default system user.";
     };
 
@@ -53,7 +54,7 @@
 
     workingDir = lib.mkOption {
       type = lib.types.str;
-      default = "/var/lib/${config.user}";
+      default = "/var/lib/${name}";
       description = "The default working directory.";
     };
 

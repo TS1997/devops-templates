@@ -14,10 +14,13 @@ on:
       domain:
         required: true
         type: string
+      deploy_script:
+        required: true
+        type: string
 
 jobs:
   build:
-    uses: ./build.yml
+    uses: ./.github/workflows/laravel-build.yml
     with:
       php_version: ${{ inputs.php_version }}
       node_version: ${{ inputs.node_version }}
@@ -49,7 +52,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            deploy-timmyskod /tmp/deploy/app-${{ github.sha }}.tar.gz
+            ${{ inputs.deploy_script }} /tmp/deploy/app-${{ github.sha }}.tar.gz
 
       - name: Health check
         run: |

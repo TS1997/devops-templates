@@ -11,9 +11,6 @@ on:
         required: false
         default: "24"
         type: string
-      host:
-        required: true
-        type: string
       domain:
         required: true
         type: string

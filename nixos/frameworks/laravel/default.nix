@@ -32,14 +32,6 @@ in
             # Merge base environment with user-defined environment variables
             environment = lib.mapAttrs (_: lib.mkDefault) baseEnv;
           };
-
-          options = {
-            postDeployCommands = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              description = "List of shell commands to run after deploying the application.";
-            };
-          };
         }
       )
     );

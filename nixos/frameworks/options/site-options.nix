@@ -69,6 +69,12 @@
       description = "The default PHP package to use.";
     };
 
+    postDeployCommands = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "List of shell commands to run after deploying the application.";
+    };
+
     database = {
       enable = lib.mkOption {
         type = lib.types.bool;

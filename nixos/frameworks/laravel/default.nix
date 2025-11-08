@@ -5,13 +5,15 @@
   ...
 }:
 let
-  cfg = config.services.ts1997.laravelSites;
+  cfg = config.services.ts1997.laravel.sites;
   mkDeploy = import ./scripts/deploy.nix {
     inherit pkgs lib;
   };
 in
 {
-  options.services.ts1997.laravelSites = lib.mkOption {
+  imports = [ ./scheduler.nix ];
+
+  options.services.ts1997.laravel.sites = lib.mkOption {
     type = lib.types.attrsOf (
       lib.types.submodule (
         { config, name, ... }:
@@ -31,6 +33,14 @@ in
 
             # Merge base environment with user-defined environment variables
             environment = lib.mapAttrs (_: lib.mkDefault) baseEnv;
+          };
+
+          options = {
+            scheduler.enable = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Enable Laravel scheduler for this site.";
+            };
           };
         }
       )
@@ -143,6 +153,20 @@ in
           ${name} = {
             user = siteCfg.user;
             unixSocket = siteCfg.redis.socket;
+          };
+        }
+      ) cfg
+    );
+
+    services.ts1997.laravel.scheduler = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf siteCfg.scheduler.enable {
+          ${name} = {
+            user = siteCfg.user;
+            workingDir = siteCfg.workingDir;
+            phpPackage = siteCfg.phpPackage;
+            appName = siteCfg.appName;
           };
         }
       ) cfg

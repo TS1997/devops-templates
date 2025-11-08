@@ -1,31 +1,16 @@
 {
   pkgs,
   lib,
-  mkEnv,
-  mkSetFilePermissions,
   ...
 }:
 let
-  mkExportEnv =
-    env:
-    let
-      escapeShell =
-        v:
-        let
-          s = builtins.toString v;
-        in
-        "'${builtins.replaceStrings [ "'" ] [ "'\"'\"'" ] s}'";
-      exports = lib.mapAttrsToList (k: v: "export ${k}=${escapeShell v}") env;
-    in
-    builtins.concatStringsSep "\n" exports;
+  mkSetFilePermissions = import ./set-file-permissions.nix { inherit pkgs; };
+  mkBuildEnv = import ../../../scripts/build-env.nix { inherit pkgs; };
 in
 name: siteCfg:
 pkgs.writeShellScriptBin "deploy-${name}" ''
   export PATH="${lib.makeBinPath [ siteCfg.phpPackage ]}:$PATH"
   set -e
-
-  # Load environment variables
-  ${mkExportEnv (mkEnv name siteCfg)}
 
   ARCHIVE_PATH="''${1:-}"
 
@@ -52,9 +37,23 @@ pkgs.writeShellScriptBin "deploy-${name}" ''
   tar -xzf "$ARCHIVE_PATH" -C ${siteCfg.workingDir}
   rm "$ARCHIVE_PATH"
 
+  # Generate the environment file
+  echo "Generating .env file..."
+  ${mkBuildEnv {
+    name = name;
+    environment = siteCfg.environment;
+    outputPath = "${siteCfg.workingDir}/.env";
+    secretsPath = siteCfg.environmentSecretsPath;
+  }}
+
   # Set file permissions
   echo "Setting file permissions..."
   ${mkSetFilePermissions name siteCfg}
+
+  # Restart services
+  echo "Restarting PHP-FPM and queue workers..."
+  systemctl reload phpfpm-${name}.service
+  systemctl restart laravel-queue-${name}-*.service || true
 
   # Run migrations
   echo "Running database migrations..."
@@ -68,11 +67,6 @@ pkgs.writeShellScriptBin "deploy-${name}" ''
   sudo -u ${siteCfg.user} php artisan route:cache
   sudo -u ${siteCfg.user} php artisan view:cache
   sudo -u ${siteCfg.user} php artisan event:cache
-
-  # Restart services
-  echo "Restarting PHP-FPM and queue workers..."
-  systemctl reload phpfpm-${siteCfg.user}.service
-  systemctl restart laravel-queue-${siteCfg.user}-*.service || true
 
   # Run post-deployment commands if any
   ${lib.optionalString (siteCfg.postDeployCommands != [ ]) ''

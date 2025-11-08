@@ -6,15 +6,8 @@
 }:
 let
   cfg = config.services.ts1997.laravelSites;
-  mkEnv = import ./scripts/build-env.nix { inherit pkgs lib; };
-  mkSetFilePermissions = import ./scripts/set-file-permissions.nix { inherit pkgs lib; };
   mkDeploy = import ./scripts/deploy.nix {
-    inherit
-      pkgs
-      lib
-      mkEnv
-      mkSetFilePermissions
-      ;
+    inherit pkgs lib;
   };
 in
 {
@@ -22,11 +15,22 @@ in
     type = lib.types.attrsOf (
       lib.types.submodule (
         { config, name, ... }:
+        let
+          baseEnv = import ./settings/base-env.nix {
+            inherit name;
+            siteCfg = config;
+          };
+        in
         {
           imports = [ ../options/site-options.nix ];
 
-          config._module.args = {
-            inherit pkgs lib;
+          config = {
+            _module.args = {
+              inherit pkgs lib;
+            };
+
+            # Merge base environment with user-defined environment variables
+            environment = lib.mapAttrs (_: lib.mkDefault) baseEnv;
           };
 
           options = {
@@ -114,7 +118,6 @@ in
     services.ts1997.phpPools = lib.mapAttrs (name: siteCfg: {
       user = siteCfg.user;
       phpPackage = siteCfg.phpPackage;
-      phpEnv = mkEnv name siteCfg;
     }) cfg;
 
     services.ts1997.mysql = lib.mkMerge (

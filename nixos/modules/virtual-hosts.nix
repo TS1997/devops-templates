@@ -74,11 +74,12 @@ in
               ${siteCfg.extraConfig or ""}
             '';
 
-            locations = (siteCfg.locations or { }) // {
+            locations = {
               "~ /\\.(?!well-known).*" = {
                 extraConfig = "deny all;";
               };
-            };
+            }
+            // (siteCfg.locations or { });
           }
         ) cfg)
 

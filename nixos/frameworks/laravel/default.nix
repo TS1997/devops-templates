@@ -210,5 +210,22 @@ in
         }
       ) cfg
     );
+
+    systemd.tmpfiles.rules = lib.flatten (
+      lib.mapAttrsToList (name: siteCfg: [
+        # Base directory structure
+        "d ${siteCfg.workingDir} 0750 ${siteCfg.user} ${siteCfg.user} -"
+        "Z ${siteCfg.workingDir} 0750 ${siteCfg.user} ${siteCfg.user} -"
+
+        # Writable directories
+        "d ${siteCfg.workingDir}/storage 0770 ${siteCfg.user} ${siteCfg.user} -"
+        "Z ${siteCfg.workingDir}/storage 0770 ${siteCfg.user} ${siteCfg.user} -"
+        "d ${siteCfg.workingDir}/bootstrap/cache 0770 ${siteCfg.user} ${siteCfg.user} -"
+        "Z ${siteCfg.workingDir}/bootstrap/cache 0770 ${siteCfg.user} ${siteCfg.user} -"
+
+        # Secure .env file
+        "f ${siteCfg.workingDir}/.env 0640 ${siteCfg.user} ${siteCfg.user} -"
+      ]) cfg
+    );
   };
 }

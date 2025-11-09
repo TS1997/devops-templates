@@ -14,9 +14,10 @@ on:
       domain:
         required: true
         type: string
-      deploy_script:
+      name:
         required: true
         type: string
+        description: "The NixOS Laravel Site name for deployment script."
 
 jobs:
   build:
@@ -52,7 +53,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            ${{ inputs.deploy_script }} /tmp/deploy/app-${{ github.sha }}.tar.gz
+            deploy-${{ inputs.name }} /tmp/deploy/app-${{ github.sha }}.tar.gz
 
       - name: Health check
         run: |

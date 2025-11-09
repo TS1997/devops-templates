@@ -1,4 +1,4 @@
-name: Laravel Deploy
+name: Laravel Build
 
 on:
   workflow_call:

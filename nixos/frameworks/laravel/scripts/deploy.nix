@@ -4,6 +4,7 @@
   ...
 }:
 let
+  mkSetFilePermissions = import ./set-file-permissions.nix { inherit pkgs; };
   mkBuildEnv = import ../../../scripts/build-env.nix { inherit pkgs; };
 in
 name: siteCfg:
@@ -47,7 +48,7 @@ pkgs.writeShellScriptBin "deploy-${name}" ''
 
   # Set file permissions
   echo "Setting file permissions..."
-  systemd-tmpfiles --create --prefix=${siteCfg.workingDir}
+  ${mkSetFilePermissions name siteCfg}
 
   # Restart services
   echo "Restarting PHP-FPM and queue workers..."

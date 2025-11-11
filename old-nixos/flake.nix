@@ -8,8 +8,8 @@
           { ... }:
           {
             imports = [
-              ./modules/nixos
-              ./frameworks/nixos.nix
+              ./nixos/modules
+              ./nixos/frameworks
             ];
           };
       };

@@ -1,5 +1,5 @@
 {
   imports = [
-    ./laravel/devenv.nix
+    ./laravel/laravel-devenv.nix
   ];
 }

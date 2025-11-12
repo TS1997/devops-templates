@@ -1,6 +1,6 @@
 {
   imports = [
-    ./modules/devenv
+    ./modules/devenv.nix
     ./frameworks/devenv.nix
   ];
 }

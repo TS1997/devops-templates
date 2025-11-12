@@ -6,19 +6,25 @@
 }:
 let
   cfg = config.services.ts1997.laravel.sites;
+
+  mkLocations =
+    name: siteCfg:
+    import ./settings/nginx-locations.nix {
+      inherit pkgs;
+      siteCfg = siteCfg;
+      phpSocket = config.services.ts1997.phpPools.${name}.socket;
+    };
 in
 {
   options.services.ts1997.laravel.sites = lib.mkOption {
     type = lib.types.attrsOf (
       lib.types.submodule (
-        { name, config, ... }:
+        { config, ... }:
         {
-          imports = [ ./options/nixos.nix ];
-
+          imports = [ ./options/site-options.nix ];
           config = {
-            _module.args = {
-              inherit pkgs lib;
-            };
+            _module.args = { inherit config pkgs lib; };
+            workingDir = lib.mkDefault "/var/lib/${config.user}";
           };
         }
       )
@@ -36,10 +42,7 @@ in
             createHome = true;
             home = siteCfg.workingDir;
             group = siteCfg.user;
-            extraGroups = [ "nginx" ];
-            packages = [ siteCfg.phpPackage ];
           };
-          nginx.extraGroups = [ siteCfg.user ];
         }) cfg
       );
 
@@ -48,7 +51,6 @@ in
           ${siteCfg.user} = {
             members = [
               siteCfg.user
-              "nginx"
             ];
           };
         }) cfg
@@ -56,44 +58,29 @@ in
     };
 
     services.ts1997.virtualHosts = lib.mapAttrs (name: siteCfg: {
+      user = siteCfg.user;
       root = siteCfg.webRoot;
       serverName = siteCfg.domain;
+      serverAliases = siteCfg.extraDomains;
       forceWWW = siteCfg.forceWWW;
-
-      locations = {
-        "/" = {
-          tryFiles = "$uri $uri/ /index.php?$query_string";
-        };
-
-        "~ \\.php$" = {
-          extraConfig = ''
-            fastcgi_pass unix:${config.services.phpfpm.pools.${siteCfg.user}.socket};
-            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-            fastcgi_index index.php;
-            fastcgi_hide_header X-Powered-By;
-            include ${pkgs.nginx}/conf/fastcgi_params;
-          '';
-        };
-
-        "~ ^/livewire/" = {
-          extraConfig = ''
-            expires off;
-            try_files $uri $uri/ /index.php?$query_string;
-          '';
-        };
-
-        "/storage/" = {
-          alias = "${siteCfg.workingDir}/storage/app/public/";
-          extraConfig = ''
-            expires 1y;
-          '';
-        };
-      };
+      locations = mkLocations name siteCfg;
     }) cfg;
 
     services.ts1997.phpPools = lib.mapAttrs (name: siteCfg: {
       user = siteCfg.user;
       phpPackage = siteCfg.phpPackage;
     }) cfg;
+
+    services.ts1997.mysql = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf (siteCfg.database.enable && siteCfg.database.connection == "mysql") {
+          ${name} = {
+            user = siteCfg.database.user;
+            name = siteCfg.database.name;
+          };
+        }
+      ) cfg
+    );
   };
 }

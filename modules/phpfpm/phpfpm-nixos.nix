@@ -1,6 +1,5 @@
 {
   config,
-  pkgs,
   lib,
   options,
   ...
@@ -8,9 +7,9 @@
 let
   cfg = config.services.ts1997.phpPools;
 
-  mkDefaultPoolSettings =
+  defaultPoolSettings =
     poolCfg:
-    import ../settings/phpfpm-pool-settings.nix
+    import ./settings/pool-settings.nix
     // {
       "listen.owner" = "nginx";
       "listen.group" = poolCfg.user;
@@ -18,32 +17,37 @@ let
       "php_admin_value[error_log]" = "/var/log/phpfpm-error.log";
     };
 
-  mkDefaultPoolPhpOptions =
+  defaultPhpOptions =
     name:
-    import ../settings/phpfpm-pool-php-options.nix
+    import ./settings/php-options.nix
     + ''
       error_log = /var/log/${name}/php-error.log
     '';
 
-  mkFilterPoolCfg = poolCfg: builtins.removeAttrs poolCfg [ "socket" ];
+  filteredPoolCfg = poolCfg: builtins.removeAttrs poolCfg [ "socket" ];
 in
 {
   options.services.ts1997.phpPools = options.services.phpfpm.pools;
 
   config = lib.mkIf (cfg != { }) {
+    users.users = lib.mkMerge (
+      lib.mapAttrsToList (name: poolCfg: {
+        ${poolCfg.user}.packages = [ poolCfg.phpPackage ];
+      }) cfg
+    );
+
     services.phpfpm.pools = lib.mapAttrs (
       name: poolCfg:
-      (mkFilterPoolCfg poolCfg)
+      (filteredPoolCfg poolCfg)
       // {
         group = lib.mkDefault poolCfg.user;
-        phpPackage = lib.mkDefault pkgs.php83;
 
         settings = lib.mkMerge [
-          (mkDefaultPoolSettings poolCfg)
-          (poolCfg.settings or { })
+          (defaultPoolSettings poolCfg)
+          (poolCfg.settings)
         ];
 
-        phpOptions = (mkDefaultPoolPhpOptions name) + (poolCfg.phpOptions or "");
+        phpOptions = (defaultPhpOptions name) + (poolCfg.phpOptions);
       }
     ) cfg;
   };

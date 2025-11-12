@@ -8,11 +8,14 @@
 let
   cfg = config.services.ts1997.virtualHosts;
 
+  defaultExtraConfig = import ./settings/extra-config.nix;
+
   # Filter out custom options that nginx doesn't know about
   filterCustomOptions =
     siteCfg:
     builtins.removeAttrs siteCfg [
       "forceWWW"
+      "user"
       "_module"
     ];
 in
@@ -20,7 +23,7 @@ in
   options.services.ts1997.virtualHosts = lib.mkOption {
     type = lib.types.attrsOf (
       lib.types.submodule (
-        { config, name, ... }:
+        { name, config, ... }:
         {
           imports = options.services.nginx.virtualHosts.type.getSubModules;
 
@@ -30,15 +33,40 @@ in
               default = true;
               description = "Whether to force www redirection for this virtual host.";
             };
+
+            user = lib.mkOption {
+              type = lib.types.str;
+              default = "nginx";
+              description = "The user that the PHP-FPM pool will run as.";
+            };
           };
         }
       )
     );
     default = { };
-    description = "Extended nginx virtual hosts with TS1997 defaults.";
+    description = "Extended nginx virtual hosts configurations.";
   };
 
   config = lib.mkIf (cfg != { }) {
+    users = {
+      users = lib.mkMerge (
+        lib.mapAttrsToList (name: siteCfg: {
+          ${siteCfg.user}.extraGroups = [ "nginx" ];
+          nginx.extraGroups = [ siteCfg.user ];
+        }) cfg
+      );
+
+      groups = lib.mkMerge (
+        lib.mapAttrsToList (name: siteCfg: {
+          ${siteCfg.user} = {
+            members = [
+              "nginx"
+            ];
+          };
+        }) cfg
+      );
+    };
+
     networking.firewall.enable = true;
     networking.firewall.allowedTCPPorts = [
       80
@@ -65,14 +93,7 @@ in
             root = lib.mkDefault "/var/lib/${name}/public";
             serverName = if siteCfg.forceWWW then "www.${siteCfg.serverName}" else siteCfg.serverName;
 
-            extraConfig = ''
-              index index.html index.htm index.php;
-              add_header X-Frame-Options "SAMEORIGIN";
-              add_header X-Content-Type-Options "nosniff";
-              charset utf-8;
-
-              ${siteCfg.extraConfig or ""}
-            '';
+            extraConfig = defaultExtraConfig + siteCfg.extraConfig;
 
             locations = {
               "~ /\\.(?!well-known).*" = {

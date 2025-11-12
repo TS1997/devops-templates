@@ -1,5 +1,5 @@
 {
   imports = [
-    ./laravel/nixos.nix
+    ./laravel/laravel-nixos.nix
   ];
 }

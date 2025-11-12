@@ -8,7 +8,7 @@
           { ... }:
           {
             imports = [
-              ./modules/nixos
+              ./modules/nixos.nix
               ./frameworks/nixos.nix
             ];
           };

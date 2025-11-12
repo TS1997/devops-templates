@@ -14,13 +14,13 @@ in
         { name, ... }:
         {
           options = {
-            dbName = lib.mkOption {
+            name = lib.mkOption {
               type = lib.types.str;
               default = name;
               description = "The name of the MySQL database.";
             };
 
-            dbUser = lib.mkOption {
+            user = lib.mkOption {
               type = lib.types.str;
               default = name;
               description = "The MySQL user for this database.";
@@ -39,15 +39,14 @@ in
       package = pkgs.mariadb;
 
       initialDatabases = lib.mapAttrsToList (name: dbCfg: {
-        name = dbCfg.dbName;
+        name = dbCfg.name;
       }) cfg;
 
-      ensureDatabases = lib.mapAttrsToList (name: dbCfg: dbCfg.dbName) cfg;
-
+      ensureDatabases = lib.mapAttrsToList (name: dbCfg: dbCfg.name) cfg;
       ensureUsers = lib.mapAttrsToList (name: dbCfg: {
-        name = dbCfg.dbUser;
+        name = dbCfg.user;
         ensurePermissions = {
-          "${dbCfg.dbName}.*" = "ALL PRIVILEGES";
+          "${dbCfg.name}.*" = "ALL PRIVILEGES";
         };
       }) cfg;
     };

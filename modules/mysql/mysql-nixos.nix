@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -14,12 +14,6 @@ in
         { name, ... }:
         {
           options = {
-            name = lib.mkOption {
-              type = lib.types.str;
-              default = name;
-              description = "The name of the MySQL database.";
-            };
-
             user = lib.mkOption {
               type = lib.types.str;
               default = name;
@@ -38,15 +32,15 @@ in
       enable = true;
       package = pkgs.mariadb;
 
-      initialDatabases = lib.mapAttrsToList (name: dbCfg: {
-        name = dbCfg.name;
+      initialDatabases = lib.mapAttrsToList (name: _: {
+        name = name;
       }) cfg;
 
-      ensureDatabases = lib.mapAttrsToList (name: dbCfg: dbCfg.name) cfg;
+      ensureDatabases = lib.mapAttrsToList (name: _: name) cfg;
       ensureUsers = lib.mapAttrsToList (name: dbCfg: {
         name = dbCfg.user;
         ensurePermissions = {
-          "${dbCfg.name}.*" = "ALL PRIVILEGES";
+          "${name}.*" = "ALL PRIVILEGES";
         };
       }) cfg;
     };

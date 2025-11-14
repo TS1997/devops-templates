@@ -1,36 +1,21 @@
-{
-  config,
-  pkgs,
-  lib,
-  ...
-}:
+{ config, lib, ... }:
 let
   cfg = config.services.ts1997.laravel.sites;
-
-  mkLocations =
-    name: siteCfg:
-    import ./settings/nginx-locations.nix {
-      inherit pkgs;
-      siteCfg = siteCfg;
-      phpSocket = config.services.ts1997.phpPools.${name}.socket;
-    };
 in
 {
   options.services.ts1997.laravel.sites = lib.mkOption {
     type = lib.types.attrsOf (
       lib.types.submodule (
-        { config, ... }:
+        { name, ... }@args:
         {
-          imports = [ ./options/site-options.nix ];
-          config = {
-            _module.args = { inherit config pkgs lib; };
-            workingDir = lib.mkDefault "/var/lib/${config.user}";
-          };
+          imports = [
+            (import ./options/nixos-options.nix (args // { name = name; }))
+          ];
         }
       )
     );
     default = { };
-    description = "Laravel site configurations.";
+    description = "Laravel application configurations.";
   };
 
   config = lib.mkIf (cfg != { }) {
@@ -57,27 +42,12 @@ in
       );
     };
 
-    services.ts1997.virtualHosts = lib.mapAttrs (name: siteCfg: {
-      user = siteCfg.user;
-      root = siteCfg.webRoot;
-      serverName = siteCfg.domain;
-      serverAliases = siteCfg.extraDomains;
-      forceWWW = siteCfg.forceWWW;
-      locations = mkLocations name siteCfg;
-    }) cfg;
-
-    services.ts1997.phpPools = lib.mapAttrs (name: siteCfg: {
-      user = siteCfg.user;
-      phpPackage = siteCfg.phpPackage;
-    }) cfg;
-
     services.ts1997.mysql = lib.mkMerge (
       lib.mapAttrsToList (
         name: siteCfg:
-        lib.mkIf (siteCfg.database.enable && siteCfg.database.connection == "mysql") {
+        lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "mysql") {
           ${name} = {
             user = siteCfg.database.user;
-            name = siteCfg.database.name;
           };
         }
       ) cfg

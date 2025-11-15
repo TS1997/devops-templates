@@ -5,5 +5,6 @@
     ./nginx/nginx-devenv.nix
     ./phpfpm/phpfpm-devenv.nix
     ./redis/redis-devenv.nix
+    ./gunicorn/gunicorn-devenv.nix
   ];
 }

@@ -71,5 +71,23 @@ in
     services.ts1997.redis = lib.mkIf (cfg.redis.enable) {
       enable = cfg.redis.enable;
     };
+
+    processes = lib.mkMerge [
+      (lib.mkIf cfg.scheduler.enable {
+        laravel-scheduler.exec = ''
+          while true; do
+            ${cfg.phpPackage}/bin/php artisan schedule:run --verbose --no-interaction
+            sleep 60
+          done
+        '';
+      })
+
+      (lib.mkIf cfg.queue.enable {
+        laravel-queue.exec = ''
+          ${cfg.phpPackage}/bin/php artisan queue:work \
+            --queue=${cfg.queue.connection}
+        '';
+      })
+    ];
   };
 }

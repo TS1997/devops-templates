@@ -36,6 +36,11 @@ let
     });
 in
 {
+  imports = [
+    ./nixos/laravel-scheduler.nix
+    ./nixos/laravel-queue-worker.nix
+  ];
+
   options.services.ts1997.laravel.sites = lib.mkOption {
     type = lib.types.attrsOf (
       lib.types.submodule (
@@ -118,6 +123,36 @@ in
         lib.mkIf siteCfg.redis.enable {
           ${name} = {
             user = siteCfg.user;
+          };
+        }
+      ) cfg
+    );
+
+    services.ts1997.laravel.scheduler = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf siteCfg.scheduler.enable {
+          ${name} = {
+            user = siteCfg.user;
+            workingDir = siteCfg.workingDir;
+            phpPackage = siteCfg.phpPackage;
+            appName = siteCfg.appName;
+          };
+        }
+      ) cfg
+    );
+
+    services.ts1997.laravel.queue = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf siteCfg.queue.enable {
+          ${name} = {
+            user = siteCfg.user;
+            workingDir = siteCfg.workingDir;
+            phpPackage = siteCfg.phpPackage;
+            appName = siteCfg.appName;
+            connection = siteCfg.queue.connection;
+            workers = siteCfg.queue.workers;
           };
         }
       ) cfg

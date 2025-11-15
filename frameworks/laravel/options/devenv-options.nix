@@ -1,10 +1,35 @@
-{ config, lib, ... }@args:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   imports = [
-    (import ./shared-options.nix args)
+    (import ./shared-options.nix {
+      inherit lib pkgs;
+    })
   ];
 
   options = {
+    port = lib.mkOption {
+      type = lib.types.int;
+      default = 8080;
+      description = "The port on which the application will be accessible.";
+    };
+
+    sslPort = lib.mkOption {
+      type = lib.types.int;
+      default = 5443;
+      description = "The SSL port on which the application will be accessible.";
+    };
+
+    enableSsl = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Whether to enable SSL for the application.";
+    };
+
     phpmyadmin = {
       enable = lib.mkEnableOption "Enable phpMyAdmin for database management.";
 
@@ -25,6 +50,7 @@
   config = {
     # Shared option defaults
     workingDir = lib.mkDefault config.env.DEVENV_ROOT;
+    webRoot = lib.mkDefault "${config.env.DEVENV_ROOT}/public";
     database.enable = lib.mkDefault true;
     phpmyadmin.enable = lib.mkDefault true;
   };

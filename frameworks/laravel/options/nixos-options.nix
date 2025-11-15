@@ -1,11 +1,14 @@
 {
   lib,
+  pkgs,
   name,
   ...
-}@args:
+}:
 {
   imports = [
-    (import ./shared-options.nix args)
+    (import ./shared-options.nix {
+      inherit lib pkgs;
+    })
   ];
 
   options = {
@@ -13,6 +16,12 @@
       type = lib.types.str;
       default = name;
       description = "The system user for the app.";
+    };
+
+    forceWWW = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Whether to force www redirection for the application.";
     };
 
     database.user = lib.mkOption {
@@ -25,6 +34,7 @@
   config = {
     # Shared option defaults
     workingDir = "/var/lib/${name}";
+    webRoot = "/var/lib/${name}/public";
     database.enable = lib.mkDefault true;
   };
 }

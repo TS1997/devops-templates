@@ -56,7 +56,7 @@ in
 
     packages = [ cfg.pythonPackage ] ++ cfg.systemPackages;
 
-    pre-commit.hooks = {
+    git-hooks.hooks = {
       poetry-export = {
         enable = true;
         name = "Export Poetry dependencies";

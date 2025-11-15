@@ -1,6 +1,6 @@
 { config, ... }:
 let
-  mkAppUrls = import ./scripts/app-urls.nix { inherit config; };
+  mkAppUrls = import ./scripts/devenv/app-urls.nix { inherit config; };
 in
 {
   imports = [

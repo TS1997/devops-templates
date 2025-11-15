@@ -4,7 +4,7 @@
   dbSocket,
   redisSocket,
 }:
-lib.mapAttrs (_: lib.mkDefault) (
+(
   {
     APP_NAME = siteCfg.appName;
     APP_ENV = siteCfg.appEnv;

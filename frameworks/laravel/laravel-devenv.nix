@@ -11,8 +11,8 @@ let
     import ./config/env-defaults.nix {
       inherit lib;
       siteCfg = cfg;
-      dbSocket = config.env.MYSQL_UNIX_PORT;
-      redisSocket = config.env.REDIS_UNIX_SOCKET;
+      dbSocket = config.env.MYSQL_UNIX_PORT or null;
+      redisSocket = config.env.REDIS_UNIX_SOCKET or null;
     }
   );
 
@@ -39,10 +39,7 @@ in
   };
 
   config = lib.mkIf (cfg != { }) {
-    env = lib.mkMerge [
-      environmentDefaults
-      cfg.environment
-    ];
+    env = environmentDefaults // cfg.environment;
 
     services.ts1997.nginx = {
       enable = true;
@@ -66,7 +63,9 @@ in
       user = cfg.database.user;
       password = cfg.database.password;
 
-      phpmyadmin = cfg.phpmyadmin;
+      phpmyadmin = cfg.phpmyadmin // {
+        host = lib.mkDefault cfg.domain;
+      };
     };
 
     services.ts1997.redis = lib.mkIf (cfg.redis.enable) {

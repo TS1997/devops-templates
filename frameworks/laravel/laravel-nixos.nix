@@ -6,6 +6,27 @@
 }:
 let
   cfg = config.services.ts1997.laravel.sites;
+  redisCfg = config.services.ts1997.redisServers;
+
+  mkEnvironmentDefaults =
+    name: siteCfg:
+    (import ./config/env-defaults.nix {
+      inherit lib siteCfg;
+      dbSocket = "/run/mysqld/mysqld.sock";
+      redisSocket = redisCfg.${name}.socket or null;
+    });
+
+  mkDeploy =
+    name: siteCfg:
+    (import ./scripts/nixos/deploy.nix {
+      inherit
+        lib
+        pkgs
+        name
+        siteCfg
+        ;
+      environmentDefaults = (mkEnvironmentDefaults name siteCfg);
+    });
 
   mkLocations =
     name: siteCfg:
@@ -62,6 +83,10 @@ in
       );
     };
 
+    environment.systemPackages = lib.flatten [
+      (lib.mapAttrsToList (name: siteCfg: (mkDeploy name siteCfg)) cfg)
+    ];
+
     services.ts1997.virtualHosts = lib.mapAttrs (name: siteCfg: {
       user = siteCfg.user;
       root = siteCfg.webRoot;
@@ -82,6 +107,17 @@ in
         lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "mysql") {
           ${name} = {
             user = siteCfg.database.user;
+          };
+        }
+      ) cfg
+    );
+
+    services.ts1997.redisServers = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf siteCfg.redis.enable {
+          ${name} = {
+            user = siteCfg.user;
           };
         }
       ) cfg

@@ -28,6 +28,7 @@ in
   };
 
   config = {
+    redis.enable = lib.mkDefault true;
     scheduler.enable = lib.mkDefault true;
   };
 }

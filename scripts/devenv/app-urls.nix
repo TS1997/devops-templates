@@ -4,6 +4,8 @@ let
   phpmyadminCfg = config.services.ts1997.phpmyadmin;
 in
 ''
+  sleep 2; # Wait for services to start properly
+
   echo -e "\n\nApplication URLs:";
   ${
     if nginxCfg.enable then

@@ -60,9 +60,14 @@
     appEnv = lib.mkDefault "local";
     workingDir = lib.mkDefault config.env.DEVENV_ROOT;
     webRoot = lib.mkDefault "${config.env.DEVENV_ROOT}/public";
-    database.enable = lib.mkDefault true;
-    database.user = lib.mkDefault "admin";
-    phpmyadmin.enable = lib.mkDefault true;
-    redis.enable = lib.mkDefault true;
+
+    database = {
+      enable = lib.mkDefault true;
+      user = lib.mkDefault "admin";
+    };
+
+    phpmyadmin = {
+      enable = lib.mkDefault true;
+    };
   };
 }

@@ -21,13 +21,14 @@ in
         { name, ... }:
         {
           imports = [
-            (import ./options/nixos-options.nix {
+            (import ./options/options.nix {
               inherit
                 config
                 lib
                 pkgs
                 name
                 ;
+              isDevenv = false;
             })
           ];
         }

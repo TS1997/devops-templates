@@ -7,6 +7,15 @@
 let
   cfg = config.services.ts1997.laravel;
 
+  environmentDefaults = (
+    import ./config/env-defaults.nix {
+      inherit lib;
+      siteCfg = cfg;
+      dbSocket = config.env.MYSQL_UNIX_PORT;
+      redisSocket = config.env.REDIS_UNIX_SOCKET;
+    }
+  );
+
   locations = (
     import ./config/nginx-locations.nix {
       inherit pkgs;
@@ -30,6 +39,11 @@ in
   };
 
   config = lib.mkIf (cfg != { }) {
+    env = lib.mkMerge [
+      environmentDefaults
+      cfg.environment
+    ];
+
     services.ts1997.nginx = {
       enable = true;
       serverName = cfg.domain;
@@ -49,8 +63,14 @@ in
     services.ts1997.mysql = lib.mkIf (cfg.database.enable && cfg.database.driver == "mysql") {
       enable = cfg.database.enable;
       name = cfg.database.name;
+      user = cfg.database.user;
+      password = cfg.database.password;
 
       phpmyadmin = cfg.phpmyadmin;
+    };
+
+    services.ts1997.redis = lib.mkIf (cfg.redis.enable) {
+      enable = cfg.redis.enable;
     };
   };
 }

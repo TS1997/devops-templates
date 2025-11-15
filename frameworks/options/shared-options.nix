@@ -16,6 +16,26 @@
       description = "Additional domains for the app.";
     };
 
+    appName = lib.mkOption {
+      type = lib.types.str;
+      description = "The name of the application.";
+    };
+
+    appEnv = lib.mkOption {
+      type = lib.types.enum [
+        "production"
+        "staging"
+        "local"
+      ];
+      description = "The application environment.";
+    };
+
+    environment = lib.mkOption {
+      type = lib.types.attrsOf lib.types.anything;
+      default = { };
+      description = "Environment variables to set for the application.";
+    };
+
     workingDir = lib.mkOption {
       type = lib.types.str;
       description = "The working directory for the app.";
@@ -45,6 +65,15 @@
         type = lib.types.str;
         description = "The name of the database.";
       };
+
+      user = lib.mkOption {
+        type = lib.types.str;
+        description = "The database user.";
+      };
+    };
+
+    redis = {
+      enable = lib.mkEnableOption "Enable Redis configuration for the app.";
     };
   };
 }

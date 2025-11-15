@@ -18,6 +18,18 @@ in
       description = "The name of the MySQL database.";
     };
 
+    user = lib.mkOption {
+      type = lib.types.str;
+      default = "admin";
+      description = "The MySQL database user.";
+    };
+
+    password = lib.mkOption {
+      type = lib.types.str;
+      default = "1234";
+      description = "The MySQL database password.";
+    };
+
     phpmyadmin = options.services.ts1997.phpmyadmin;
   };
 
@@ -33,8 +45,8 @@ in
 
         ensureUsers = [
           {
-            name = "admin";
-            password = "1234";
+            name = cfg.user;
+            password = cfg.password;
             ensurePermissions = {
               "*.*" = "ALL PRIVILEGES";
             };
@@ -42,11 +54,16 @@ in
         ];
       };
 
-      ts1997.phpmyadmin = cfg.phpmyadmin;
+      ts1997.phpmyadmin = cfg.phpmyadmin // {
+        database = {
+          user = cfg.user;
+          password = cfg.password;
+        };
+      };
     };
 
     scripts = {
-      mysql-local.exec = "mysql -u admin -p1234 ${cfg.name} \"$@\"";
+      mysql-local.exec = "mysql -u ${cfg.user} -p${cfg.password} ${cfg.name} \"$@\"";
     };
   };
 }

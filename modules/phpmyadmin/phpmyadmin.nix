@@ -32,8 +32,8 @@ let
             "connect_type" => "socket",
             "socket" => getenv("MYSQL_UNIX_PORT"),
             "auth_type" => "config",
-            "user" => "admin",
-            "password" => "1234",
+            "user" => "${cfg.database.user}",
+            "password" => "${cfg.database.password}",
           ];
 
       ' > config.inc.php;
@@ -58,6 +58,20 @@ in
       type = lib.types.int;
       default = 8081;
       description = "The port on which phpMyAdmin will be accessible.";
+    };
+
+    database = {
+      user = lib.mkOption {
+        type = lib.types.str;
+        default = "admin";
+        description = "The database user for phpMyAdmin to connect with.";
+      };
+
+      password = lib.mkOption {
+        type = lib.types.str;
+        default = "1234";
+        description = "The database password for phpMyAdmin to connect with.";
+      };
     };
   };
 

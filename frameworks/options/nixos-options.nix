@@ -23,18 +23,14 @@
       default = true;
       description = "Whether to force www redirection for the application.";
     };
-
-    database.user = lib.mkOption {
-      type = lib.types.str;
-      default = name;
-      description = "The database user for the app.";
-    };
   };
 
   config = {
     # Shared option defaults
+    appEnv = lib.mkDefault "production";
     workingDir = "/var/lib/${name}";
     webRoot = "/var/lib/${name}/public";
     database.enable = lib.mkDefault true;
+    database.user = lib.mkDefault name;
   };
 }

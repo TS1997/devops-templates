@@ -8,11 +8,20 @@ let
   cfg = config.services.ts1997.laravel.sites;
   redisCfg = config.services.ts1997.redisServers;
 
+  dbCfg =
+    siteCfg:
+    if siteCfg.database.enable then
+      import ../scripts/nixos/db-config.nix {
+        inherit config siteCfg;
+      }
+    else
+      { };
+
   mkEnvironmentDefaults =
     name: siteCfg:
     (import ./config/env-defaults.nix {
       inherit lib siteCfg;
-      dbSocket = "/run/mysqld/mysqld.sock";
+      dbCfg = (dbCfg siteCfg);
       redisSocket = redisCfg.${name}.socket or null;
     });
 
@@ -112,6 +121,18 @@ in
         lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "mysql") {
           ${name} = {
             user = siteCfg.database.user;
+          };
+        }
+      ) cfg
+    );
+
+    services.ts1997.pgsql = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "pgsql") {
+          ${name} = {
+            user = siteCfg.database.user;
+            extensions = siteCfg.database.extensions;
           };
         }
       ) cfg

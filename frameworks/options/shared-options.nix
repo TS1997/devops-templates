@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   ...
@@ -56,7 +57,10 @@
       enable = lib.mkEnableOption "Enable database configuration for the app.";
 
       driver = lib.mkOption {
-        type = lib.types.enum [ "mysql" ];
+        type = lib.types.enum [
+          "mysql"
+          "pgsql"
+        ];
         default = "mysql";
         description = "The database driver to use.";
       };

@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   name,
@@ -7,7 +8,7 @@
 {
   imports = [
     (import ./shared-options.nix {
-      inherit lib pkgs;
+      inherit config lib pkgs;
     })
   ];
 
@@ -34,6 +35,18 @@
       type = lib.types.listOf lib.types.str;
       default = [ ];
       description = "List of commands to run after deployment.";
+    };
+
+    database = {
+      # Extensions are only used in pgsql
+      extensions = lib.mkOption {
+        type = with lib.types; coercedTo (listOf path) (path: _ignorePg: path) (functionTo (listOf path));
+        default = _: [ ];
+        example = lib.literalExpression "ps: with ps; [ postgis pg_repack ]";
+        description = ''
+          List of PostgreSQL extensions to install.
+        '';
+      };
     };
   };
 

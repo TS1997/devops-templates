@@ -7,7 +7,7 @@
 {
   imports = [
     (import ./shared-options.nix {
-      inherit lib pkgs;
+      inherit config lib pkgs;
     })
   ];
 
@@ -35,6 +35,26 @@
         type = lib.types.str;
         default = "1234";
         description = "The database password.";
+      };
+
+      # Extensions are only used for pgsql
+      extensions = lib.mkOption {
+        type = with lib.types; nullOr (functionTo (listOf package));
+        default = null;
+        example = lib.literalExpression ''
+          extensions: [
+            extensions.pg_cron
+            extensions.postgis
+            extensions.timescaledb
+          ];
+        '';
+        description = ''
+          Additional PostgreSQL extensions to install.
+
+          The available extensions are:
+
+          ${lib.concatLines (builtins.map (x: "- " + x) (builtins.attrNames pkgs.postgresql.pkgs))}
+        '';
       };
     };
 

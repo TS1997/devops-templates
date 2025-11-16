@@ -1,12 +1,12 @@
 {
   lib,
   siteCfg,
-  dbSocket,
+  dbCfg,
   redisSocket,
 }:
 (
   {
-    APP_NAME = siteCfg.appName;
+    APP_NAME = "${siteCfg.appName}";
     APP_ENV = siteCfg.appEnv;
     APP_DEBUG = if siteCfg.appEnv == "production" then "false" else "true";
     APP_TIMEZONE = "Europe/Stockholm";
@@ -33,10 +33,22 @@
     LOG_LEVEL = "debug";
 
     DB_CONNECTION = siteCfg.database.driver;
-    DB_SOCKET = dbSocket;
     DB_DATABASE = siteCfg.database.name;
     DB_USERNAME = siteCfg.database.user;
-
+  }
+  // lib.optionalAttrs ((dbCfg.host or null) != null) {
+    DB_HOST = dbCfg.host;
+  }
+  // lib.optionalAttrs ((dbCfg.port or null) != null) {
+    DB_PORT = dbCfg.port;
+  }
+  // lib.optionalAttrs ((dbCfg.socket or null) != null) {
+    DB_SOCKET = dbCfg.socket;
+  }
+  // lib.optionalAttrs ((siteCfg.database.password or "") != "") {
+    DB_PASSWORD = "${siteCfg.database.password}";
+  }
+  // {
     SESSION_DRIVER = "database";
     SESSION_LIFETIME = 120;
     SESSION_ENCRYPT = false;
@@ -64,7 +76,7 @@
     MAIL_USERNAME = "null";
     MAIL_PASSWORD = "null";
     MAIL_FROM_ADDRESS = "hello@example.com";
-    MAIL_FROM_NAME = siteCfg.appName;
+    MAIL_FROM_NAME = "${siteCfg.appName}";
 
     AWS_ACCESS_KEY_ID = "";
     AWS_SECRET_ACCESS_KEY = "";
@@ -72,9 +84,6 @@
     AWS_BUCKET = "";
     AWS_USE_PATH_STYLE_ENDPOINT = false;
 
-    VITE_APP_NAME = siteCfg.appName;
-  }
-  // lib.optionalAttrs ((siteCfg.database.password or "") != "") {
-    DB_PASSWORD = siteCfg.database.password;
+    VITE_APP_NAME = "${siteCfg.appName}";
   }
 )

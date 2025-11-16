@@ -7,11 +7,19 @@
 let
   cfg = config.services.ts1997.laravel;
 
+  dbCfg =
+    if cfg.database.enable then
+      import ../scripts/devenv/db-config.nix {
+        inherit config;
+        siteCfg = cfg;
+      }
+    else
+      { };
+
   environmentDefaults = (
     import ./config/env-defaults.nix {
-      inherit lib;
+      inherit lib dbCfg;
       siteCfg = cfg;
-      dbSocket = config.env.MYSQL_UNIX_PORT or null;
       redisSocket = config.env.REDIS_UNIX_SOCKET or null;
     }
   );
@@ -66,6 +74,14 @@ in
       phpmyadmin = cfg.phpmyadmin // {
         host = lib.mkDefault cfg.domain;
       };
+    };
+
+    services.ts1997.pgsql = lib.mkIf (cfg.database.enable && cfg.database.driver == "pgsql") {
+      enable = cfg.database.enable;
+      name = cfg.database.name;
+      user = cfg.database.user;
+      password = cfg.database.password;
+      extensions = cfg.database.extensions;
     };
 
     services.ts1997.redis = lib.mkIf (cfg.redis.enable) {

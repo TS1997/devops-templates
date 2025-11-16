@@ -34,11 +34,5 @@
       default = pkgs.python313;
       description = "The Python package to use for Gunicorn.";
     };
-
-    systemPackages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
-      default = [ ];
-      description = "System Packages that should be available for the gunicorn server";
-    };
   };
 }

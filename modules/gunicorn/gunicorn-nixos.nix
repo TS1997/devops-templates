@@ -71,8 +71,6 @@ in
         wants = [ "network.target" ];
         wantedBy = [ "multi-user.target" ];
 
-        path = gunicornCfg.systemPackages;
-
         serviceConfig = {
           User = gunicornCfg.user;
           WorkingDirectory = gunicornCfg.workingDir;

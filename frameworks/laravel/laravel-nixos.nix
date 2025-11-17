@@ -6,16 +6,15 @@
 }:
 let
   cfg = config.services.ts1997.laravel.sites;
+  pgsqlCfg = config.services.postgresql;
   redisCfg = config.services.ts1997.redisServers;
 
-  dbCfg =
-    siteCfg:
-    if siteCfg.database.enable then
-      import ../scripts/nixos/db-config.nix {
-        inherit config siteCfg;
-      }
-    else
-      { };
+  dbCfg = siteCfg: {
+    driver = siteCfg.database.driver;
+    host = if siteCfg.database.driver == "pgsql" then "/run/postgresql" else "127.0.0.1";
+    port = if siteCfg.database.driver == "pgsql" then pgsqlCfg.settings.port else 3306;
+    socket = if siteCfg.database.driver == "mysql" then "/run/mysqld/mysqld.sock" else null;
+  };
 
   mkEnvironmentDefaults =
     name: siteCfg:
@@ -23,6 +22,7 @@ let
       inherit lib siteCfg;
       dbCfg = (dbCfg siteCfg);
       redisSocket = redisCfg.${name}.socket or null;
+      isDevenv = false;
     });
 
   mkDeploy =

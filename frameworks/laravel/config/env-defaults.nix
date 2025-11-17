@@ -3,87 +3,87 @@
   siteCfg,
   dbCfg,
   redisSocket,
+  isDevenv,
 }:
-(
-  {
-    APP_NAME = "${siteCfg.appName}";
-    APP_ENV = siteCfg.appEnv;
-    APP_DEBUG = if siteCfg.appEnv == "production" then "false" else "true";
-    APP_TIMEZONE = "Europe/Stockholm";
-    APP_URL =
-      if (siteCfg.forceWWW or false) then
-        "https://www.${siteCfg.domain}"
-      else
-        "https://${siteCfg.domain}";
+let
+  appUrl =
+    if (siteCfg.forceWWW or false) then
+      "https://www.${siteCfg.domain}"
+    else
+      "https://${siteCfg.domain}";
 
-    APP_LOCALE = "en";
-    APP_FALLBACK_LOCALE = "en";
-    APP_FAKER_LOCALE = "en_US";
+  appUrlWithPort =
+    if isDevenv && siteCfg.enableSsl then
+      "${appUrl}:${toString siteCfg.sslPort}"
+    else if isDevenv then
+      "${appUrl}:${toString siteCfg.port}"
+    else
+      appUrl;
+in
+{
+  APP_NAME = "${siteCfg.appName}";
+  APP_ENV = siteCfg.appEnv;
+  APP_DEBUG = if siteCfg.appEnv == "production" then "false" else "true";
+  APP_TIMEZONE = "Europe/Stockholm";
+  APP_URL = appUrlWithPort;
 
-    APP_MAINTENANCE_DRIVER = "file";
-    APP_MAINTENANCE_STORE = "database";
+  APP_LOCALE = "en";
+  APP_FALLBACK_LOCALE = "en";
+  APP_FAKER_LOCALE = "en_US";
 
-    PHP_CLI_SERVER_WORKERS = 4;
+  APP_MAINTENANCE_DRIVER = "file";
+  APP_MAINTENANCE_STORE = "database";
 
-    BCRYPT_ROUNDS = 12;
+  PHP_CLI_SERVER_WORKERS = 4;
 
-    LOG_CHANNEL = "stack";
-    LOG_STACK = "single";
-    LOG_DEPRECATIONS_CHANNEL = null;
-    LOG_LEVEL = "debug";
+  BCRYPT_ROUNDS = 12;
 
-    DB_CONNECTION = siteCfg.database.driver;
-    DB_DATABASE = siteCfg.database.name;
-    DB_USERNAME = siteCfg.database.user;
-  }
-  // lib.optionalAttrs ((dbCfg.host or null) != null) {
-    DB_HOST = dbCfg.host;
-  }
-  // lib.optionalAttrs ((dbCfg.port or null) != null) {
-    DB_PORT = dbCfg.port;
-  }
-  // lib.optionalAttrs ((dbCfg.socket or null) != null) {
-    DB_SOCKET = dbCfg.socket;
-  }
-  // lib.optionalAttrs ((siteCfg.database.password or "") != "") {
-    DB_PASSWORD = "${siteCfg.database.password}";
-  }
-  // {
-    SESSION_DRIVER = "database";
-    SESSION_LIFETIME = 120;
-    SESSION_ENCRYPT = false;
-    SESSION_PATH = "/";
-    SESSION_DOMAIN = null;
+  LOG_CHANNEL = "stack";
+  LOG_STACK = "single";
+  LOG_DEPRECATIONS_CHANNEL = null;
+  LOG_LEVEL = "debug";
 
-    BROADCAST_CONNECTION = "log";
-    FILESYSTEM_DISK = "local";
-    QUEUE_CONNECTION = "database";
+  DB_CONNECTION = dbCfg.driver;
+  DB_HOST = dbCfg.host;
+  DB_PORT = dbCfg.port;
+  DB_SOCKET = dbCfg.socket;
+  DB_DATABASE = siteCfg.database.name;
+  DB_USERNAME = siteCfg.database.user;
+  DB_PASSWORD = siteCfg.database.password or "";
+  SESSION_DRIVER = "database";
+  SESSION_LIFETIME = 120;
+  SESSION_ENCRYPT = false;
+  SESSION_PATH = "/";
+  SESSION_DOMAIN = null;
 
-    CACHE_STORE = "database";
-    CACHE_PREFIX = "";
+  BROADCAST_CONNECTION = "log";
+  FILESYSTEM_DISK = "local";
+  QUEUE_CONNECTION = "database";
 
-    MEMCACHED_HOST = "127.0.0.1";
+  CACHE_STORE = "database";
+  CACHE_PREFIX = "";
 
-    REDIS_CLIENT = "phpredis";
-    REDIS_HOST = redisSocket;
-    REDIS_PASSWORD = "null";
-    REDIS_PORT = "6379";
+  MEMCACHED_HOST = "127.0.0.1";
 
-    MAIL_MAILER = "log";
-    MAIL_SCHEME = "null";
-    MAIL_HOST = "127.0.0.1";
-    MAIL_PORT = "2525";
-    MAIL_USERNAME = "null";
-    MAIL_PASSWORD = "null";
-    MAIL_FROM_ADDRESS = "hello@example.com";
-    MAIL_FROM_NAME = "${siteCfg.appName}";
+  REDIS_CLIENT = "phpredis";
+  REDIS_HOST = redisSocket;
+  REDIS_PASSWORD = null;
+  REDIS_PORT = "6379";
 
-    AWS_ACCESS_KEY_ID = "";
-    AWS_SECRET_ACCESS_KEY = "";
-    AWS_DEFAULT_REGION = "us-east-1";
-    AWS_BUCKET = "";
-    AWS_USE_PATH_STYLE_ENDPOINT = false;
+  MAIL_MAILER = "smtp";
+  MAIL_SCHEME = null;
+  MAIL_HOST = "127.0.0.1";
+  MAIL_PORT = 1025;
+  MAIL_USERNAME = null;
+  MAIL_PASSWORD = null;
+  MAIL_FROM_ADDRESS = "hello@example.com";
+  MAIL_FROM_NAME = "${siteCfg.appName}";
 
-    VITE_APP_NAME = "${siteCfg.appName}";
-  }
-)
+  AWS_ACCESS_KEY_ID = "";
+  AWS_SECRET_ACCESS_KEY = "";
+  AWS_DEFAULT_REGION = "us-east-1";
+  AWS_BUCKET = "";
+  AWS_USE_PATH_STYLE_ENDPOINT = false;
+
+  VITE_APP_NAME = "${siteCfg.appName}";
+}

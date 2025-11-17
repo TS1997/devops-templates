@@ -6,21 +6,22 @@
 }:
 let
   cfg = config.services.ts1997.laravel;
+  pgsqlCfg = config.services.postgres;
 
-  dbCfg =
-    if cfg.database.enable then
-      import ../scripts/devenv/db-config.nix {
-        inherit config;
-        siteCfg = cfg;
-      }
-    else
-      { };
+  dbCfg = {
+    driver = cfg.database.driver;
+    host =
+      if cfg.database.driver == "pgsql" then pgsqlCfg.settings.unix_socket_directories else "127.0.0.1";
+    port = if cfg.database.driver == "pgsql" then pgsqlCfg.settings.port else 3306;
+    socket = if cfg.database.driver == "mysql" then config.env.MYSQL_UNIX_PORT else null;
+  };
 
   environmentDefaults = (
     import ./config/env-defaults.nix {
       inherit lib dbCfg;
       siteCfg = cfg;
       redisSocket = config.env.REDIS_UNIX_SOCKET or null;
+      isDevenv = true;
     }
   );
 
@@ -86,6 +87,11 @@ in
 
     services.ts1997.redis = lib.mkIf (cfg.redis.enable) {
       enable = cfg.redis.enable;
+    };
+
+    services.mailpit = {
+      enable = true;
+      uiListenAddress = "${cfg.domain}:8025";
     };
 
     processes = lib.mkMerge [

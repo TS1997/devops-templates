@@ -63,5 +63,9 @@ in
         }
       ];
     };
+
+    scripts = {
+      psql-local.exec = "psql -U ${cfg.user} ${cfg.name} \"$@\"";
+    };
   };
 }

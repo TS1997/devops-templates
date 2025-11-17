@@ -54,7 +54,7 @@ in
       '';
     };
 
-    packages = [ cfg.pythonPackage ];
+    packages = [ cfg.pythonPackage ] ++ cfg.systemPackages;
 
     git-hooks.hooks = {
       poetry-export = {

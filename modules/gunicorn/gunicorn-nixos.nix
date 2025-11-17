@@ -70,6 +70,7 @@ in
         after = [ "network.target" ];
         wants = [ "network.target" ];
         wantedBy = [ "multi-user.target" ];
+        path = gunicornCfg.systemPackages;
 
         serviceConfig = {
           User = gunicornCfg.user;

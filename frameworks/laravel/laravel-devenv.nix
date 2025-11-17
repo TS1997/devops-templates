@@ -42,6 +42,10 @@ in
           isDevenv = true;
         })
       ];
+
+      config = {
+        vite.enable = lib.mkDefault true;
+      };
     };
     default = { };
     description = "Laravel application configuration.";
@@ -49,6 +53,8 @@ in
 
   config = lib.mkIf (cfg != { }) {
     env = environmentDefaults // cfg.environment;
+
+    packages = [ cfg.vite.nodePackage ];
 
     services.ts1997.nginx = {
       enable = true;
@@ -95,6 +101,10 @@ in
     };
 
     processes = lib.mkMerge [
+      (lib.mkIf (cfg.vite.enable) {
+        vite.exec = "npm run dev";
+      })
+
       (lib.mkIf cfg.scheduler.enable {
         laravel-scheduler.exec = ''
           while true; do

@@ -73,6 +73,16 @@
         description = "The port on which phpMyAdmin will be accessible.";
       };
     };
+
+    vite = {
+      enable = lib.mkEnableOption "Enable Vite development server.";
+
+      nodePackage = lib.mkOption {
+        type = lib.types.package;
+        default = pkgs.nodejs;
+        description = "The Node.js package to use for the Vite development server.";
+      };
+    };
   };
 
   config = {

@@ -6,7 +6,7 @@ in
 ''
   sleep 2; # Wait for services to start properly
 
-  echo -e "\n\n";
+  echo -e "\n";
   echo "Application URLs:";
   ${
     if nginxCfg.enable then
@@ -28,7 +28,7 @@ in
   ${
     if phpmyadminCfg.enable then
       ''
-        echo -e "\n";
+        echo "";
         echo "PhpMyAdmin URL:";
         echo "http://${phpmyadminCfg.host}:${toString phpmyadminCfg.port}/"
       ''
@@ -39,7 +39,7 @@ in
   ${
     if config.services.mailpit.enable then
       ''
-        echo -e "\n";
+        echo "";
         echo "Mailpit URL:";
         echo "http://${config.services.mailpit.uiListenAddress}/"
       ''

@@ -6,6 +6,14 @@
 }:
 let
   cfg = config.services.ts1997.gunicorn;
+
+  mkModulePath =
+    appModule:
+    let
+      modulePath = builtins.head (builtins.split ":" appModule);
+      moduleFsPath = builtins.replaceStrings [ "." ] [ "/" ] modulePath;
+    in
+    builtins.dirOf moduleFsPath;
 in
 {
   options.services.ts1997.gunicorn = lib.mkOption {
@@ -87,6 +95,8 @@ in
 
           ExecStart = ''
             ${gunicornCfg.pythonEnv}/bin/gunicorn \
+            --chdir ${gunicornCfg.workingDir} \
+            --pythonpath ${gunicornCfg.workingDir}/${mkModulePath gunicornCfg.appModule} \
             --workers ${toString gunicornCfg.workers} \
             --bind unix:${gunicornCfg.socket} \
             --timeout ${toString gunicornCfg.timeout} \

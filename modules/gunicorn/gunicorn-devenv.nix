@@ -6,6 +6,10 @@
 }:
 let
   cfg = config.services.ts1997.gunicorn;
+
+  modulePath = builtins.head (builtins.split ":" cfg.appModule);
+  moduleFsPath = builtins.replaceStrings [ "." ] [ "/" ] modulePath;
+  moduleDir = builtins.dirOf moduleFsPath;
 in
 {
   options.services.ts1997.gunicorn = lib.mkOption {
@@ -44,6 +48,8 @@ in
     processes = {
       gunicorn.exec = ''
         poetry run gunicorn \
+          --chdir ${cfg.workingDir} \
+          --pythonpath ${cfg.workingDir}/${moduleDir} \
           --workers ${toString cfg.workers} \
           --bind unix:${cfg.socket} \
           --timeout ${toString cfg.timeout} \

@@ -53,8 +53,8 @@
   config = {
     # Shared option defaults
     appEnv = lib.mkDefault "production";
-    workingDir = "/var/lib/${name}";
-    webRoot = "/var/lib/${name}/public";
+    workingDir = lib.mkDefault "/var/lib/${name}";
+    webRoot = lib.mkDefault "/var/lib/${name}/public";
 
     database = {
       enable = lib.mkDefault true;

@@ -106,12 +106,7 @@ in
       })
 
       (lib.mkIf cfg.scheduler.enable {
-        laravel-scheduler.exec = ''
-          while true; do
-            ${cfg.phpPackage}/bin/php artisan schedule:run --verbose --no-interaction
-            sleep 60
-          done
-        '';
+        laravel-scheduler.exec = "${cfg.phpPackage}/bin/php artisan schedule:work";
       })
 
       (lib.mkIf cfg.queue.enable {

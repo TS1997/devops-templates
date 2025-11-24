@@ -7,5 +7,6 @@
     ./phpfpm/phpfpm-devenv.nix
     ./redis/redis-devenv.nix
     ./gunicorn/gunicorn-devenv.nix
+    ./mailpit/mailpit.nix
   ];
 }

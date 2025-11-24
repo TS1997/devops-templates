@@ -95,7 +95,7 @@ in
       enable = cfg.redis.enable;
     };
 
-    services.mailpit = {
+    services.ts1997.mailpit = {
       enable = true;
       uiListenAddress = "${cfg.domain}:8025";
     };

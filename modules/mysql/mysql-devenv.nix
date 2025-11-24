@@ -37,7 +37,7 @@ in
     services = {
       mysql = {
         enable = cfg.enable;
-        package = pkgs.mariadb;
+        package = pkgs.mysql84;
 
         initialDatabases = [
           { name = cfg.name; }

@@ -30,7 +30,7 @@ in
   config = lib.mkIf (cfg != { }) {
     services.mysql = {
       enable = true;
-      package = pkgs.mariadb;
+      package = pkgs.mysql84;
 
       initialDatabases = lib.mapAttrsToList (name: _: {
         name = name;

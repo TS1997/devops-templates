@@ -10,7 +10,10 @@ let
   serverName = cfg.serverName + (lib.concatStringsSep " " cfg.serverAliases);
   numberOfServerAliases = builtins.length cfg.serverAliases;
   certificateName =
-    if numberOfServerAliases > 0 then "${cfg.serverName}+${numberOfServerAliases}" else cfg.serverName;
+    if numberOfServerAliases > 0 then
+      "${cfg.serverName}+${toString numberOfServerAliases}"
+    else
+      cfg.serverName;
 
   defaultExtraConfig = import ./config/extra-config.nix;
 in

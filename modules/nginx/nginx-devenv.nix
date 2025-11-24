@@ -8,6 +8,9 @@ let
 
   serverNames = [ cfg.serverName ] ++ cfg.serverAliases;
   serverName = cfg.serverName + (lib.concatStringsSep " " cfg.serverAliases);
+  numberOfServerAliases = builtins.length cfg.serverAliases;
+  certificateName =
+    if numberOfServerAliases > 0 then "${cfg.serverName}+${numberOfServerAliases}" else cfg.serverName;
 
   defaultExtraConfig = import ./config/extra-config.nix;
 in
@@ -104,8 +107,8 @@ in
 
   config = lib.mkIf (cfg.enable) {
     env = {
-      SSL_CERT = "${config.env.DEVENV_STATE}/mkcert/${cfg.serverName}.pem";
-      SSL_CERT_KEY = "${config.env.DEVENV_STATE}/mkcert/${cfg.serverName}-key.pem";
+      SSL_CERT = "${config.env.DEVENV_STATE}/mkcert/${certificateName}.pem";
+      SSL_CERT_KEY = "${config.env.DEVENV_STATE}/mkcert/${certificateName}-key.pem";
     };
 
     services.nginx = {

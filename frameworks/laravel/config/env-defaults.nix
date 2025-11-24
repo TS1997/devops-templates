@@ -19,6 +19,22 @@ let
       "${appUrl}:${toString siteCfg.port}"
     else
       appUrl;
+
+  domains = [ siteCfg.domain ] ++ siteCfg.extraDomains;
+  domainsWithPorts = lib.concatMap (
+    domain:
+    if isDevenv then
+      [
+        "${domain}:${toString siteCfg.port}"
+        "${domain}:${toString siteCfg.sslPort}"
+      ]
+    else if siteCfg.forceWWW then
+      [ "www.${domain}" ]
+    else
+      [ domain ]
+  ) domains;
+
+  sanctumStatefulDomains = lib.concatStringsSep "," domainsWithPorts;
 in
 {
   APP_NAME = "${siteCfg.appName}";
@@ -55,6 +71,8 @@ in
   SESSION_ENCRYPT = false;
   SESSION_PATH = "/";
   SESSION_DOMAIN = null;
+
+  SANCTUM_STATEFUL_DOMAINS = sanctumStatefulDomains;
 
   BROADCAST_CONNECTION = "log";
   FILESYSTEM_DISK = "local";

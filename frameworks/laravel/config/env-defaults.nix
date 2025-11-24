@@ -27,8 +27,8 @@ in
   APP_TIMEZONE = "Europe/Stockholm";
   APP_URL = appUrlWithPort;
 
-  APP_LOCALE = "en";
-  APP_FALLBACK_LOCALE = "en";
+  APP_LOCALE = siteCfg.locale;
+  APP_FALLBACK_LOCALE = siteCfg.locale;
   APP_FAKER_LOCALE = "en_US";
 
   APP_MAINTENANCE_DRIVER = "file";

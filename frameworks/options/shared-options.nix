@@ -36,6 +36,12 @@
       description = "Environment variables to set for the application.";
     };
 
+    locale = lib.mkOption {
+      type = lib.types.str;
+      default = "en";
+      description = "The application locale.";
+    };
+
     workingDir = lib.mkOption {
       type = lib.types.str;
       description = "The working directory for the app.";

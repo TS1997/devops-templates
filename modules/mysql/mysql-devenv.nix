@@ -41,7 +41,8 @@ in
 
         initialDatabases = [
           { name = cfg.name; }
-        ];
+        ]
+        ++ (if cfg.phpmyadmin.enable then [ { name = "phpmyadmin"; } ] else [ ]);
 
         ensureUsers = [
           {

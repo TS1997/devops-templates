@@ -36,6 +36,8 @@ let
             "password" => "${cfg.database.password}",
           ];
 
+          $cfg["TempDir"] = "${config.env.DEVENV_STATE}/phpmyadmin/tmp";
+
       ' > config.inc.php;
 
       mv ./* $out/;

@@ -111,6 +111,7 @@ in
 
       (lib.mkIf cfg.queue.enable {
         laravel-queue.exec = ''
+          sleep 2; # Wait for the database to be ready 
           ${cfg.phpPackage}/bin/php artisan queue:work \
             --queue=${cfg.queue.connection}
         '';

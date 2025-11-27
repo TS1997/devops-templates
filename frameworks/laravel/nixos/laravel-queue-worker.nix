@@ -108,7 +108,6 @@ in
 
                 ExecStart = ''
                   ${queueCfg.phpPackage}/bin/php artisan queue:work \
-                    --queue=${queueCfg.connection} \
                     --timeout=${toString queueCfg.timeout} \
                     --sleep=${toString queueCfg.sleep} \
                     --tries=${toString queueCfg.tries} \

@@ -80,5 +80,33 @@ in
         ${mkAuthRules}
       '';
     };
+
+    systemd.services.create-db-extensions = {
+      after = [ "postgresql.service" ];
+      requires = [ "postgresql.service" ];
+      wantedBy = [ "multi-user.target" ];
+      path = [ pkgs.postgresql ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "postgres";
+        ExecStart = pkgs.writeShellScript "create-db-extensions" ''
+          set -e
+          ${lib.concatStringsSep "\n" (
+            lib.mapAttrsToList (
+              name: dbCfg:
+              let
+                extPkgs = dbCfg.extensions pkgs.postgresql.pkgs;
+                extNames = builtins.map (extPkg: extPkg.pname or extPkg.name or "unknown") extPkgs;
+              in
+              lib.concatStringsSep "\n" (
+                builtins.map (extName: ''
+                  psql -d ${name} -c "CREATE EXTENSION IF NOT EXISTS \"${extName}\";"
+                '') extNames
+              )
+            ) cfg
+          )}
+        '';
+      };
+    };
   };
 }

@@ -36,7 +36,7 @@ in
 
       workers = lib.mkOption {
         type = lib.types.int;
-        default = 1;
+        default = 8;
         description = "The number of queue worker instances to run.";
       };
     };

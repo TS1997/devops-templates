@@ -52,10 +52,17 @@
       description = "The web root directory for the app.";
     };
 
-    phpPackage = lib.mkOption {
-      type = lib.types.package;
-      default = pkgs.php;
-      description = "The PHP package to use for the app.";
+    php = lib.mkOption {
+      type = lib.types.submodule (
+        { config, ... }:
+        {
+          imports = [
+            (import ../../modules/phpfpm/phpfpm-options.nix { inherit lib pkgs; })
+          ];
+        }
+      );
+      default = { };
+      description = "PHP-FPM service configuration for the app.";
     };
 
     database = {

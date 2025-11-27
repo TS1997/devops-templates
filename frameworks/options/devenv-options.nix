@@ -6,7 +6,7 @@
 }:
 {
   imports = [
-    ./shared-options.nix
+    (import ./shared-options.nix { inherit config lib pkgs; })
   ];
 
   options = {
@@ -70,13 +70,13 @@
       };
     };
 
-    vite = {
-      enable = lib.mkEnableOption "Enable Vite development server.";
+    nodejs = {
+      enable = lib.mkEnableOption "Enable Node.js development server.";
 
-      nodePackage = lib.mkOption {
+      package = lib.mkOption {
         type = lib.types.package;
         default = pkgs.nodejs;
-        description = "The Node.js package to use for the Vite development server.";
+        description = "The Node.js package to use for the development server.";
       };
     };
   };

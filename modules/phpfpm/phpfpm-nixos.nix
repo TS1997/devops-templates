@@ -1,7 +1,7 @@
 {
   config,
   lib,
-  options,
+  pkgs,
   ...
 }:
 let
@@ -23,32 +23,53 @@ let
     + ''
       error_log = /var/log/${name}/php-error.log
     '';
-
-  filteredPoolCfg = poolCfg: builtins.removeAttrs poolCfg [ "socket" ];
 in
 {
-  options.services.ts1997.phpPools = options.services.phpfpm.pools;
+  options.services.ts1997.phpPools = lib.mkOption {
+    type = lib.types.attrsOf (
+      lib.types.submodule (
+        { name, config, ... }:
+        {
+          imports = [
+            (import ./phpfpm-options.nix { inherit lib pkgs; })
+          ];
+
+          options = {
+            user = lib.mkOption {
+              type = lib.types.str;
+              default = name;
+              description = "The system user that owns the PHP-FPM pool.";
+            };
+          };
+
+          config = {
+            packageWithExtensions = config.package.buildEnv {
+              extensions = { all, enabled }: enabled ++ config.extensions;
+            };
+          };
+        }
+      )
+    );
+    description = "PHP-FPM pools configuration.";
+  };
 
   config = lib.mkIf (cfg != { }) {
     users.users = lib.mkMerge (
       lib.mapAttrsToList (name: poolCfg: {
-        ${poolCfg.user}.packages = [ poolCfg.phpPackage ];
+        ${poolCfg.user}.packages = [ poolCfg.packageWithExtensions ];
       }) cfg
     );
 
-    services.phpfpm.pools = lib.mapAttrs (
-      name: poolCfg:
-      (filteredPoolCfg poolCfg)
-      // {
-        group = lib.mkDefault poolCfg.user;
+    services.phpfpm.pools = lib.mapAttrs (name: poolCfg: {
+      phpPackage = poolCfg.packageWithExtensions;
+      user = poolCfg.user;
 
-        settings = lib.mkMerge [
-          (defaultPoolSettings poolCfg)
-          (poolCfg.settings)
-        ];
+      settings = lib.mkMerge [
+        (defaultPoolSettings poolCfg)
+        (poolCfg.settings)
+      ];
 
-        phpOptions = (defaultPhpOptions name) + (poolCfg.phpOptions);
-      }
-    ) cfg;
+      phpOptions = (defaultPhpOptions name) + (poolCfg.phpOptions);
+    }) cfg;
   };
 }

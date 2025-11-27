@@ -86,7 +86,7 @@ in
   REDIS_CLIENT = "phpredis";
   REDIS_HOST = redisSocket;
   REDIS_PASSWORD = null;
-  REDIS_PORT = "6379";
+  REDIS_PORT = 0;
 
   MAIL_MAILER = "smtp";
   MAIL_SCHEME = null;

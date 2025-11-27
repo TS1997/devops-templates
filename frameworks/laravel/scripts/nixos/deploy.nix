@@ -2,6 +2,7 @@
   lib,
   pkgs,
   name,
+  phpPackage,
   siteCfg,
   environmentDefaults,
   ...
@@ -16,7 +17,7 @@ let
   };
 in
 pkgs.writeShellScriptBin "deploy-${name}" ''
-  export PATH="${lib.makeBinPath [ siteCfg.phpPackage ]}:$PATH"
+  export PATH="${lib.makeBinPath [ phpPackage ]}:$PATH"
   set -e
 
   ARCHIVE_PATH="''${1:-}"

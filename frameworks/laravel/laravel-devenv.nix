@@ -6,6 +6,7 @@
 }:
 let
   cfg = config.services.ts1997.laravel;
+  phpCfg = config.services.ts1997.php;
   pgsqlCfg = config.services.postgres;
 
   dbCfg = {
@@ -44,7 +45,7 @@ in
       ];
 
       config = {
-        vite.enable = lib.mkDefault true;
+        nodejs.enable = lib.mkDefault true;
       };
     };
     default = { };
@@ -54,9 +55,12 @@ in
   config = lib.mkIf (cfg != { }) {
     env = environmentDefaults // cfg.environment;
 
-    packages = [ cfg.vite.nodePackage ];
+    packages = with pkgs; [
+      cfg.nodejs.package
+      jq
+    ];
 
-    languages.javascript.enable = true;
+    languages.javascript.enable = cfg.nodejs.enable;
 
     services.ts1997.nginx = {
       enable = true;
@@ -69,9 +73,8 @@ in
       locations = locations;
     };
 
-    services.ts1997.php = {
+    services.ts1997.php = (builtins.removeAttrs cfg.php [ "packageWithExtensions" ]) // {
       enable = true;
-      phpPackage = cfg.phpPackage;
     };
 
     services.ts1997.mysql = lib.mkIf (cfg.database.enable && cfg.database.driver == "mysql") {
@@ -103,18 +106,18 @@ in
     };
 
     processes = lib.mkMerge [
-      (lib.mkIf (cfg.vite.enable) {
+      (lib.mkIf (cfg.nodejs.enable) {
         vite.exec = "npm run dev";
       })
 
       (lib.mkIf cfg.scheduler.enable {
-        laravel-scheduler.exec = "${cfg.phpPackage}/bin/php artisan schedule:work";
+        laravel-scheduler.exec = "${phpCfg.packageWithExtensions}/bin/php artisan schedule:work";
       })
 
       (lib.mkIf cfg.queue.enable {
         laravel-queue.exec = ''
           sleep 2; # Wait for the database to be ready 
-          ${cfg.phpPackage}/bin/php artisan queue:work ${cfg.queue.connection}
+          ${phpCfg.packageWithExtensions}/bin/php artisan queue:work ${cfg.queue.connection}
         '';
       })
     ];
@@ -125,8 +128,7 @@ in
         while IFS= read -r line; do
           name=$(echo "$line" | sed -n 's/.*name="\([^"]*\)".*/\1/p')
           value=$(echo "$line" | sed -n 's/.*value="\([^"]*\)".*/\1/p')
-
-          unset "$name"
+          
           export "$name"="$value"
         done < <(grep '<env ' phpunit.xml)
 

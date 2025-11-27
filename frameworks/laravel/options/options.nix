@@ -14,6 +14,7 @@ let
   nixosOptions = import ../../options/nixos-options.nix {
     inherit
       lib
+      pkgs
       name
       ;
   };
@@ -29,7 +30,7 @@ in
 
       connection = lib.mkOption {
         type = lib.types.str;
-        default = "database";
+        default = "redis";
         description = "The queue connection to use for the Laravel Queue Worker.";
       };
 
@@ -45,5 +46,8 @@ in
     redis.enable = lib.mkDefault true;
     scheduler.enable = lib.mkDefault true;
     queue.enable = lib.mkDefault true;
+    php.extensions = lib.mkDefault [
+      pkgs.php84Extensions.redis
+    ];
   };
 }

@@ -9,6 +9,8 @@ let
   pgsqlCfg = config.services.postgresql;
   redisCfg = config.services.ts1997.redisServers;
 
+  mkPhpCfg = name: config.services.phpfpm.pools.${name};
+
   dbCfg = siteCfg: {
     driver = siteCfg.database.driver;
     host = if siteCfg.database.driver == "pgsql" then "/run/postgresql" else "127.0.0.1";
@@ -34,6 +36,7 @@ let
         name
         siteCfg
         ;
+      phpPackage = (mkPhpCfg name).phpPackage;
       environmentDefaults = (mkEnvironmentDefaults name siteCfg);
     });
 
@@ -41,7 +44,7 @@ let
     name: siteCfg:
     (import ./config/nginx-locations.nix {
       inherit pkgs siteCfg;
-      phpSocket = config.services.ts1997.phpPools.${name}.socket;
+      phpSocket = (mkPhpCfg name).socket;
     });
 in
 {
@@ -110,10 +113,14 @@ in
       locations = (mkLocations name siteCfg);
     }) cfg;
 
-    services.ts1997.phpPools = lib.mapAttrs (name: siteCfg: {
-      user = siteCfg.user;
-      phpPackage = siteCfg.phpPackage;
-    }) cfg;
+    services.ts1997.phpPools = lib.mapAttrs (
+      name: siteCfg:
+      (builtins.removeAttrs siteCfg.php [ "packageWithExtensions" ])
+      // {
+        enable = true;
+        user = siteCfg.user;
+      }
+    ) cfg;
 
     services.ts1997.mysql = lib.mkMerge (
       lib.mapAttrsToList (
@@ -156,7 +163,7 @@ in
           ${name} = {
             user = siteCfg.user;
             workingDir = siteCfg.workingDir;
-            phpPackage = siteCfg.phpPackage;
+            phpPackage = (mkPhpCfg name).phpPackage;
             appName = siteCfg.appName;
           };
         }
@@ -170,7 +177,7 @@ in
           ${name} = {
             user = siteCfg.user;
             workingDir = siteCfg.workingDir;
-            phpPackage = siteCfg.phpPackage;
+            phpPackage = (mkPhpCfg name).phpPackage;
             appName = siteCfg.appName;
             connection = siteCfg.queue.connection;
             workers = siteCfg.queue.workers;

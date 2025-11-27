@@ -16,32 +16,37 @@ let
   '';
 in
 {
-  options.services.ts1997.php = {
-    enable = lib.mkEnableOption "Enable the PHP-FPM service.";
+  options.services.ts1997.php = lib.mkOption {
+    type = lib.types.submodule (
+      { config, ... }:
+      {
+        imports = [
+          (import ./phpfpm-options.nix { inherit lib pkgs; })
+        ];
 
-    phpPackage = lib.mkOption {
-      type = lib.types.package;
-      default = pkgs.php;
-      description = "The PHP package to use for the PHP-FPM service.";
-    };
+        config = {
+          packageWithExtensions = config.package.buildEnv {
+            extensions = { all, enabled }: enabled ++ config.extensions;
+          };
+        };
+      }
+    );
+    description = "PHP-FPM service configuration.";
   };
 
   config = lib.mkIf (cfg.enable) {
     languages.php = {
       enable = cfg.enable;
-      package = cfg.phpPackage;
+      package = cfg.packageWithExtensions;
 
       fpm.pools.web = {
-        phpPackage = cfg.phpPackage;
-        settings = defaultPoolSettings;
-        phpOptions = defaultPhpOptions;
+        settings = defaultPoolSettings // cfg.settings;
+        phpOptions = defaultPhpOptions + cfg.phpOptions;
       };
     };
 
     processes = {
       php_error.exec = "touch ${config.env.DEVENV_STATE}/php_error; tail -f ${config.env.DEVENV_STATE}/php_error";
     };
-
-    packages = [ cfg.phpPackage ];
   };
 }

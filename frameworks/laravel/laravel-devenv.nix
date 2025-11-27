@@ -56,6 +56,8 @@ in
 
     packages = [ cfg.vite.nodePackage ];
 
+    languages.javascript.enable = true;
+
     services.ts1997.nginx = {
       enable = true;
       serverName = cfg.domain;
@@ -112,7 +114,7 @@ in
       (lib.mkIf cfg.queue.enable {
         laravel-queue.exec = ''
           sleep 2; # Wait for the database to be ready 
-          ${cfg.phpPackage}/bin/php artisan queue:work
+          ${cfg.phpPackage}/bin/php artisan queue:work ${cfg.queue.connection}
         '';
       })
     ];

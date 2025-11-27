@@ -107,7 +107,7 @@ in
                 WorkingDirectory = queueCfg.workingDir;
 
                 ExecStart = ''
-                  ${queueCfg.phpPackage}/bin/php artisan queue:work \
+                  ${queueCfg.phpPackage}/bin/php artisan queue:work ${queueCfg.connection} \
                     --timeout=${toString queueCfg.timeout} \
                     --sleep=${toString queueCfg.sleep} \
                     --tries=${toString queueCfg.tries} \

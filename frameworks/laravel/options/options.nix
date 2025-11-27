@@ -13,9 +13,7 @@ let
 
   nixosOptions = import ../../options/nixos-options.nix {
     inherit
-      config
       lib
-      pkgs
       name
       ;
   };

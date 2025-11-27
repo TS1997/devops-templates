@@ -6,9 +6,7 @@
 }:
 {
   imports = [
-    (import ./shared-options.nix {
-      inherit config lib pkgs;
-    })
+    ./shared-options.nix
   ];
 
   options = {
@@ -41,13 +39,11 @@
       extensions = lib.mkOption {
         type = with lib.types; nullOr (functionTo (listOf package));
         default = null;
-        example = lib.literalExpression ''
-          extensions: [
-            extensions.pg_cron
-            extensions.postgis
-            extensions.timescaledb
-          ];
-        '';
+        example = extensions: [
+          extensions.pg_cron
+          extensions.postgis
+          extensions.timescaledb
+        ];
         description = ''
           Additional PostgreSQL extensions to install.
 

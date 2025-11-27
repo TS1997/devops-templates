@@ -1,15 +1,11 @@
 {
-  config,
   lib,
-  pkgs,
   name,
   ...
 }:
 {
   imports = [
-    (import ./shared-options.nix {
-      inherit config lib pkgs;
-    })
+    ./shared-options.nix
   ];
 
   options = {

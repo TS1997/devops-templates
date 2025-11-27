@@ -29,7 +29,7 @@ in
 
       connection = lib.mkOption {
         type = lib.types.str;
-        default = "redis";
+        default = "database";
         description = "The queue connection to use for the Laravel Queue Worker.";
       };
 

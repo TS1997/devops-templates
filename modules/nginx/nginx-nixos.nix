@@ -2,20 +2,12 @@
   config,
   pkgs,
   lib,
-  options,
   ...
 }:
 let
   cfg = config.services.ts1997.virtualHosts;
 
   defaultExtraConfig = import ./config/extra-config.nix;
-
-  # Filter out custom options that nginx doesn't know about
-  validVirtualHostOptionNames = lib.attrNames (
-    options.services.nginx.virtualHosts.type.getSubOptions [ ]
-  );
-  virtualHostOptions =
-    siteCfg: lib.filterAttrs (name: _: lib.elem name validVirtualHostOptionNames) siteCfg;
 in
 {
   options.services.ts1997.virtualHosts = lib.mkOption {
@@ -23,7 +15,9 @@ in
       lib.types.submodule (
         { name, config, ... }:
         {
-          imports = options.services.nginx.virtualHosts.type.getSubModules;
+          imports = [
+            (import ./nginx-options.nix { inherit lib; })
+          ];
 
           options = {
             forceWWW = lib.mkOption {
@@ -34,15 +28,20 @@ in
 
             user = lib.mkOption {
               type = lib.types.str;
-              default = "nginx";
+              default = name;
               description = "The user that nginx will run as for this virtual host.";
             };
+          };
+
+          config = {
+            enable = lib.mkDefault true;
+            root = lib.mkDefault "/var/lib/${name}/public";
           };
         }
       )
     );
     default = { };
-    description = "Extended nginx virtual hosts configurations.";
+    description = "Nginx virtual hosts configuration.";
   };
 
   config = lib.mkIf (cfg != { }) {
@@ -82,24 +81,19 @@ in
       };
 
       virtualHosts = lib.mkMerge [
-        (lib.mapAttrs (
-          name: siteCfg:
-          (virtualHostOptions siteCfg)
-          // {
-            enableACME = lib.mkDefault true;
-            forceSSL = lib.mkDefault true;
-            serverName = if siteCfg.forceWWW then "www.${siteCfg.serverName}" else siteCfg.serverName;
-
-            extraConfig = defaultExtraConfig + siteCfg.extraConfig;
-
-            locations = {
-              "~ /\\.(?!well-known).*" = {
-                extraConfig = "deny all;";
-              };
-            }
-            // (siteCfg.locations or { });
-          }
-        ) cfg)
+        (lib.mapAttrs (name: siteCfg: {
+          enableACME = true;
+          forceSSL = true;
+          serverName = if siteCfg.forceWWW then "www.${siteCfg.serverName}" else siteCfg.serverName;
+          serverAliases = siteCfg.serverAliases;
+          root = siteCfg.root;
+          extraConfig = defaultExtraConfig + siteCfg.extraConfig;
+          locations = siteCfg.locations // {
+            "~ /\\.(?!well-known).*" = {
+              extraConfig = "deny all;";
+            };
+          };
+        }) cfg)
 
         # WWW redirects
         (lib.mkMerge (

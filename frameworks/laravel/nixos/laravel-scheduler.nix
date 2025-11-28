@@ -51,11 +51,9 @@ in
         description = "Laravel Scheduler for ${schedulerCfg.appName}";
         after = [
           "network.target"
-          "mysql.service"
           "phpfpm-${name}.service"
         ];
         wants = [
-          "mysql.service"
           "phpfpm-${name}.service"
         ];
 

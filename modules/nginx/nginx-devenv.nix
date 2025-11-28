@@ -18,94 +18,33 @@ let
   defaultExtraConfig = import ./config/extra-config.nix;
 in
 {
-  options.services.ts1997.nginx = {
-    enable = lib.mkEnableOption "Enable the NGINX service.";
-
-    serverName = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = ''
-        Name of this virtual host. Defaults to attribute name in virtualHosts.
-      '';
-      example = "example.org";
-    };
-
-    serverAliases = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [
-        "www.example.org"
-        "example.org"
+  options.services.ts1997.nginx = lib.mkOption {
+    type = lib.types.submodule {
+      imports = [
+        (import ./nginx-options.nix { inherit lib; })
       ];
-      description = ''
-        Additional names of virtual hosts served by this virtual host configuration.
-      '';
-    };
 
-    root = lib.mkOption {
-      type = lib.types.path;
-      description = "The root directory for the nginx instance.";
-    };
+      options = {
+        port = lib.mkOption {
+          type = lib.types.int;
+          default = 8080;
+          description = "The port that nginx will listen on.";
+        };
 
-    port = lib.mkOption {
-      type = lib.types.int;
-      default = 8080;
-      description = "The port that nginx will listen on.";
-    };
+        sslPort = lib.mkOption {
+          type = lib.types.int;
+          default = 5443;
+          description = "The port that nginx will listen on for SSL.";
+        };
 
-    sslPort = lib.mkOption {
-      type = lib.types.int;
-      default = 5443;
-      description = "The port that nginx will listen on for SSL.";
+        enableSsl = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = "Whether to enable SSL for the nginx instance.";
+        };
+      };
     };
-
-    enableSsl = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "Whether to enable SSL for the nginx instance.";
-    };
-
-    extraConfig = lib.mkOption {
-      type = lib.types.lines;
-      default = "";
-      description = ''
-        These lines go to the end of the vhost verbatim.
-      '';
-    };
-
-    locations = lib.mkOption {
-      type = lib.types.attrsOf (
-        lib.types.submodule {
-          options = {
-            alias = lib.mkOption {
-              type = lib.types.nullOr lib.types.path;
-              default = null;
-              example = "/your/alias/directory";
-              description = ''
-                Alias directory for requests.
-              '';
-            };
-            tryFiles = lib.mkOption {
-              type = lib.types.nullOr lib.types.str;
-              default = null;
-              example = "$uri =404";
-              description = ''
-                Adds try_files directive.
-              '';
-            };
-            extraConfig = lib.mkOption {
-              type = lib.types.lines;
-              default = "";
-              description = ''
-                These lines go to the end of the location verbatim.
-              '';
-            };
-          };
-        }
-      );
-      description = "NGINX location blocks";
-      default = { };
-    };
+    description = "Nginx service configuration.";
   };
 
   config = lib.mkIf (cfg.enable) {
@@ -139,7 +78,22 @@ in
             lib.mapAttrsToList (name: location: ''
               location ${name} {
                 ${lib.optionalString (location.alias != null) "alias ${location.alias};"}
+                ${lib.optionalString (location.proxyPass != null) "proxy_pass ${location.proxyPass};"}
+                ${lib.optionalString (location.return != null) "return ${toString location.return};"}
+                ${lib.optionalString (location.root != null) "root ${location.root};"}
                 ${lib.optionalString (location.tryFiles != null) "try_files ${location.tryFiles};"}
+
+                ${lib.concatStringsSep "\n" (
+                  lib.mapAttrsToList (n: v: ''fastcgi_param ${n} "${v}";'') (
+                    lib.optionalAttrs (location.fastcgiParams != { }) location.fastcgiParams
+                  )
+                )}
+
+                ${lib.optionalString (location.basicAuthFile != null) (''
+                  auth_basic secured;
+                  auth_basic_user_file ${location.basicAuthFile};
+                '')}
+
                 ${location.extraConfig}
               }
             '') cfg.locations

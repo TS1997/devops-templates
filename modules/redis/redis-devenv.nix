@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 let
@@ -15,7 +14,6 @@ in
   config = lib.mkIf cfg.enable {
     services.redis = {
       enable = true;
-      package = pkgs.redis;
       port = 0;
     };
   };

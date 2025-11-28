@@ -22,7 +22,7 @@ in
         { name, config, ... }:
         {
           imports = [
-            (import ./options/gunicorn-options.nix { inherit lib pkgs; })
+            (import ./gunicorn-options.nix { inherit lib pkgs; })
           ];
 
           options = {
@@ -48,6 +48,7 @@ in
           };
 
           config = {
+            enable = lib.mkDefault true;
             workingDir = lib.mkDefault "/var/lib/${name}";
             socket = lib.mkDefault "/run/gunicorn/${name}.sock";
 
@@ -67,7 +68,7 @@ in
       )
     );
     default = { };
-    description = "List of Gunicorn applications to enable.";
+    description = "List of Gunicorn application configurations.";
   };
 
   config = lib.mkIf (cfg != { }) {
@@ -87,7 +88,7 @@ in
           StateDirectory = name;
 
           ExecStartPre = pkgs.writeShellScript "install-deps" ''
-            cd /var/lib/${name}
+            cd ${gunicornCfg.workingDir}
             if [ -f requirements.txt ]; then
               ${gunicornCfg.pythonEnv}/bin/pip install -r requirements.txt --target ${gunicornCfg.workingDir}/.venv --no-warn-script-location --upgrade
             fi

@@ -95,9 +95,7 @@ in
             i:
             lib.nameValuePair "laravel-queue-${name}-${toString i}" {
               description = "Laravel Queue Worker ${toString i} for ${queueCfg.appName}";
-              after = [
-                "network.target"
-              ];
+              after = [ "network.target" ];
               wantedBy = [ "multi-user.target" ];
 
               serviceConfig = {

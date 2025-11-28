@@ -9,7 +9,7 @@ let
   pgsqlCfg = config.services.postgresql;
   redisCfg = config.services.ts1997.redisServers;
 
-  mkPhpCfg = name: config.services.phpfpm.pools.${name};
+  phpCfg = name: config.services.phpfpm.pools.${name};
 
   dbCfg = siteCfg: {
     driver = siteCfg.database.driver;
@@ -36,7 +36,7 @@ let
         name
         siteCfg
         ;
-      phpPackage = (mkPhpCfg name).phpPackage;
+      phpPackage = (phpCfg name).phpPackage;
       environmentDefaults = (mkEnvironmentDefaults name siteCfg);
     });
 
@@ -44,7 +44,7 @@ let
     name: siteCfg:
     (import ./config/nginx-locations.nix {
       inherit pkgs siteCfg;
-      phpSocket = (mkPhpCfg name).socket;
+      phpSocket = (phpCfg name).socket;
     });
 in
 {
@@ -59,7 +59,7 @@ in
         { name, ... }:
         {
           imports = [
-            (import ./options/options.nix {
+            (import ./laravel-options.nix {
               inherit
                 config
                 lib
@@ -163,7 +163,7 @@ in
           ${name} = {
             user = siteCfg.user;
             workingDir = siteCfg.workingDir;
-            phpPackage = (mkPhpCfg name).phpPackage;
+            phpPackage = (phpCfg name).phpPackage;
             appName = siteCfg.appName;
           };
         }
@@ -177,7 +177,7 @@ in
           ${name} = {
             user = siteCfg.user;
             workingDir = siteCfg.workingDir;
-            phpPackage = (mkPhpCfg name).phpPackage;
+            phpPackage = (phpCfg name).phpPackage;
             appName = siteCfg.appName;
             connection = siteCfg.queue.connection;
             workers = siteCfg.queue.workers;

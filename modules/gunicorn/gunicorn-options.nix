@@ -1,6 +1,8 @@
 { lib, pkgs }:
 {
   options = {
+    enable = lib.mkEnableOption "Enable the Gunicorn service.";
+
     appModule = lib.mkOption {
       type = lib.types.str;
       default = "app:app";

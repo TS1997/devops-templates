@@ -15,12 +15,8 @@ in
   options.services.ts1997.gunicorn = lib.mkOption {
     type = lib.types.submodule {
       imports = [
-        (import ./options/gunicorn-options.nix { inherit lib pkgs; })
+        (import ./gunicorn-options.nix { inherit lib pkgs; })
       ];
-
-      options = {
-        enable = lib.mkEnableOption "Enable Gunicorn Server.";
-      };
 
       config = {
         workingDir = lib.mkDefault config.env.DEVENV_ROOT;
@@ -28,7 +24,7 @@ in
       };
     };
     default = { };
-    description = "Gunicorn web server configuration.";
+    description = "Gunicorn application configuration.";
   };
 
   config = lib.mkIf (cfg.enable) {

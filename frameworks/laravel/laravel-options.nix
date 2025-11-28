@@ -7,11 +7,11 @@
   ...
 }:
 let
-  devenvOptions = import ../../options/devenv-options.nix {
+  devenvOptions = import ../options/devenv-options.nix {
     inherit config lib pkgs;
   };
 
-  nixosOptions = import ../../options/nixos-options.nix {
+  nixosOptions = import ../options/nixos-options.nix {
     inherit
       lib
       pkgs

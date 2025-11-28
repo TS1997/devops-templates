@@ -38,7 +38,7 @@ in
   options.services.ts1997.laravel = lib.mkOption {
     type = lib.types.submodule {
       imports = [
-        (import ./options/options.nix {
+        (import ./laravel-options.nix {
           inherit config lib pkgs;
           isDevenv = true;
         })

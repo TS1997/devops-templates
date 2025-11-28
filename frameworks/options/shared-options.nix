@@ -57,7 +57,7 @@
         { config, ... }:
         {
           imports = [
-            (import ../../modules/phpfpm/phpfpm-options.nix { inherit lib pkgs; })
+            (import ../../modules/phpfpm/phpfpm-options.nix { inherit config lib pkgs; })
           ];
         }
       );

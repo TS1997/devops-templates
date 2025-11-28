@@ -21,14 +21,8 @@ in
       { config, ... }:
       {
         imports = [
-          (import ./phpfpm-options.nix { inherit lib pkgs; })
+          (import ./phpfpm-options.nix { inherit config lib pkgs; })
         ];
-
-        config = {
-          packageWithExtensions = config.package.buildEnv {
-            extensions = { all, enabled }: enabled ++ config.extensions;
-          };
-        };
       }
     );
     description = "PHP-FPM service configuration.";

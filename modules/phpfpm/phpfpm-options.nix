@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   ...
@@ -21,6 +22,9 @@
 
     packageWithExtensions = lib.mkOption {
       type = lib.types.package;
+      default = config.package.buildEnv {
+        extensions = { all, enabled }: enabled ++ config.extensions;
+      };
       description = "The PHP package with the specified extensions enabled.";
       readOnly = true;
     };

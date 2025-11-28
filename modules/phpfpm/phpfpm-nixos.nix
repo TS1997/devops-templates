@@ -31,7 +31,7 @@ in
         { name, config, ... }:
         {
           imports = [
-            (import ./phpfpm-options.nix { inherit lib pkgs; })
+            (import ./phpfpm-options.nix { inherit config lib pkgs; })
           ];
 
           options = {
@@ -39,12 +39,6 @@ in
               type = lib.types.str;
               default = name;
               description = "The system user that owns the PHP-FPM pool.";
-            };
-          };
-
-          config = {
-            packageWithExtensions = config.package.buildEnv {
-              extensions = { all, enabled }: enabled ++ config.extensions;
             };
           };
         }

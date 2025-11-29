@@ -49,8 +49,8 @@ let
 in
 {
   imports = [
-    ./nixos/laravel-scheduler.nix
-    ./nixos/laravel-queue-worker.nix
+    ./submodules/laravel-scheduler-nixos.nix
+    ./submodules/laravel-queue-worker-nixos.nix
   ];
 
   options.services.ts1997.laravel.sites = lib.mkOption {

@@ -44,6 +44,7 @@ in
         }
       )
     );
+    default = { };
     description = "PHP-FPM pools configuration.";
   };
 

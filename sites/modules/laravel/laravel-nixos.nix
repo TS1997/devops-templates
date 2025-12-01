@@ -1,25 +1,23 @@
 {
   config,
   lib,
-  siteName,
+  name,
   ...
 }:
 {
   options = {
-    scheduler.enable = lib.mkEnableOption "Enable Laravel scheduler for the site.";
+    scheduler.enable = lib.mkEnableOption "Enable the Laravel scheduler for ${name}";
   };
 
   config = {
-    services.ts1997.virtualHosts.${siteName} = {
-      user = config.user;
-      root = config.webRoot;
+    services.ts1997.virtualHosts.${name} = {
       serverName = config.domain;
-      serverAliases = config.extraDomains;
-      forceWWW = config.forceWWW;
+      user = config.user;
+
       locations."/" = {
-        return = "200 '<html><body><h1>Simple HTML Page</h1></body></html>'";
         extraConfig = ''
-          add_header Content-Type text/html;
+          default_type text/html;
+          return 200 "<h1>Welcome to ${name}!</h1>";
         '';
       };
     };

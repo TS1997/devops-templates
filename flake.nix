@@ -9,8 +9,7 @@
           {
             imports = [
               ./modules/nixos.nix
-              ./sites/nixos-sites.nix
-              # ./frameworks/nixos.nix
+              ./sites/sites-nixos.nix
             ];
           };
       };

@@ -34,14 +34,18 @@ in
 
     sslCert = lib.mkOption {
       type = lib.types.path;
-      default = "${util.devenvState}/mkcert/${sslCertBaseName}.pem";
+      default = "${util.values.devenvState}/mkcert/${sslCertBaseName}.pem";
       description = "Path to the SSL certificate file.";
     };
 
     sslKey = lib.mkOption {
       type = lib.types.path;
-      default = "${util.devenvState}/mkcert/${sslCertBaseName}-key.pem";
+      default = "${util.values.devenvState}/mkcert/${sslCertBaseName}-key.pem";
       description = "Path to the SSL key file.";
     };
+  };
+
+  config = {
+    root = lib.mkDefault util.values.devenvRoot;
   };
 }

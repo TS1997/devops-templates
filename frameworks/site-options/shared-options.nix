@@ -1,6 +1,6 @@
 {
   lib,
-  pkgs,
+  util,
   ...
 }:
 {
@@ -53,14 +53,11 @@
     };
 
     php = lib.mkOption {
-      type = lib.types.submodule (
-        { config, ... }:
-        {
-          imports = [
-            (import ../../modules/phpfpm/phpfpm-options.nix { inherit config lib pkgs; })
-          ];
-        }
-      );
+      type = util.submoduleWithPkgs {
+        imports = [
+          ../../modules/phpfpm/phpfpm-options.nix
+        ];
+      };
       default = { };
       description = "PHP-FPM service configuration for the app.";
     };

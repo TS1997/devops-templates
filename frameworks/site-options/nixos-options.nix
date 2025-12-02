@@ -1,13 +1,10 @@
 {
   lib,
-  pkgs,
   name,
   ...
 }:
 {
-  imports = [
-    (import ./shared-options.nix { inherit lib pkgs; })
-  ];
+  imports = [ ./shared-options.nix ];
 
   options = {
     user = lib.mkOption {

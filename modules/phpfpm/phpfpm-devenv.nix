@@ -1,6 +1,5 @@
 {
   config,
-  pkgs,
   lib,
   ...
 }:
@@ -20,9 +19,7 @@ in
     type = lib.types.submodule (
       { config, ... }:
       {
-        imports = [
-          (import ./phpfpm-options.nix { inherit config lib pkgs; })
-        ];
+        imports = [ ./phpfpm-options.nix ];
       }
     );
     description = "PHP-FPM service configuration.";

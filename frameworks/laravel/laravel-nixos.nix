@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  util,
   ...
 }:
 let
@@ -55,22 +56,12 @@ in
 
   options.services.ts1997.laravel.sites = lib.mkOption {
     type = lib.types.attrsOf (
-      lib.types.submodule (
-        { name, ... }:
-        {
-          imports = [
-            (import ./laravel-options.nix {
-              inherit
-                config
-                lib
-                pkgs
-                name
-                ;
-              isDevenv = false;
-            })
-          ];
-        }
-      )
+      util.submoduleWithPkgs {
+        imports = [
+          ./laravel-options.nix
+          ../site-options/nixos-options.nix
+        ];
+      }
     );
     default = { };
     description = "Laravel application configurations.";

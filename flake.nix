@@ -4,14 +4,13 @@
     { self }:
     {
       nixosModules = {
-        default =
-          { ... }:
-          {
-            imports = [
-              ./modules/nixos.nix
-              ./frameworks/nixos.nix
-            ];
-          };
+        default = {
+          imports = [
+            (import ./utils/util.nix { })
+            ./modules/nixos.nix
+            ./frameworks/nixos.nix
+          ];
+        };
       };
     };
 }

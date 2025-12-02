@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 let
@@ -28,11 +27,9 @@ in
   options.services.ts1997.phpPools = lib.mkOption {
     type = lib.types.attrsOf (
       lib.types.submodule (
-        { name, config, ... }:
+        { name, ... }:
         {
-          imports = [
-            (import ./phpfpm-options.nix { inherit config lib pkgs; })
-          ];
+          imports = [ ./phpfpm-options.nix ];
 
           options = {
             user = lib.mkOption {

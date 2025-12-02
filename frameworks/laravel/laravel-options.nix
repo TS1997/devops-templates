@@ -1,27 +1,9 @@
 {
-  config,
   lib,
   pkgs,
-  isDevenv,
-  name ? null,
   ...
 }:
-let
-  devenvOptions = import ../site-options/devenv-options.nix {
-    inherit config lib pkgs;
-  };
-
-  nixosOptions = import ../site-options/nixos-options.nix {
-    inherit
-      lib
-      pkgs
-      name
-      ;
-  };
-in
 {
-  imports = lib.optional isDevenv devenvOptions ++ lib.optional (!isDevenv) nixosOptions;
-
   options = {
     scheduler.enable = lib.mkEnableOption "Enable Laravel Scheduler";
 

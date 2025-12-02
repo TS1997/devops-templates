@@ -1,9 +1,13 @@
-{ config, ... }:
+{
+  config,
+  ...
+}:
 let
   mkAppUrls = import ./scripts/devenv/app-urls.nix { inherit config; };
 in
 {
   imports = [
+    (import ./utils/util.nix { devenvRoot = config.env.DEVENV_ROOT; })
     ./modules/devenv.nix
     ./frameworks/devenv.nix
   ];

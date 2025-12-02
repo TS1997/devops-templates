@@ -1,13 +1,11 @@
 {
-  config,
   lib,
   pkgs,
+  util,
   ...
 }:
 {
-  imports = [
-    (import ./shared-options.nix { inherit config lib pkgs; })
-  ];
+  imports = [ ./shared-options.nix ];
 
   options = {
     port = lib.mkOption {
@@ -84,8 +82,8 @@
   config = {
     # Shared option defaults
     appEnv = lib.mkDefault "local";
-    workingDir = lib.mkDefault config.env.DEVENV_ROOT;
-    webRoot = lib.mkDefault "${config.env.DEVENV_ROOT}/public";
+    workingDir = lib.mkDefault util.values.devenvRoot;
+    webRoot = lib.mkDefault "${util.values.devenvRoot}/public";
 
     database = {
       enable = lib.mkDefault true;

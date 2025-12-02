@@ -2,25 +2,28 @@
   config,
   lib,
   pkgs,
+  util,
   ...
 }:
 let
-  cfg = config.services.ts1997.laravel;
+  siteCfg = config.services.ts1997.laravel;
   phpCfg = config.services.ts1997.php;
   pgsqlCfg = config.services.postgres;
 
   dbCfg = {
-    driver = cfg.database.driver;
+    driver = siteCfg.database.driver;
     host =
-      if cfg.database.driver == "pgsql" then pgsqlCfg.settings.unix_socket_directories else "127.0.0.1";
-    port = if cfg.database.driver == "pgsql" then pgsqlCfg.settings.port else 3306;
-    socket = if cfg.database.driver == "mysql" then config.env.MYSQL_UNIX_PORT else null;
+      if siteCfg.database.driver == "pgsql" then
+        pgsqlCfg.settings.unix_socket_directories
+      else
+        "127.0.0.1";
+    port = if siteCfg.database.driver == "pgsql" then pgsqlCfg.settings.port else 3306;
+    socket = if siteCfg.database.driver == "mysql" then config.env.MYSQL_UNIX_PORT else null;
   };
 
   environmentDefaults = (
     import ./config/env-defaults.nix {
-      inherit lib dbCfg;
-      siteCfg = cfg;
+      inherit lib siteCfg dbCfg;
       redisSocket = config.env.REDIS_UNIX_SOCKET or null;
       isDevenv = true;
     }
@@ -28,20 +31,17 @@ let
 
   locations = (
     import ./config/nginx-locations.nix {
-      inherit pkgs;
-      siteCfg = cfg;
+      inherit pkgs siteCfg;
       phpSocket = config.languages.php.fpm.pools.web.socket;
     }
   );
 in
 {
   options.services.ts1997.laravel = lib.mkOption {
-    type = lib.types.submodule {
+    type = util.submoduleWithPkgs {
       imports = [
-        (import ./laravel-options.nix {
-          inherit config lib pkgs;
-          isDevenv = true;
-        })
+        ../site-options/devenv-options.nix
+        ./laravel-options.nix
       ];
 
       config = {
@@ -52,72 +52,71 @@ in
     description = "Laravel application configuration.";
   };
 
-  config = lib.mkIf (cfg != { }) {
-    env = environmentDefaults // cfg.environment;
+  config = lib.mkIf (siteCfg != { }) {
+    env = environmentDefaults // siteCfg.environment;
 
     packages = with pkgs; [
-      cfg.nodejs.package
+      siteCfg.nodejs.package
       jq
     ];
 
-    languages.javascript.enable = cfg.nodejs.enable;
-
+    languages.javascript.enable = siteCfg.nodejs.enable;
     services.ts1997.nginx = {
       enable = true;
-      serverName = cfg.domain;
-      serverAliases = cfg.extraDomains;
-      root = cfg.webRoot;
-      port = cfg.port;
-      sslPort = cfg.sslPort;
-      enableSsl = cfg.enableSsl;
+      serverName = siteCfg.domain;
+      serverAliases = siteCfg.extraDomains;
+      root = siteCfg.webRoot;
+      port = siteCfg.port;
+      sslPort = siteCfg.sslPort;
+      enableSsl = siteCfg.enableSsl;
       locations = locations;
     };
 
-    services.ts1997.php = (builtins.removeAttrs cfg.php [ "packageWithExtensions" ]) // {
+    services.ts1997.php = (builtins.removeAttrs siteCfg.php [ "packageWithExtensions" ]) // {
       enable = true;
     };
 
-    services.ts1997.mysql = lib.mkIf (cfg.database.enable && cfg.database.driver == "mysql") {
-      enable = cfg.database.enable;
-      name = cfg.database.name;
-      user = cfg.database.user;
-      password = cfg.database.password;
+    services.ts1997.mysql = lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "mysql") {
+      enable = siteCfg.database.enable;
+      name = siteCfg.database.name;
+      user = siteCfg.database.user;
+      password = siteCfg.database.password;
 
-      phpmyadmin = cfg.phpmyadmin // {
-        host = lib.mkDefault cfg.domain;
+      phpmyadmin = siteCfg.phpmyadmin // {
+        host = lib.mkDefault siteCfg.domain;
       };
     };
 
-    services.ts1997.pgsql = lib.mkIf (cfg.database.enable && cfg.database.driver == "pgsql") {
-      enable = cfg.database.enable;
-      name = cfg.database.name;
-      user = cfg.database.user;
-      password = cfg.database.password;
-      extensions = cfg.database.extensions;
+    services.ts1997.pgsql = lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "pgsql") {
+      enable = siteCfg.database.enable;
+      name = siteCfg.database.name;
+      user = siteCfg.database.user;
+      password = siteCfg.database.password;
+      extensions = siteCfg.database.extensions;
     };
 
-    services.ts1997.redis = lib.mkIf (cfg.redis.enable) {
-      enable = cfg.redis.enable;
+    services.ts1997.redis = lib.mkIf (siteCfg.redis.enable) {
+      enable = siteCfg.redis.enable;
     };
 
     services.ts1997.mailpit = {
       enable = true;
-      uiListenAddress = "${cfg.domain}:8025";
+      uiListenAddress = "${siteCfg.domain}:8025";
     };
 
     processes = lib.mkMerge [
-      (lib.mkIf (cfg.nodejs.enable) {
+      (lib.mkIf (siteCfg.nodejs.enable) {
         vite.exec = "npm run dev";
       })
 
-      (lib.mkIf cfg.scheduler.enable {
+      (lib.mkIf siteCfg.scheduler.enable {
         laravel-scheduler.exec = "${phpCfg.packageWithExtensions}/bin/php artisan schedule:work";
       })
 
-      (lib.mkIf cfg.queue.enable {
+      (lib.mkIf siteCfg.queue.enable {
         laravel-queue.exec = ''
           sleep 2; # Wait for the database to be ready 
-          ${phpCfg.packageWithExtensions}/bin/php artisan queue:work ${cfg.queue.connection}
+          ${phpCfg.packageWithExtensions}/bin/php artisan queue:work ${siteCfg.queue.connection}
         '';
       })
     ];

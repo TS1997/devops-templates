@@ -11,7 +11,7 @@
       devenvProfile = config.env.DEVENV_PROFILE;
       devenvRuntime = config.env.DEVENV_RUNTIME;
     })
-    ./nix/modules/app-urls.devenv.nix
+    ./nix/utils/app-urls.devenv.nix
     ./nix/services/devenv.nix
     ./nix/app-services/devenv.nix
   ];

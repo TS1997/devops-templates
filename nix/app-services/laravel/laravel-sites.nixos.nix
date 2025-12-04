@@ -37,7 +37,7 @@ in
         serverAliases = siteCfg.extraDomains;
         root = siteCfg.webRoot;
         forceWWW = siteCfg.nginx.forceWWW;
-        user = siteCfg.nginx.user;
+        user = siteCfg.user;
         locations."/".extraConfig = [
           ''
             add_header X-Frame-Options "SAMEORIGIN" always;

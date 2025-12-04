@@ -5,13 +5,13 @@
 }:
 {
   options = {
-    nginx = {
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = name;
-        description = "The system user to run the nginx worker processes as.";
-      };
+    user = lib.mkOption {
+      type = lib.types.str;
+      default = name;
+      description = "The system user to run the nginx worker processes as.";
+    };
 
+    nginx = {
       forceWWW = lib.mkOption {
         type = lib.types.bool;
         default = true;

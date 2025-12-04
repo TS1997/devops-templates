@@ -36,7 +36,7 @@ in
         serverName = siteCfg.domain;
         serverAliases = siteCfg.extraDomains;
         root = siteCfg.webRoot;
-        forceWWW = siteCfg.nginx.forceWWW;
+        forceWWW = siteCfg.forceWWW;
         user = siteCfg.user;
         locations."/".extraConfig = [
           ''

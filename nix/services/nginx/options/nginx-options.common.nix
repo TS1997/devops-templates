@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  util,
   ...
 }:
 {
@@ -28,6 +29,18 @@
       };
       readOnly = true;
       description = "The nginx package combined with the selected modules.";
+    };
+
+    virtualHosts = lib.mkOption {
+      type = lib.types.attrsOf (
+        util.submodule {
+          imports = [
+            ./nginx-vhost-options.common.nix
+          ];
+        }
+      );
+      default = { };
+      description = "A set of virtual hosts to configure.";
     };
   };
 }

@@ -21,23 +21,9 @@ in
   options.services.ts1997.nginx = lib.mkOption {
     type = util.submodule {
       imports = [
-        ./options/nginx-options.nix
+        ./options/nginx-options.common.nix
+        ./options/nginx-options.nixos.nix
       ];
-
-      options = {
-        virtualHosts = lib.mkOption {
-          type = lib.types.attrsOf (
-            util.submodule {
-              imports = [
-                ./options/nginx-vhost-options.common.nix
-                ./options/nginx-vhost-options.nixos.nix
-              ];
-            }
-          );
-          default = { };
-          description = "A set of virtual hosts to configure.";
-        };
-      };
     };
     default = { };
     description = "Nginx web server configuration.";

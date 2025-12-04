@@ -1,4 +1,4 @@
-{ lib, util, ... }:
+{ lib, ... }:
 {
   options = {
     serverName = lib.mkOption {
@@ -38,7 +38,7 @@
 
     locations = lib.mkOption {
       type = lib.types.attrsOf (
-        util.submodule {
+        lib.types.submodule {
           imports = [ ./nginx-location-options.nix ];
         }
       );

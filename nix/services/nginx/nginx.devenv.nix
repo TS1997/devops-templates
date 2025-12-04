@@ -6,92 +6,95 @@
 }:
 let
   cfg = config.services.ts1997.nginx;
-  vhostCfg = cfg.virtualHost;
 in
 {
   options.services.ts1997.nginx = lib.mkOption {
     type = util.submodule {
       imports = [
-        ./options/nginx-options.nix
+        ./options/nginx-options.common.nix
+        ./options/nginx-options.devenv.nix
       ];
-
-      options = {
-        virtualHost = lib.mkOption {
-          type = util.submodule {
-            imports = [
-              ./options/nginx-vhost-options.common.nix
-              ./options/nginx-vhost-options.devenv.nix
-            ];
-          };
-          default = { };
-          description = "Virtual host configuration.";
-        };
-      };
     };
     default = { };
     description = "Nginx web server configuration.";
   };
 
   config = lib.mkIf (cfg.enable) {
-    certificates = lib.optionals (vhostCfg.enableSsl) [ vhostCfg.serverName ] ++ vhostCfg.serverAliases;
+    certificates = lib.flatten (
+      lib.mapAttrsToList (
+        vhostName: vhostCfg:
+        lib.optionals (vhostCfg.enableSsl) ([ vhostCfg.serverName ] ++ vhostCfg.serverAliases)
+      ) cfg.virtualHosts
+    );
 
     hosts = builtins.listToAttrs (
-      map (domain: {
-        name = domain;
-        value = "127.0.0.1";
-      }) ([ vhostCfg.serverName ] ++ vhostCfg.serverAliases)
+      lib.flatten (
+        lib.mapAttrsToList (
+          vhostName: vhostCfg:
+          map (domain: {
+            name = domain;
+            value = "127.0.0.1";
+          }) ([ vhostCfg.serverName ] ++ vhostCfg.serverAliases)
+        ) cfg.virtualHosts
+      )
     );
 
     services.nginx = {
       enable = cfg.enable;
       package = cfg.fullPackage;
 
-      httpConfig = ''
-        server {
-          listen ${toString vhostCfg.port};
-          ${lib.optionalString (vhostCfg.enableSsl) ''
-            listen ${toString vhostCfg.sslPort} ssl;
-            ssl_certificate ${vhostCfg.sslCert};
-            ssl_certificate_key ${vhostCfg.sslKey};
-          ''}
+      httpConfig = lib.concatStringsSep "\n\n" (
+        lib.mapAttrsToList (vhostName: vhostCfg: ''
+          server {
+            listen ${toString vhostCfg.port};
+            ${lib.optionalString (vhostCfg.enableSsl) ''
+              listen ${toString vhostCfg.sslPort} ssl;
+              ssl_certificate ${vhostCfg.sslCert};
+              ssl_certificate_key ${vhostCfg.sslKey};
+            ''}
 
-          server_name ${lib.concatStringsSep " " ([ vhostCfg.serverName ] ++ vhostCfg.serverAliases)};
-          root ${vhostCfg.root};
-          
-          ${lib.concatStringsSep "\n" vhostCfg.extraConfig}
+            server_name ${lib.concatStringsSep " " ([ vhostCfg.serverName ] ++ vhostCfg.serverAliases)};
+            root ${vhostCfg.root};
+            
+            ${lib.concatStringsSep "\n" vhostCfg.extraConfig}
 
-          ${lib.concatStringsSep "\n\n" (
-            lib.mapAttrsToList (name: location: ''
-              location ${name} {
-                ${lib.optionalString (location.alias != null) "alias ${location.alias};"}
-                ${lib.optionalString (location.proxyPass != null) "proxy_pass ${location.proxyPass};"}
-                ${lib.optionalString (location.return != null) "return ${toString location.return};"}
-                ${lib.optionalString (location.root != null) "root ${location.root};"}
-                ${lib.optionalString (location.tryFiles != null) "try_files ${location.tryFiles};"}
+            ${lib.concatStringsSep "\n\n" (
+              lib.mapAttrsToList (locationName: locationCfg: ''
+                location ${locationName} {
+                  ${lib.optionalString (locationCfg.alias != null) "alias ${locationCfg.alias};"}
+                  ${lib.optionalString (locationCfg.proxyPass != null) "proxy_pass ${locationCfg.proxyPass};"}
+                  ${lib.optionalString (locationCfg.return != null) "return ${toString locationCfg.return};"}
+                  ${lib.optionalString (locationCfg.root != null) "root ${locationCfg.root};"}
+                  ${lib.optionalString (locationCfg.tryFiles != null) "try_files ${locationCfg.tryFiles};"}
 
-                ${lib.concatStringsSep "\n" (
-                  lib.mapAttrsToList (n: v: ''fastcgi_param ${n} "${v}";'') (
-                    lib.optionalAttrs (location.fastcgiParams != { }) location.fastcgiParams
-                  )
-                )}
+                  ${lib.concatStringsSep "\n" (
+                    lib.mapAttrsToList (n: v: ''fastcgi_param ${n} "${v}";'') (
+                      lib.optionalAttrs (locationCfg.fastcgiParams != { }) locationCfg.fastcgiParams
+                    )
+                  )}
 
-                ${lib.optionalString (location.basicAuthFile != null) (''
-                  auth_basic secured;
-                  auth_basic_user_file ${location.basicAuthFile};
-                '')}
+                  ${lib.optionalString (locationCfg.basicAuthFile != null) (''
+                    auth_basic secured;
+                    auth_basic_user_file ${locationCfg.basicAuthFile};
+                  '')}
 
-                ${lib.concatStringsSep "\n" location.extraConfig}
-              }
-            '') vhostCfg.locations
-          )}
-        }
-      '';
+                  ${lib.concatStringsSep "\n" locationCfg.extraConfig}
+                }
+              '') vhostCfg.locations
+            )}
+          }
+        '') cfg.virtualHosts
+      );
     };
 
-    scripts.browse.exec =
-      if (vhostCfg.enableSsl) then
-        "open https://${vhostCfg.serverName}:${toString vhostCfg.sslPort}/"
-      else
-        "open http://${vhostCfg.serverName}:${toString vhostCfg.port}/";
+    scripts.browse.exec = lib.concatStringsSep " & " (
+      lib.mapAttrsToList (
+        vhostName: vhostCfg:
+        if (vhostCfg.enableSsl) then
+          "open https://${vhostCfg.serverName}:${toString vhostCfg.sslPort}/"
+        else
+          "open http://${vhostCfg.serverName}:${toString vhostCfg.port}/"
+      ) cfg.virtualHosts
+    );
   };
 }

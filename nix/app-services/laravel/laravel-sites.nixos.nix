@@ -6,6 +6,13 @@
 }:
 let
   sites = config.services.ts1997.laravelSites;
+
+  mkLocations =
+    name: siteCfg:
+    import ./config/nginx-locations.nix {
+      inherit config siteCfg;
+      phpSocket = config.services.phpfpm.pools.${name}.socket;
+    };
 in
 {
   imports = [
@@ -38,13 +45,13 @@ in
         root = siteCfg.webRoot;
         forceWWW = siteCfg.forceWWW;
         user = siteCfg.user;
-        locations."/".extraConfig = ''
-          add_header X-Frame-Options "SAMEORIGIN" always;
-          add_header X-Content-Type-Options "nosniff" always;
-          add_header Content-Type text/plain;
-          return 200 "Hello from Nginx\n";
-        '';
+        locations = mkLocations name siteCfg;
       }) sites;
+    };
+
+    services.ts1997.phpfpm = {
+      enable = true;
+      pools = lib.mapAttrs (name: siteCfg: builtins.removeAttrs siteCfg.php [ "fullPackage" ]) sites;
     };
   };
 }

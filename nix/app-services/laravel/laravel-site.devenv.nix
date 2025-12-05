@@ -6,6 +6,11 @@
 }:
 let
   siteCfg = config.services.ts1997.laravelSite;
+
+  locations = import ./config/nginx-locations.nix {
+    inherit config siteCfg;
+    phpSocket = config.languages.php.fpm.pools.web.socket;
+  };
 in
 {
   options.services.ts1997.laravelSite = lib.mkOption {
@@ -29,11 +34,15 @@ in
         port = siteCfg.port;
         sslPort = siteCfg.sslPort;
         enableSsl = siteCfg.enableSsl;
-        locations."/".extraConfig = ''
-          return 200 "Hello from Nginx\n";
-          add_header Content-Type text/plain;
-        '';
+        locations = locations;
       };
+    };
+
+    services.ts1997.phpfpm = {
+      enable = true;
+      basePackage = siteCfg.php.basePackage;
+      extensions = siteCfg.php.extensions;
+      pools.web = builtins.removeAttrs siteCfg.php [ "fullPackage" ];
     };
   };
 }

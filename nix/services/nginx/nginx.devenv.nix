@@ -56,7 +56,7 @@ in
             server_name ${lib.concatStringsSep " " ([ vhostCfg.serverName ] ++ vhostCfg.serverAliases)};
             root ${vhostCfg.root};
             
-            ${lib.concatStringsSep "\n" vhostCfg.extraConfig}
+            ${vhostCfg.extraConfig}
 
             ${lib.concatStringsSep "\n\n" (
               lib.mapAttrsToList (locationName: locationCfg: ''
@@ -78,7 +78,7 @@ in
                     auth_basic_user_file ${locationCfg.basicAuthFile};
                   '')}
 
-                  ${lib.concatStringsSep "\n" locationCfg.extraConfig}
+                  ${locationCfg.extraConfig}
                 }
               '') vhostCfg.locations
             )}

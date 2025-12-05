@@ -14,8 +14,8 @@
       description = "Path to the htpasswd file for basic authentication.";
     };
     extraConfig = lib.mkOption {
-      type = lib.types.listOf (lib.types.lines);
-      default = [ ];
+      type = lib.types.lines;
+      default = "";
       description = "These lines go to the end of the location verbatim.";
     };
     fastcgiParams = lib.mkOption {

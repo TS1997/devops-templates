@@ -24,15 +24,13 @@
     };
 
     extraConfig = lib.mkOption {
-      type = lib.types.listOf (lib.types.lines);
-      default = [
-        ''
-          index index.html index.htm index.php;
-          add_header X-Frame-Options "SAMEORIGIN";
-          add_header X-Content-Type-Options "nosniff";
-          charset utf-8;
-        ''
-      ];
+      type = lib.types.lines;
+      default = ''
+        index index.html index.htm index.php;
+        add_header X-Frame-Options "SAMEORIGIN";
+        add_header X-Content-Type-Options "nosniff";
+        charset utf-8;
+      '';
       description = "These lines go to the end of the vhost verbatim.";
     };
 

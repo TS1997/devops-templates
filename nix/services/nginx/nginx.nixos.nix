@@ -6,16 +6,6 @@
 }:
 let
   cfg = config.services.ts1997.nginx;
-
-  mkLocations =
-    locations:
-    lib.mapAttrs (
-      name: location:
-      location
-      // {
-        extraConfig = lib.concatStringsSep "\n" location.extraConfig;
-      }
-    ) locations;
 in
 {
   options.services.ts1997.nginx = lib.mkOption {
@@ -72,8 +62,8 @@ in
           serverName = if siteCfg.forceWWW then "www.${siteCfg.serverName}" else siteCfg.serverName;
           serverAliases = siteCfg.serverAliases;
           root = siteCfg.root;
-          extraConfig = lib.concatStringsSep "\n" siteCfg.extraConfig;
-          locations = mkLocations (siteCfg.locations) // {
+          extraConfig = siteCfg.extraConfig;
+          locations = (siteCfg.locations) // {
             "~ /\\.(?!well-known).*" = {
               extraConfig = "deny all;";
             };

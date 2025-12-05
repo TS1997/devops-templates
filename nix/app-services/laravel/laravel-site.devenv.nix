@@ -29,12 +29,10 @@ in
         port = siteCfg.port;
         sslPort = siteCfg.sslPort;
         enableSsl = siteCfg.enableSsl;
-        locations."/".extraConfig = [
-          ''
-            return 200 "Hello from Nginx\n";
-            add_header Content-Type text/plain;
-          ''
-        ];
+        locations."/".extraConfig = ''
+          return 200 "Hello from Nginx\n";
+          add_header Content-Type text/plain;
+        '';
       };
     };
   };

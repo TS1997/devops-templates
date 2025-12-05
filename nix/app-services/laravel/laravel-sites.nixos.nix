@@ -5,14 +5,14 @@
   ...
 }:
 let
-  cfg = config.services.ts1997.laravelSites;
+  sites = config.services.ts1997.laravelSites;
 in
 {
   imports = [
     (import ../../modules/users.nixos.nix {
       users = lib.mapAttrs (name: siteCfg: {
         home = siteCfg.workingDir;
-      }) cfg;
+      }) sites;
     })
   ];
 
@@ -29,7 +29,7 @@ in
     description = "Laravel application configuration";
   };
 
-  config = lib.mkIf (cfg != { }) {
+  config = lib.mkIf (sites != { }) {
     services.ts1997.nginx = {
       enable = true;
       virtualHosts = lib.mapAttrs (name: siteCfg: {
@@ -38,15 +38,13 @@ in
         root = siteCfg.webRoot;
         forceWWW = siteCfg.forceWWW;
         user = siteCfg.user;
-        locations."/".extraConfig = [
-          ''
-            add_header X-Frame-Options "SAMEORIGIN" always;
-            add_header X-Content-Type-Options "nosniff" always;
-            add_header Content-Type text/plain;
-            return 200 "Hello from Nginx\n";
-          ''
-        ];
-      }) cfg;
+        locations."/".extraConfig = ''
+          add_header X-Frame-Options "SAMEORIGIN" always;
+          add_header X-Content-Type-Options "nosniff" always;
+          add_header Content-Type text/plain;
+          return 200 "Hello from Nginx\n";
+        '';
+      }) sites;
     };
   };
 }

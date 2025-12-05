@@ -21,7 +21,7 @@ in
   options.services.ts1997.nginx = lib.mkOption {
     type = util.submodule {
       imports = [
-        ./options/nginx-options.common.nix
+        ./options/nginx-options.base.nix
         ./options/nginx-options.nixos.nix
       ];
     };

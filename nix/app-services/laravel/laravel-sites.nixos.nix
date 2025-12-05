@@ -20,7 +20,7 @@ in
     type = lib.types.attrsOf (
       util.submodule {
         imports = [
-          ../options/app-options.common.nix
+          ../options/app-options.base.nix
           ../options/app-options.nixos.nix
         ];
       }

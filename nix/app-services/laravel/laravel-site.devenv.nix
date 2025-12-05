@@ -11,7 +11,7 @@ in
   options.services.ts1997.laravelSite = lib.mkOption {
     type = util.submodule {
       imports = [
-        ../options/app-options.common.nix
+        ../options/app-options.base.nix
         ../options/app-options.devenv.nix
       ];
     };

@@ -35,7 +35,7 @@
       type = lib.types.attrsOf (
         util.submodule {
           imports = [
-            ./nginx-vhost-options.common.nix
+            ./nginx-vhost-options.base.nix
           ];
         }
       );

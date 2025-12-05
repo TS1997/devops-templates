@@ -39,7 +39,7 @@
     locations = lib.mkOption {
       type = lib.types.attrsOf (
         lib.types.submodule {
-          imports = [ ./nginx-location-options.nix ];
+          imports = [ ./nginx-location-options.base.nix ];
         }
       );
       description = "Nginx location blocks";

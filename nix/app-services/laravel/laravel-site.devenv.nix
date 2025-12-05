@@ -44,5 +44,15 @@ in
       extensions = siteCfg.phpPool.extensions;
       pools.web = builtins.removeAttrs siteCfg.phpPool [ "fullPackage" ];
     };
+
+    services.ts1997.mysql = lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "mysql") {
+      enable = true;
+      databases = [
+        {
+          name = siteCfg.database.name;
+          user = siteCfg.database.user;
+        }
+      ];
+    };
   };
 }

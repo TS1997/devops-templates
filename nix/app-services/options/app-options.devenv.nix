@@ -22,5 +22,9 @@
 
   config = {
     workingDir = lib.mkDefault util.values.devenvRoot;
+    database = {
+      enable = lib.mkDefault true;
+      user = lib.mkDefault "admin";
+    };
   };
 }

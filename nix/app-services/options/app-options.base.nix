@@ -35,5 +35,31 @@
       default = { };
       description = "PHP-FPM pool configuration for the application.";
     };
+
+    database = lib.mkOption {
+      type = util.submodule {
+        options = {
+          enable = lib.mkEnableOption "Enable database server for the application.";
+
+          driver = lib.mkOption {
+            type = lib.types.enum [ "mysql" ];
+            default = "mysql";
+            description = "The database driver to use.";
+          };
+
+          name = lib.mkOption {
+            type = lib.types.str;
+            description = "The name of the database.";
+          };
+
+          user = lib.mkOption {
+            type = lib.types.str;
+            description = "The database user.";
+          };
+        };
+      };
+      default = { };
+      description = "Database configuration for the application.";
+    };
   };
 }

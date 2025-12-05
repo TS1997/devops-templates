@@ -28,7 +28,7 @@
       description = "The web root directory of the application.";
     };
 
-    php = lib.mkOption {
+    phpPool = lib.mkOption {
       type = util.submodule {
         imports = [ ../../services/phpfpm/options/phpfpm-pool-options.base.nix ];
       };

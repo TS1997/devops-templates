@@ -51,7 +51,7 @@ in
 
     services.ts1997.phpfpm = {
       enable = true;
-      pools = lib.mapAttrs (name: siteCfg: builtins.removeAttrs siteCfg.php [ "fullPackage" ]) sites;
+      pools = lib.mapAttrs (name: siteCfg: builtins.removeAttrs siteCfg.phpPool [ "fullPackage" ]) sites;
     };
   };
 }

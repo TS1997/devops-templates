@@ -6,6 +6,8 @@
 }:
 let
   cfg = config.services.ts1997.phpfpm;
+
+  errorLog = config.languages.php.fpm.settings.error_log;
 in
 {
   options.services.ts1997.phpfpm = lib.mkOption {
@@ -33,7 +35,11 @@ in
     };
 
     processes = {
-      php_error.exec = "tail -f ${config.languages.php.fpm.settings.error_log}";
+      php_error.exec = ''
+        mkdir -p $(dirname ${errorLog})
+        touch ${errorLog}
+        tail -f ${errorLog}
+      '';
     };
   };
 }

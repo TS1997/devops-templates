@@ -40,9 +40,9 @@ in
 
     services.ts1997.phpfpm = {
       enable = true;
-      basePackage = siteCfg.php.basePackage;
-      extensions = siteCfg.php.extensions;
-      pools.web = builtins.removeAttrs siteCfg.php [ "fullPackage" ];
+      basePackage = siteCfg.phpPool.basePackage;
+      extensions = siteCfg.phpPool.extensions;
+      pools.web = builtins.removeAttrs siteCfg.phpPool [ "fullPackage" ];
     };
   };
 }

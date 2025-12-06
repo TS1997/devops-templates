@@ -42,7 +42,10 @@
           enable = lib.mkEnableOption "Enable database server for the application.";
 
           driver = lib.mkOption {
-            type = lib.types.enum [ "mysql" ];
+            type = lib.types.enum [
+              "mysql"
+              "pgsql"
+            ];
             default = "mysql";
             description = "The database driver to use.";
           };

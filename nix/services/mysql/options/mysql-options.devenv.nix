@@ -7,8 +7,9 @@
 {
   options = {
     databases = lib.mkOption {
+      # Use lib.types.submodule here instead of util.submodule to avoid circular dependency
       type = lib.types.listOf (
-        util.submodule {
+        lib.types.submodule {
           options = {
             password = lib.mkOption {
               type = lib.types.str;

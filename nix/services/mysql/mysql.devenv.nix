@@ -64,20 +64,7 @@ in
         users=(${lib.concatStringsSep " " (map (db: db.user) cfg.databases)})
         passwords=(${lib.concatStringsSep " " (map (db: db.password) cfg.databases)})
 
-        if [ ${toString (lib.length (cfg.databases))} -gt 1 ]; then
-          PS3="Select a database to connect to: "
-          select db in "''${names[@]}"; do
-            [ -n "$db" ] || continue
-            index=$((REPLY-1))
-            break
-          done
-        else
-          index=0
-          db="''${names[0]}"
-        fi
-
-        user="''${users[$index]}"
-        password="''${passwords[$index]}"
+        source ${../../utils/select-database.sh}
 
         mysql -u "$user" -p"$password" "$db" "$@"
       '';

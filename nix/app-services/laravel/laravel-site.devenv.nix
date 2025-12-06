@@ -58,5 +58,16 @@ in
         host = siteCfg.domain;
       };
     };
+
+    services.ts1997.pgsql = lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "pgsql") {
+      enable = true;
+      databases = [
+        {
+          name = siteCfg.database.name;
+          user = siteCfg.database.user;
+          extensions = siteCfg.database.extensions;
+        }
+      ];
+    };
   };
 }

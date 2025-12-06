@@ -20,9 +20,21 @@
     };
 
     database = lib.mkOption {
-      type = util.submodule {
+      # Use lib.types.submodule here instead of util.submodule to avoid circular dependency
+      type = lib.types.submodule {
         options = {
           admin.enable = lib.mkEnableOption "Enable database admin user interface for the application.";
+
+          # Database extensions to be installed if using PostgreSQL
+          extensions = lib.mkOption {
+            type = with lib.types; nullOr (functionTo (listOf package));
+            default = null;
+            example = extensions: [
+              extensions.pg_cron
+              extensions.postgis
+              extensions.timescaledb
+            ];
+          };
         };
 
         config = {

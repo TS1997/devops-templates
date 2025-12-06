@@ -65,4 +65,8 @@
       description = "Database configuration for the application.";
     };
   };
+
+  config = {
+    database.enable = lib.mkDefault true;
+  };
 }

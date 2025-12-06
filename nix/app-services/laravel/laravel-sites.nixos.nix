@@ -7,6 +7,13 @@
 let
   sites = config.services.ts1997.laravelSites;
 
+  mysqlSites = lib.filterAttrs (
+    name: siteCfg: siteCfg.database.enable && siteCfg.database.driver == "mysql"
+  ) sites;
+  pgsqlSites = lib.filterAttrs (
+    name: siteCfg: siteCfg.database.enable && siteCfg.database.driver == "pgsql"
+  ) sites;
+
   mkLocations =
     name: siteCfg:
     import ./config/nginx-locations.nix {
@@ -52,6 +59,23 @@ in
     services.ts1997.phpfpm = {
       enable = true;
       pools = lib.mapAttrs (name: siteCfg: builtins.removeAttrs siteCfg.phpPool [ "fullPackage" ]) sites;
+    };
+
+    services.ts1997.mysql = lib.mkIf (mysqlSites != { }) {
+      enable = true;
+      databases = lib.mapAttrsToList (_: siteCfg: {
+        name = siteCfg.database.name;
+        user = siteCfg.database.user;
+      }) mysqlSites;
+    };
+
+    services.ts1997.pgsql = lib.mkIf (pgsqlSites != { }) {
+      enable = true;
+      databases = lib.mapAttrsToList (_: siteCfg: {
+        name = siteCfg.database.name;
+        user = siteCfg.database.user;
+        extensions = siteCfg.database.extensions;
+      }) pgsqlSites;
     };
   };
 }

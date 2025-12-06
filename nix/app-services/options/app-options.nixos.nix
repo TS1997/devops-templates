@@ -27,9 +27,27 @@
         };
       };
     };
+
+    database = lib.mkOption {
+      # Use lib.types.submodule here instead of util.submodule to avoid circular dependency
+      type = lib.types.submodule {
+        options = {
+          # Database extensions to be installed if using PostgreSQL
+          extensions = lib.mkOption {
+            type = with lib.types; coercedTo (listOf path) (path: _ignorePg: path) (functionTo (listOf path));
+            default = _: [ ];
+            example = lib.literalExpression "ps: with ps; [ postgis pg_repack ]";
+          };
+        };
+      };
+    };
   };
 
   config = {
     workingDir = lib.mkDefault "/var/lib/${name}";
+    database = {
+      name = lib.mkDefault name;
+      user = lib.mkDefault name;
+    };
   };
 }

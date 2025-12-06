@@ -25,9 +25,7 @@ in
         name = dbCfg.name;
       }) cfg.databases;
 
-      ensureDatabases = map (dbCfg: {
-        name = dbCfg.name;
-      }) cfg.databases;
+      ensureDatabases = map (dbCfg: dbCfg.name) cfg.databases;
 
       ensureUsers = map (dbCfg: {
         name = dbCfg.user;

@@ -47,6 +47,16 @@ let
       echo -e "  ${vhost.footer}"
     '') nginxCfg.virtualHosts
   );
+
+  dbManagementUrls = lib.concatStringsSep "\n" (
+    lib.optionals (phpMyAdminCfg.enable) [
+      ''echo -e "  ${vhost.header "phpMyAdmin"}"''
+      ''echo -e "  ${vhost.http "http://${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port}/"}"''
+      ''echo -e "  ${vhost.footer}"''
+    ]
+  );
+
+  showDbManagement = phpMyAdminCfg.enable;
 in
 {
   config.processes.app-urls.exec = ''
@@ -54,11 +64,9 @@ in
 
     ${lib.optionalString (nginxCfg.enable) (section "Application URLs" appUrls)}
 
-    ${lib.optionalString (phpMyAdminCfg.enable) (
-      section "phpMyAdmin" ''
-        echo -e "  ${vhost.header "Database Management"}"
-        echo -e "  ${vhost.http "http://${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port}/"}"
-        echo -e "  ${vhost.footer}"
+    ${lib.optionalString (showDbManagement) (
+      section "Database Management" ''
+        ${dbManagementUrls}
         echo -e ""
       ''
     )}

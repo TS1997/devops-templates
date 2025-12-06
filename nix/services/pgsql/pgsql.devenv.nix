@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   util,
   ...
 }:
@@ -47,7 +46,7 @@ in
           \c ${dbCfg.name}
           ${lib.optionalString (dbCfg.extensions != null) (
             lib.concatMapStringsSep "\n" (ext: "CREATE EXTENSION IF NOT EXISTS \"${extensionName ext}\";") (
-              dbCfg.extensions pkgs.postgresql.pkgs
+              dbCfg.extensions cfg.package.pkgs
             )
           )}
         '') cfg.databases}

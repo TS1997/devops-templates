@@ -1,5 +1,10 @@
 values:
-{ lib, pkgs, ... }:
+{
+  lib,
+  pkgs,
+  stdenv,
+  ...
+}:
 let
   util = {
     inherit values;

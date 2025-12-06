@@ -10,6 +10,7 @@
       devenvDotfile = config.env.DEVENV_DOTFILE;
       devenvProfile = config.env.DEVENV_PROFILE;
       devenvRuntime = config.env.DEVENV_RUNTIME;
+      mysqlSocket = config.env.MYSQL_UNIX_PORT;
     })
     ./nix/utils/app-urls.devenv.nix
     ./nix/services/devenv.nix

@@ -18,6 +18,18 @@
       default = true;
       description = "Whether to enable SSL for the application.";
     };
+
+    database = lib.mkOption {
+      type = util.submodule {
+        options = {
+          admin.enable = lib.mkEnableOption "Enable database admin user interface for the application.";
+        };
+
+        config = {
+          admin.enable = lib.mkDefault true;
+        };
+      };
+    };
   };
 
   config = {

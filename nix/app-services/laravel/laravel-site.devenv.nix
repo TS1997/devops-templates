@@ -53,6 +53,10 @@ in
           user = siteCfg.database.user;
         }
       ];
+      phpmyadmin = {
+        enable = siteCfg.database.admin.enable;
+        host = siteCfg.domain;
+      };
     };
   };
 }

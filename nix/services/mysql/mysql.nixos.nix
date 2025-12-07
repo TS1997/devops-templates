@@ -10,7 +10,10 @@ in
 {
   options.services.ts1997.mysql = lib.mkOption {
     type = util.submodule {
-      imports = [ ./options/mysql-options.base.nix ];
+      imports = [
+        ./options/mysql-options.base.nix
+        ./options/mysql-options.nixos.nix
+      ];
     };
     default = { };
     description = "MySQL service configuration.";

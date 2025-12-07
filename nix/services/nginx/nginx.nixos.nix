@@ -59,7 +59,11 @@ in
         (lib.mapAttrs (name: siteCfg: {
           enableACME = true;
           forceSSL = true;
-          serverName = if siteCfg.forceWWW then "www.${siteCfg.serverName}" else siteCfg.serverName;
+          serverName =
+            if (siteCfg.forceWWW && !(lib.hasPrefix "www." siteCfg.serverName)) then
+              "www.${siteCfg.serverName}"
+            else
+              siteCfg.serverName;
           serverAliases = siteCfg.serverAliases;
           root = siteCfg.root;
           extraConfig = siteCfg.extraConfig;

@@ -1,5 +1,6 @@
 {
   lib,
+  util,
   ...
 }:
 {
@@ -28,5 +29,9 @@
         }
       );
     };
+  };
+
+  config = {
+    socket = util.values.pgsqlSocket;
   };
 }

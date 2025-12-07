@@ -1,4 +1,9 @@
-{ lib, util, ... }:
+{
+  config,
+  lib,
+  util,
+  ...
+}:
 {
   options = {
     port = lib.mkOption {
@@ -23,6 +28,12 @@
       # Use lib.types.submodule here instead of util.submodule to avoid circular dependency
       type = lib.types.submodule {
         options = {
+          password = lib.mkOption {
+            type = lib.types.str;
+            default = "1234";
+            description = "The password for the database user.";
+          };
+
           admin.enable = lib.mkEnableOption "Enable database admin user interface for the application.";
 
           # Database extensions to be installed if using PostgreSQL
@@ -45,6 +56,22 @@
   };
 
   config = {
+    appUrl =
+      if (config.enableSsl) then
+        "https://${config.domain}:${toString config.sslPort}"
+      else
+        "http://${config.domain}:${toString config.port}";
+
+    extraAppUrls = map (
+      domain:
+      if (config.enableSsl) then
+        "https://${domain}:${toString config.sslPort}"
+      else
+        "http://${domain}:${toString config.port}"
+    ) config.extraDomains;
+
+    appEnv = lib.mkDefault "local";
+
     workingDir = lib.mkDefault util.values.devenvRoot;
     database.user = lib.mkDefault "admin";
   };

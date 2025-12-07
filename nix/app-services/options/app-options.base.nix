@@ -17,6 +17,18 @@
       description = "Additional domain names for the application.";
     };
 
+    appUrl = lib.mkOption {
+      type = lib.types.str;
+      description = "The application URL.";
+      readOnly = true;
+    };
+
+    extraAppUrls = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      description = "Additional application URLs.";
+      readOnly = true;
+    };
+
     workingDir = lib.mkOption {
       type = lib.types.str;
       description = "The working directory of the application.";
@@ -26,6 +38,40 @@
       type = lib.types.str;
       default = "${config.workingDir}/public";
       description = "The web root directory of the application.";
+    };
+
+    appName = lib.mkOption {
+      type = lib.types.str;
+      description = "The name of the application.";
+    };
+
+    appEnv = lib.mkOption {
+      type = lib.types.enum [
+        "production"
+        "staging"
+        "local"
+      ];
+      description = "The application environment.";
+    };
+
+    env = lib.mkOption {
+      type =
+        with lib.types;
+        attrsOf (
+          nullOr (oneOf [
+            str
+            bool
+            int
+          ])
+        );
+      default = { };
+      description = "Environment variables for the application.";
+    };
+
+    locale = lib.mkOption {
+      type = lib.types.str;
+      default = "en";
+      description = "The application locale.";
     };
 
     phpPool = lib.mkOption {

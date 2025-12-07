@@ -49,4 +49,8 @@
       description = "phpMyAdmin configuration.";
     };
   };
+
+  config = {
+    socket = util.values.mysqlSocket;
+  };
 }

@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   name,
   ...
@@ -44,6 +45,16 @@
   };
 
   config = {
+    appUrl =
+      if (config.forceWWW && !(lib.hasPrefix "www." config.domain)) then
+        "https://www.${config.domain}"
+      else
+        "https://${config.domain}";
+
+    extraAppUrls = map (domain: "https://${domain}") config.extraDomains;
+
+    appEnv = lib.mkDefault "production";
+
     workingDir = lib.mkDefault "/var/lib/${name}";
     database = {
       name = lib.mkDefault name;

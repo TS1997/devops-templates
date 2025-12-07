@@ -19,4 +19,8 @@
       );
     };
   };
+
+  config = {
+    socket = "/run/postgresql";
+  };
 }

@@ -11,6 +11,7 @@
       devenvProfile = config.env.DEVENV_PROFILE;
       devenvRuntime = config.env.DEVENV_RUNTIME;
       mysqlSocket = config.env.MYSQL_UNIX_PORT;
+      pgsqlSocket = config.services.postgres.settings.unix_socket_directories;
     })
     ./nix/utils/app-urls.devenv.nix
     ./nix/services/devenv.nix

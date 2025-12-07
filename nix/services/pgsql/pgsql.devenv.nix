@@ -34,6 +34,7 @@ in
       enable = cfg.enable;
       package = cfg.package;
       extensions = extensions: allExtensions;
+      settings.port = cfg.port;
 
       initialDatabases = map (dbCfg: {
         name = dbCfg.name;

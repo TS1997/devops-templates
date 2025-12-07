@@ -7,6 +7,10 @@
 let
   siteCfg = config.services.ts1997.laravelSite;
 
+  defaultEnv = import ./config/default-env.nix {
+    inherit config lib siteCfg;
+  };
+
   locations = import ./config/nginx-locations.nix {
     inherit config siteCfg;
     phpSocket = config.languages.php.fpm.pools.web.socket;
@@ -25,6 +29,8 @@ in
   };
 
   config = lib.mkIf (siteCfg != { }) {
+    env = defaultEnv // siteCfg.env;
+
     services.ts1997.nginx = {
       enable = true;
       virtualHosts.web = {
@@ -51,6 +57,7 @@ in
         {
           name = siteCfg.database.name;
           user = siteCfg.database.user;
+          password = siteCfg.database.password;
         }
       ];
       phpmyadmin = {

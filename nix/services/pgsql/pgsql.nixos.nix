@@ -43,6 +43,8 @@ in
         ensureDBOwnership = true;
       }) cfg.databases;
 
+      settings.port = cfg.port;
+
       authentication = lib.mkAfter ''
         # type database user auth-method
         ${lib.concatMapStringsSep "\n" (dbCfg: ''

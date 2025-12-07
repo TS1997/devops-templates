@@ -77,6 +77,8 @@
     phpPool = lib.mkOption {
       type = util.submodule {
         imports = [ ../../services/phpfpm/options/phpfpm-pool-options.base.nix ];
+
+        config.extensions = if (config.redis.enable) then extensions: [ extensions.redis ] else [ ];
       };
       default = { };
       description = "PHP-FPM pool configuration for the application.";

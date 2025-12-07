@@ -22,6 +22,7 @@ in
       imports = [
         ../options/app-options.base.nix
         ../options/app-options.devenv.nix
+        ./options/laravel-options.base.nix
       ];
     };
     default = { };
@@ -99,6 +100,10 @@ in
     processes = lib.mkMerge [
       (lib.mkIf (siteCfg.nodejs.enable) {
         nodejs.exec = siteCfg.nodejs.script;
+      })
+
+      (lib.mkIf (siteCfg.scheduler.enable) {
+        scheduler.exec = "php artisan schedule:work";
       })
     ];
 

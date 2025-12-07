@@ -31,6 +31,7 @@ in
         home = siteCfg.workingDir;
       }) sites;
     })
+    ./submodules/laravel-scheduler.nixos.nix
   ];
 
   options.services.ts1997.laravelSites = lib.mkOption {
@@ -39,6 +40,7 @@ in
         imports = [
           ../options/app-options.base.nix
           ../options/app-options.nixos.nix
+          ./options/laravel-options.base.nix
         ];
       }
     );

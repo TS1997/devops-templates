@@ -31,6 +31,15 @@ in
   config = lib.mkIf (siteCfg != { }) {
     env = defaultEnv // siteCfg.env;
 
+    languages.javascript = {
+      enable = siteCfg.nodejs.enable;
+      package = siteCfg.nodejs.package;
+      npm = {
+        enable = siteCfg.nodejs.enable;
+        install.enable = siteCfg.nodejs.install.enable;
+      };
+    };
+
     services.ts1997.nginx = {
       enable = true;
       virtualHosts.web = {
@@ -85,6 +94,27 @@ in
       enable = siteCfg.mailpit.enable;
       smtp.host = siteCfg.domain;
       ui.host = siteCfg.domain;
+    };
+
+    processes = lib.mkMerge [
+      (lib.mkIf (siteCfg.nodejs.enable) {
+        nodejs.exec = siteCfg.nodejs.script;
+      })
+    ];
+
+    scripts = {
+      run-tests.exec = ''
+        # Load environment variables from phpunit.xml
+        while IFS= read -r line; do
+          name=$(echo "$line" | sed -n 's/.*name="\([^"]*\)".*/\1/p')
+          value=$(echo "$line" | sed -n 's/.*value="\([^"]*\)".*/\1/p')
+          
+          export "$name"="$value"
+        done < <(grep '<env ' phpunit.xml)
+
+        # Run the tests
+        php artisan test "$@"
+      '';
     };
   };
 }

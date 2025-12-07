@@ -53,6 +53,8 @@
         };
       };
     };
+
+    mailpit.enable = lib.mkEnableOption "Enable Mailpit service for email testing.";
   };
 
   config = {
@@ -74,5 +76,6 @@
 
     workingDir = lib.mkDefault util.values.devenvRoot;
     database.user = lib.mkDefault "admin";
+    mailpit.enable = lib.mkDefault true;
   };
 }

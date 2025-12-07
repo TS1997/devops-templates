@@ -80,5 +80,11 @@ in
     services.ts1997.redis = lib.mkIf (siteCfg.redis.enable) {
       enable = siteCfg.redis.enable;
     };
+
+    services.ts1997.mailpit = lib.mkIf (siteCfg.mailpit.enable) {
+      enable = siteCfg.mailpit.enable;
+      smtp.host = siteCfg.domain;
+      ui.host = siteCfg.domain;
+    };
   };
 }

@@ -5,6 +5,7 @@
 }:
 let
   redisCfg = config.services.ts1997.redis;
+  mailpitCfg = config.services.ts1997.mailpit or null;
 
   dbCfg =
     if (siteCfg.database.driver == "pgsql") then
@@ -65,10 +66,10 @@ in
   REDIS_PASSWORD = null;
   REDIS_PORT = if (redisCfg.enable) then redisCfg.port else null;
 
-  MAIL_MAILER = "smtp";
+  MAIL_MAILER = if (mailpitCfg != null && mailpitCfg.enable) then "smtp" else "log";
   MAIL_SCHEME = null;
-  MAIL_HOST = "127.0.0.1";
-  MAIL_PORT = 1025;
+  MAIL_HOST = if (mailpitCfg != null && mailpitCfg.enable) then mailpitCfg.smtp.host else "127.0.0.1";
+  MAIL_PORT = if (mailpitCfg != null && mailpitCfg.enable) then mailpitCfg.smtp.port else 2525;
   MAIL_USERNAME = null;
   MAIL_PASSWORD = null;
   MAIL_FROM_ADDRESS = "hello@example.com";

@@ -2,6 +2,7 @@
 let
   nginxCfg = config.services.ts1997.nginx;
   phpMyAdminCfg = config.services.ts1997.mysql.phpmyadmin;
+  mailpitCfg = config.services.ts1997.mailpit;
 
   # Helper functions
   repeat = str: n: lib.concatStrings (lib.replicate n str);
@@ -64,11 +65,17 @@ in
 
     ${lib.optionalString (nginxCfg.enable) (section "Application URLs" appUrls)}
 
-    ${lib.optionalString (showDbManagement) (
-      section "Database Management" ''
-        ${dbManagementUrls}
+    ${lib.optionalString (showDbManagement) (section "Database Management" dbManagementUrls)}
+
+    ${lib.optionalString (mailpitCfg.enable) (
+      section "Mailpit URLs" ''
+        echo -e "  ${vhost.header "Mailpit UI"}"
+        echo -e "  ${vhost.http "http://${mailpitCfg.ui.host}:${toString mailpitCfg.ui.port}/"}"
+        echo -e "  ${vhost.footer}"
         echo -e ""
       ''
     )}
+
+    echo ""
   '';
 }

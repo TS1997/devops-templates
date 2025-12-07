@@ -29,7 +29,7 @@
     };
 
     socket = lib.mkOption {
-      type = lib.types.str;
+      type = lib.types.path;
       description = "The socket path for MySQL.";
       readOnly = true;
     };

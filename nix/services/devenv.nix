@@ -6,5 +6,6 @@
     ./pgsql/pgsql.devenv.nix
     ./redis/redis.devenv.nix
     ./mailpit/mailpit.devenv.nix
+    ./gunicorn/gunicorn.devenv.nix
   ];
 }

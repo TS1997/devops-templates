@@ -13,7 +13,7 @@
     };
 
     socket = lib.mkOption {
-      type = lib.types.str;
+      type = lib.types.path;
       description = "Unix socket for the Redis server.";
       readOnly = true;
     };

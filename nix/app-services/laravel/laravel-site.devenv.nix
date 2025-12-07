@@ -76,5 +76,9 @@ in
         }
       ];
     };
+
+    services.ts1997.redis = lib.mkIf (siteCfg.redis.enable) {
+      enable = siteCfg.redis.enable;
+    };
   };
 }

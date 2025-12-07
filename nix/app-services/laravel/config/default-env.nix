@@ -4,6 +4,8 @@
   siteCfg,
 }:
 let
+  redisCfg = config.services.ts1997.redis;
+
   dbCfg =
     if (siteCfg.database.driver == "pgsql") then
       config.services.ts1997.pgsql
@@ -59,9 +61,9 @@ in
   MEMCACHED_HOST = "127.0.0.1";
 
   REDIS_CLIENT = "phpredis";
-  # REDIS_HOST = redisSocket;
+  REDIS_HOST = if redisCfg.enable then redisCfg.socket else null;
   REDIS_PASSWORD = null;
-  REDIS_PORT = 0;
+  REDIS_PORT = if (redisCfg.enable) then redisCfg.port else null;
 
   MAIL_MAILER = "smtp";
   MAIL_SCHEME = null;

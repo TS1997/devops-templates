@@ -4,5 +4,6 @@
     ./phpfpm/phpfpm.nixos.nix
     ./mysql/mysql.nixos.nix
     ./pgsql/pgsql.nixos.nix
+    ./redis/redis.nixos.nix
   ];
 }

@@ -10,9 +10,12 @@ let
   mysqlSites = lib.filterAttrs (
     name: siteCfg: siteCfg.database.enable && siteCfg.database.driver == "mysql"
   ) sites;
+
   pgsqlSites = lib.filterAttrs (
     name: siteCfg: siteCfg.database.enable && siteCfg.database.driver == "pgsql"
   ) sites;
+
+  redisSites = lib.filterAttrs (name: siteCfg: siteCfg.redis.enable) sites;
 
   mkLocations =
     name: siteCfg:
@@ -76,6 +79,14 @@ in
         user = siteCfg.database.user;
         extensions = siteCfg.database.extensions;
       }) pgsqlSites;
+    };
+
+    services.ts1997.redis = lib.mkIf (redisSites != { }) {
+      enable = true;
+      servers = lib.mapAttrs (name: siteCfg: {
+        enable = siteCfg.redis.enable;
+        user = name;
+      }) redisSites;
     };
   };
 }

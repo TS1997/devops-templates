@@ -110,9 +110,12 @@
       default = { };
       description = "Database configuration for the application.";
     };
+
+    redis.enable = lib.mkEnableOption "Enable Redis server for the application.";
   };
 
   config = {
     database.enable = lib.mkDefault true;
+    redis.enable = lib.mkDefault true;
   };
 }

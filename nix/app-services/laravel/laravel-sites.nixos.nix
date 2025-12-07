@@ -32,6 +32,7 @@ in
       }) sites;
     })
     ./submodules/laravel-scheduler.nixos.nix
+    ./submodules/laravel-queue-worker.nixos.nix
   ];
 
   options.services.ts1997.laravelSites = lib.mkOption {

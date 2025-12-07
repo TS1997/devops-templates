@@ -105,6 +105,18 @@ in
       (lib.mkIf (siteCfg.scheduler.enable) {
         scheduler.exec = "php artisan schedule:work";
       })
+
+      (lib.mkIf (siteCfg.queue.enable) {
+        queue.exec = ''
+          sleep 2; # Wait for the database to be ready
+          php artisan queue:work ${siteCfg.queue.connection} \
+            --timeout=${toString siteCfg.queue.timeout} \
+            --sleep=${toString siteCfg.queue.sleep} \
+            --tries=${toString siteCfg.queue.tries} \
+            --max-jobs=${toString siteCfg.queue.maxJobs} \
+            --max-time=${toString siteCfg.queue.maxTime}
+        '';
+      })
     ];
 
     scripts = {

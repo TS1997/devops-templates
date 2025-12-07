@@ -54,7 +54,7 @@ in
 
   BROADCAST_CONNECTION = "log";
   FILESYSTEM_DISK = "local";
-  # QUEUE_CONNECTION = siteCfg.queue.connection;
+  QUEUE_CONNECTION = siteCfg.queue.connection;
 
   CACHE_STORE = "database";
   CACHE_PREFIX = "";

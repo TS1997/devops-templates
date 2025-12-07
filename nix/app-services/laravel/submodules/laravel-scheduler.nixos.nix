@@ -1,9 +1,10 @@
 { config, lib, ... }:
 let
   sites = config.services.ts1997.laravelSites;
+  schedulerSites = lib.filterAttrs (name: siteCfg: siteCfg.scheduler.enable) sites;
 in
 {
-  config = lib.mkIf (sites != { }) {
+  config = lib.mkIf (schedulerSites != { }) {
     systemd.services = lib.mapAttrs' (
       name: siteCfg:
       lib.nameValuePair "laravel-scheduler-${name}" {
@@ -22,7 +23,7 @@ in
           ExecStart = "${siteCfg.phpPool.fullPackage}/bin/php artisan schedule:run";
         };
       }
-    ) sites;
+    ) schedulerSites;
 
     systemd.timers = lib.mapAttrs' (
       name: siteCfg:
@@ -36,6 +37,6 @@ in
           Unit = "laravel-scheduler-${name}.service";
         };
       }
-    ) sites;
+    ) schedulerSites;
   };
 }

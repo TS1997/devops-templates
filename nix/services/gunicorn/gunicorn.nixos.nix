@@ -43,6 +43,7 @@ in
 
         serviceConfig = {
           User = serverCfg.user;
+          Group = serverCfg.user;
           WorkingDirectory = serverCfg.workingDir;
           RuntimeDirectory = "gunicorn";
           StateDirectory = serverName;

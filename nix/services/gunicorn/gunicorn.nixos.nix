@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   util,
   ...
 }:
@@ -47,7 +48,7 @@ in
           StateDirectory = serverName;
           Environment = "PYTHONPATH=${serverCfg.workingDir}/.venv:$PYTHONPATH";
 
-          ExecStartPre = ''
+          ExecStartPre = pkgs.writeShellScript "install-${serverName}-deps" ''
             cd ${serverCfg.workingDir}
             if [ -f requirements.txt ]; then
               ${serverCfg.fullPackage}/bin/pip install -r requirements.txt \

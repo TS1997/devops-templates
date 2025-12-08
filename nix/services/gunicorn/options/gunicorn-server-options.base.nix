@@ -93,4 +93,8 @@ in
       description = "The number of seconds to wait for workers to gracefully shut down.";
     };
   };
+
+  config = {
+    enable = lib.mkDefault true;
+  };
 }

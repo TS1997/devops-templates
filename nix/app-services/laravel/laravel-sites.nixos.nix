@@ -91,5 +91,14 @@ in
         user = name;
       }) redisSites;
     };
+
+    systemd.tmpfiles.rules = lib.flatten (
+      lib.mapAttrsToList (name: siteCfg: [
+        "d ${siteCfg.workingDir} 0750 ${siteCfg.user} ${siteCfg.user} -"
+        "d ${siteCfg.workingDir}/storage 0770 ${siteCfg.user} ${siteCfg.user} -"
+        "d ${siteCfg.workingDir}/bootstrap/cache 0770 ${siteCfg.user} ${siteCfg.user} -"
+        "f ${siteCfg.workingDir}/.env 0600 ${siteCfg.user} ${siteCfg.user} -"
+      ]) sites
+    );
   };
 }

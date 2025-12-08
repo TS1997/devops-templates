@@ -36,6 +36,7 @@ in
   LOG_DEPRECATIONS_CHANNEL = null;
   LOG_LEVEL = "debug";
 
+  # Laravel requires PostgreSQL socket as db_host rather than db_socket compared to MySQL
   DB_CONNECTION = "${siteCfg.database.driver}";
   DB_HOST = if siteCfg.database.driver == "pgsql" then "${dbCfg.socket}" else "${dbCfg.host}";
   DB_PORT = dbCfg.port;

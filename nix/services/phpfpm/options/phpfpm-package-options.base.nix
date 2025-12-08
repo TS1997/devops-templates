@@ -4,11 +4,6 @@
   pkgs,
   ...
 }:
-let
-  phpVersionParts = lib.splitString "." (config.basePackage.version);
-  phpMajorMinor = lib.concatStringsSep "" (lib.take 2 phpVersionParts);
-  extensionsPkgsSet = pkgs."php${phpMajorMinor}Extensions";
-in
 {
   options = {
     basePackage = lib.mkOption {
@@ -27,7 +22,7 @@ in
     fullPackage = lib.mkOption {
       type = lib.types.package;
       default = config.basePackage.buildEnv {
-        extensions = { all, enabled }: enabled ++ (config.extensions extensionsPkgsSet);
+        extensions = { all, enabled }: enabled ++ (config.extensions all);
       };
       readOnly = true;
       description = "The PHP-FPM package combined with the selected extensions.";

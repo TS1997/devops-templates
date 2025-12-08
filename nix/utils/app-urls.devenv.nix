@@ -60,22 +60,33 @@ let
   showDbManagement = phpMyAdminCfg.enable;
 in
 {
-  config.processes.app-urls.exec = ''
-    sleep 2
+  config.processes.app-urls = {
+    exec = ''
+      ${lib.optionalString (nginxCfg.enable) (section "Application URLs" appUrls)}
 
-    ${lib.optionalString (nginxCfg.enable) (section "Application URLs" appUrls)}
+      ${lib.optionalString (showDbManagement) (section "Database Management" dbManagementUrls)}
 
-    ${lib.optionalString (showDbManagement) (section "Database Management" dbManagementUrls)}
+      ${lib.optionalString (mailpitCfg.enable) (
+        section "Mailpit URLs" ''
+          echo -e "  ${vhost.header "Mailpit UI"}"
+          echo -e "  ${vhost.http "http://${mailpitCfg.ui.host}:${toString mailpitCfg.ui.port}/"}"
+          echo -e "  ${vhost.footer}"
+          echo -e ""
+        ''
+      )}
 
-    ${lib.optionalString (mailpitCfg.enable) (
-      section "Mailpit URLs" ''
-        echo -e "  ${vhost.header "Mailpit UI"}"
-        echo -e "  ${vhost.http "http://${mailpitCfg.ui.host}:${toString mailpitCfg.ui.port}/"}"
-        echo -e "  ${vhost.footer}"
-        echo -e ""
-      ''
-    )}
-
-    echo ""
-  '';
+      echo ""
+    '';
+    process-compose.depends_on = lib.mkMerge [
+      (lib.mkIf nginxCfg.enable {
+        nginx.condition = "process_healthy";
+      })
+      (lib.mkIf phpMyAdminCfg.enable {
+        phpmyadmin.condition = "process_healthy";
+      })
+      (lib.mkIf mailpitCfg.enable {
+        mailpit.condition = "process_healthy";
+      })
+    ];
+  };
 }

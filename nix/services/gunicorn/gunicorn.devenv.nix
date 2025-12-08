@@ -41,19 +41,31 @@ in
     };
 
     processes = {
-      gunicorn.exec = ''
-        poetry run gunicorn \
-          --chdir ${cfg.server.workingDir} \
-          --pythonpath ${cfg.server.workingDir}/${cfg.server.entrypointDir} \
-          --workers ${toString cfg.server.workers} \
-          --bind unix:${cfg.server.socket} \
-          --timeout ${toString cfg.server.timeout} \
-          --graceful-timeout ${toString cfg.server.gracefulTimeout} \
-          --access-logfile - \
-          --error-logfile - \
-          --reload \
-          ${cfg.server.entrypoint}
-      '';
+      gunicorn = {
+        exec = ''
+          poetry run gunicorn \
+            --chdir ${cfg.server.workingDir} \
+            --pythonpath ${cfg.server.workingDir}/${cfg.server.entrypointDir} \
+            --workers ${toString cfg.server.workers} \
+            --bind unix:${cfg.server.socket} \
+            --timeout ${toString cfg.server.timeout} \
+            --graceful-timeout ${toString cfg.server.gracefulTimeout} \
+            --access-logfile - \
+            --error-logfile - \
+            --reload \
+            ${cfg.server.entrypoint}
+        '';
+        process-compose = {
+          readiness_probe = {
+            exec.command = "${pkgs.curl}/bin/curl -sf --unix-socket ${cfg.server.socket} http://localhost/healthcheck";
+            initial_delay_seconds = 1;
+            period_seconds = 1;
+            timeout_seconds = 5;
+            success_threshold = 1;
+            failure_threshold = 30;
+          };
+        };
+      };
     };
 
     git-hooks.hooks = {

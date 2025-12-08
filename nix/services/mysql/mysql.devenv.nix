@@ -12,6 +12,8 @@ let
     import ./submodules/phpmyadmin.nix {
       inherit pkgs util;
       dbCfg = lib.head cfg.databases;
+      host = cfg.phpmyadmin.host;
+      port = cfg.phpmyadmin.port;
     }
   );
 in
@@ -52,9 +54,36 @@ in
       }) cfg.databases;
     };
 
-    processes.phpmyadmin.exec = lib.mkIf (cfg.phpmyadmin.enable) ''
-      php -S ${cfg.phpmyadmin.host}:${toString cfg.phpmyadmin.port} -t ${phpmyadmin}
-    '';
+    processes = {
+      mysql = {
+        process-compose.readiness_probe = {
+          exec.command = "${cfg.package}/bin/mysqladmin ping --socket=${cfg.socket}";
+          initial_delay_seconds = 1;
+          period_seconds = 1;
+          timeout_seconds = 5;
+          success_threshold = 1;
+          failure_threshold = 30;
+        };
+      };
+
+      phpmyadmin = lib.mkIf (cfg.phpmyadmin.enable) {
+        exec = ''
+          php -S ${cfg.phpmyadmin.host}:${toString cfg.phpmyadmin.port} -t ${phpmyadmin}
+        '';
+        process-compose.readiness_probe = {
+          http_get = {
+            host = cfg.phpmyadmin.host;
+            port = cfg.phpmyadmin.port;
+            path = "/";
+          };
+          initial_delay_seconds = 2;
+          period_seconds = 1;
+          timeout_seconds = 5;
+          success_threshold = 1;
+          failure_threshold = 30;
+        };
+      };
+    };
 
     scripts = {
       phpmyadmin.exec = "open http://${cfg.phpmyadmin.host}:${toString cfg.phpmyadmin.port}/";

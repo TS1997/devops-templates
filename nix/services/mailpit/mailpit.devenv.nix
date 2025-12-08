@@ -27,6 +27,23 @@ in
       uiListenAddress = "${cfg.ui.host}:${toString cfg.ui.port}";
     };
 
+    processes.mailpit = {
+      process-compose = {
+        readiness_probe = {
+          http_get = {
+            host = cfg.ui.host;
+            port = cfg.ui.port;
+            path = "/";
+          };
+          initial_delay_seconds = 1;
+          period_seconds = 1;
+          timeout_seconds = 5;
+          success_threshold = 1;
+          failure_threshold = 30;
+        };
+      };
+    };
+
     scripts.mail.exec = "open http://${cfg.ui.host}:${toString cfg.ui.port}";
   };
 }

@@ -107,15 +107,27 @@ in
       })
 
       (lib.mkIf (siteCfg.queue.enable) {
-        queue.exec = ''
-          sleep 2; # Wait for the database to be ready
-          php artisan queue:work ${siteCfg.queue.connection} \
-            --timeout=${toString siteCfg.queue.timeout} \
-            --sleep=${toString siteCfg.queue.sleep} \
-            --tries=${toString siteCfg.queue.tries} \
-            --max-jobs=${toString siteCfg.queue.maxJobs} \
-            --max-time=${toString siteCfg.queue.maxTime}
-        '';
+        queue = {
+          exec = ''
+            php artisan queue:work ${siteCfg.queue.connection} \
+              --timeout=${toString siteCfg.queue.timeout} \
+              --sleep=${toString siteCfg.queue.sleep} \
+              --tries=${toString siteCfg.queue.tries} \
+              --max-jobs=${toString siteCfg.queue.maxJobs} \
+              --max-time=${toString siteCfg.queue.maxTime}
+          '';
+          process-compose.depends_on = lib.mkMerge [
+            (lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "mysql") {
+              mysql.condition = "process_healthy";
+            })
+            (lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "pgsql") {
+              postgres.condition = "process_healthy";
+            })
+            (lib.mkIf siteCfg.redis.enable {
+              redis.condition = "process_healthy";
+            })
+          ];
+        };
       })
     ];
 

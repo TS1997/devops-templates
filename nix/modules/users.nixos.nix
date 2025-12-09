@@ -9,6 +9,7 @@
             isSystemUser = true;
             createHome = true;
             home = user.home;
+            homeMode = "0750";
             group = name;
           };
         }) users

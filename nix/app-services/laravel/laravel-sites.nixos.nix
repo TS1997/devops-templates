@@ -68,10 +68,8 @@ in
         lib.mkIf (siteCfg.generateEnv) {
           "generate-env-${name}" = (
             import ../../utils/generate-env.nixos.nix {
-              inherit lib pkgs;
-              env = (mkDefaultEnv name siteCfg) // siteCfg.env;
-              envSecretsFile = siteCfg.envSecretsFile;
-              workingDir = siteCfg.workingDir;
+              inherit lib pkgs siteCfg;
+              defaultEnv = (mkDefaultEnv name siteCfg);
             }
           );
         }

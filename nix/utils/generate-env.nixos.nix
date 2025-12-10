@@ -1,27 +1,32 @@
 {
-  env,
-  envSecretsFile ? null,
   lib,
   pkgs,
-  workingDir,
+  defaultEnv,
+  siteCfg,
   ...
 }:
+let
+  mkValue =
+    value:
+    if (lib.isString value && lib.stringLength value > 0) then "\"${value}\"" else toString value;
+in
 lib.stringAfter [ "agenix" ] ''
   # Start with regular env vars
-  cat > ${workingDir}/.env << 'EOF'
+  cat > ${siteCfg.workingDir}/.env << 'EOF'
   ${lib.concatStringsSep "\n" (
-    lib.mapAttrsToList (envName: value: "${envName}=${toString value}") env
+    lib.mapAttrsToList (envName: value: "${envName}=${mkValue value}") (defaultEnv // siteCfg.env)
   )}
   EOF
 
   # Merge secrets from agenix file if it exists
-  ${lib.optionalString (envSecretsFile != null) ''
-    if [ -f ${envSecretsFile} ]; then
-      cat ${envSecretsFile} ${workingDir}/.env | \
-        ${pkgs.gawk}/bin/awk -F= '!seen[$1]++ {print}' > ${workingDir}/.env.tmp
-      mv ${workingDir}/.env.tmp ${workingDir}/.env
+  ${lib.optionalString (siteCfg.envSecretsFile != null) ''
+    if [ -f ${siteCfg.envSecretsFile} ]; then
+      cat ${siteCfg.envSecretsFile} ${siteCfg.workingDir}/.env | \
+        ${pkgs.gawk}/bin/awk -F= '!seen[$1]++ {print}' > ${siteCfg.workingDir}/.env.tmp
+      mv ${siteCfg.workingDir}/.env.tmp ${siteCfg.workingDir}/.env
     fi
   ''}
 
-  chmod 600 ${workingDir}/.env
+  chown ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}/.env
+  chmod 600 ${siteCfg.workingDir}/.env
 ''

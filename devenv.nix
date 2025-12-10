@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 {
@@ -21,6 +22,8 @@
   ];
 
   config = {
+    packages = with pkgs; [ wl-clipboard ];
+
     processes = {
       env-config.exec = "devenv info";
     };

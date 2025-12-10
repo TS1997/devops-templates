@@ -1,10 +1,11 @@
 {
   config,
   lib,
+  name,
   siteCfg,
 }:
 let
-  redisCfg = config.services.ts1997.redis;
+  redisCfg = config.services.ts1997.redis.servers.${name} or null;
   mailpitCfg = config.services.ts1997.mailpit or null;
 
   dbCfg =
@@ -63,9 +64,9 @@ in
   MEMCACHED_HOST = "127.0.0.1";
 
   REDIS_CLIENT = "phpredis";
-  REDIS_HOST = if redisCfg.enable then redisCfg.socket else null;
+  REDIS_HOST = if (redisCfg != null && redisCfg.enable) then redisCfg.socket else null;
   REDIS_PASSWORD = null;
-  REDIS_PORT = if (redisCfg.enable) then redisCfg.port else null;
+  REDIS_PORT = if (redisCfg != null && redisCfg.enable) then redisCfg.port else null;
 
   MAIL_MAILER = if (mailpitCfg != null && mailpitCfg.enable) then "smtp" else "log";
   MAIL_SCHEME = null;

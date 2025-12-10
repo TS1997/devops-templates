@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   util,
   ...
 }:
@@ -16,6 +17,17 @@ let
   ) sites;
 
   redisSites = lib.filterAttrs (name: siteCfg: siteCfg.redis.enable) sites;
+
+  mkDefaultEnv =
+    name: siteCfg:
+    import ./config/default-env.nix {
+      inherit
+        config
+        lib
+        name
+        siteCfg
+        ;
+    };
 
   mkLocations =
     name: siteCfg:
@@ -50,6 +62,22 @@ in
   };
 
   config = lib.mkIf (sites != { }) {
+    system.activationScripts = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf (siteCfg.generateEnv) {
+          "generate-env-${name}" = (
+            import ../../utils/generate-env.nixos.nix {
+              inherit lib pkgs;
+              env = (mkDefaultEnv name siteCfg) // siteCfg.env;
+              envSecretsFile = siteCfg.envSecretsFile;
+              workingDir = siteCfg.workingDir;
+            }
+          );
+        }
+      ) sites
+    );
+
     services.ts1997.nginx = {
       enable = true;
       virtualHosts = lib.mapAttrs (name: siteCfg: {

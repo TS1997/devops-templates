@@ -15,19 +15,15 @@ in
       ];
 
       options = {
-        enable = lib.mkEnableOption "Enable Redis server configuration.";
-
         servers = lib.mkOption {
+          # Use lib.types.submodule here instead of util.submodule to avoid circular dependency
           type = lib.types.attrsOf (
-            util.submodule {
+            lib.types.submodule {
               imports = [
-                ./options/redis-server-options.base.nix
                 ./options/redis-server-options.nixos.nix
               ];
             }
           );
-          default = { };
-          description = "List of Redis servers to enable.";
         };
       };
     };

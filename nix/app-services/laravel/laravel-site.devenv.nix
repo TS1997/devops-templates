@@ -5,15 +5,21 @@
   ...
 }:
 let
+  name = "web";
   siteCfg = config.services.ts1997.laravelSite;
 
   defaultEnv = import ./config/default-env.nix {
-    inherit config lib siteCfg;
+    inherit
+      config
+      lib
+      name
+      siteCfg
+      ;
   };
 
   locations = import ./config/nginx-locations.nix {
     inherit config siteCfg;
-    phpSocket = config.languages.php.fpm.pools.web.socket;
+    phpSocket = config.languages.php.fpm.pools.${name}.socket;
   };
 in
 {
@@ -43,7 +49,7 @@ in
 
     services.ts1997.nginx = {
       enable = true;
-      virtualHosts.web = {
+      virtualHosts.${name} = {
         serverName = siteCfg.domain;
         serverAliases = siteCfg.extraDomains;
         root = siteCfg.webRoot;
@@ -58,7 +64,7 @@ in
       enable = true;
       basePackage = siteCfg.phpPool.basePackage;
       extensions = siteCfg.phpPool.extensions;
-      pools.web = builtins.removeAttrs siteCfg.phpPool [ "fullPackage" ];
+      pools.${name} = builtins.removeAttrs siteCfg.phpPool [ "fullPackage" ];
     };
 
     services.ts1997.mysql = lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "mysql") {
@@ -89,6 +95,9 @@ in
 
     services.ts1997.redis = lib.mkIf (siteCfg.redis.enable) {
       enable = siteCfg.redis.enable;
+      servers.${name} = {
+        enable = siteCfg.redis.enable;
+      };
     };
 
     services.ts1997.mailpit = lib.mkIf (siteCfg.mailpit.enable) {

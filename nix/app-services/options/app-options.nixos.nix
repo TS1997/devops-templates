@@ -6,6 +6,14 @@
 }:
 {
   options = {
+    envSecretsFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = null;
+      description = "Path to a file containing environment variable secrets to be merged into the generated .env file.";
+    };
+
+    generateEnv = lib.mkEnableOption "Whether to generate the .env file for this Laravel site.";
+
     user = lib.mkOption {
       type = lib.types.str;
       default = name;
@@ -54,7 +62,7 @@
     extraAppUrls = map (domain: "https://${domain}") config.extraDomains;
 
     appEnv = lib.mkDefault "production";
-
+    generateEnv = lib.mkDefault true;
     workingDir = lib.mkDefault "/var/lib/${name}";
     database = {
       name = lib.mkDefault name;

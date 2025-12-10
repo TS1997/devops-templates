@@ -12,9 +12,20 @@ in
     type = util.submodule {
       imports = [
         ./options/redis-options.base.nix
-        ./options/redis-server-options.base.nix
-        ./options/redis-server-options.devenv.nix
       ];
+
+      options = {
+        servers = lib.mkOption {
+          # Use lib.types.submodule here instead of util.submodule to avoid circular dependency
+          type = lib.types.attrsOf (
+            lib.types.submodule {
+              imports = [
+                ./options/redis-server-options.devenv.nix
+              ];
+            }
+          );
+        };
+      };
     };
     default = { };
     description = "Redis server configuration.";
@@ -24,7 +35,7 @@ in
     services.redis = {
       enable = cfg.enable;
       package = cfg.package;
-      port = cfg.port;
+      port = cfg.servers.web.port;
     };
   };
 }

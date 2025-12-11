@@ -69,7 +69,7 @@ jobs:
           switches: >-
             -avzr
             --delete
-            --exclude-from=../config/laravel-exclude.txt
+            --exclude-from=.github/config/laravel-excludes.txt
           path: ./
           remote_path: ${{ inputs.working_dir }}
           remote_host: ${{ secrets.HOST }}

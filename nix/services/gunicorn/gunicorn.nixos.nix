@@ -32,19 +32,15 @@ in
   };
 
   config = lib.mkIf (cfg.enable) {
-    security.sudo.extraRules = lib.mapAttrsToList (serverName: serverCfg: {
-      users = [ serverCfg.user ];
-      commands = [
-        {
-          command = "${pkgs.systemd}/bin/systemctl restart gunicorn-${serverName}";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "${pkgs.systemd}/bin/systemctl status gunicorn-${serverName}";
-          options = [ "NOPASSWD" ];
-        }
-      ];
-    }) enabledServers;
+    security.sudo.wheelNeedsPassword = false;
+
+    users = {
+      users = lib.mkMerge (
+        lib.mapAttrsToList (name: siteCfg: {
+          ${siteCfg.user}.extraGroups = [ "wheel" ];
+        }) enabledServers
+      );
+    };
 
     systemd.services = lib.mapAttrs' (
       serverName: serverCfg:

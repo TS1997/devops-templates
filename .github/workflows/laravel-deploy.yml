@@ -64,7 +64,21 @@ jobs:
           switches: >-
             -avzr
             --delete
-            --exclude-from=${{ github.workspace }}/.github/config/laravel-excludes.txt
+            --exclude='.git*'
+            --exclude='node_modules'
+            --exclude='tests'
+            --exclude='bootstrap/cache/*'
+            --exclude='storage/logs/*.log'
+            --exclude='storage/framework/cache/*'
+            --exclude='storage/framework/sessions/*'
+            --exclude='storage/framework/views/*'
+            --exclude='.env*'
+            --exclude='phpunit.xml'
+            --exclude='README.md'
+            --exclude='.editorconfig'
+            --exclude='.eslintrc.json'
+            --exclude='.prettierrc'
+            --exclude='.devenv*'
 
           path: ./
           remote_path: ./

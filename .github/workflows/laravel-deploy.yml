@@ -14,11 +14,6 @@ on:
       domain:
         required: true
         type: string
-      working_dir:
-        required: false
-        default: "~"
-        type: string
-        description: "The working directory on the server."
       additional_commands:
         required: false
         default: ""
@@ -69,9 +64,24 @@ jobs:
           switches: >-
             -avzr
             --delete
-            --exclude-from=.github/config/laravel-excludes.txt
+            --exclude='.git*'
+            --exclude='node_modules'
+            --exclude='tests'
+            --exclude='bootstrap/cache/*'
+            --exclude='storage/logs/*.log'
+            --exclude='storage/framework/cache/*'
+            --exclude='storage/framework/sessions/*'
+            --exclude='storage/framework/views/*'
+            --exclude='.env*'
+            --exclude='phpunit.xml'
+            --exclude='README.md'
+            --exclude='.editorconfig'
+            --exclude='.eslintrc.json'
+            --exclude='.prettierrc'
+            --exclude='.devenv*'
+
           path: ./
-          remote_path: ${{ inputs.working_dir }}
+          remote_path: ./
           remote_host: ${{ secrets.HOST }}
           remote_user: ${{ secrets.USER }}
           remote_key: ${{ secrets.SSH_KEY }}
@@ -83,7 +93,6 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd ${{ inputs.working_dir }}
             php artisan down
             php artisan migrate --force
             php artisan optimize:clear

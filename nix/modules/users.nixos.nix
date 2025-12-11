@@ -1,31 +1,29 @@
-{ users }:
+{ sites }:
 { lib, ... }:
 {
   config = {
     users = {
       users = lib.mkMerge (
-        lib.mapAttrsToList (name: user: {
-          ${name} = {
-            isSystemUser = true;
+        lib.mapAttrsToList (_: siteCfg: {
+          ${siteCfg.user} = {
+            isNormalUser = true;
             createHome = true;
-            home = user.home;
+            home = siteCfg.workingDir;
             homeMode = "0750";
-            group = name;
-            openssh.authorizedKeys.keys = [
-              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDObN2rJY9jwRZcOJniUtokZ4XMNN7A8MY5OaeIbhsyx timmy@nixos-xps-15-9510"
-            ];
+            group = siteCfg.user;
+            openssh.authorizedKeys.keys = siteCfg.authorizedKeys;
           };
-        }) users
+        }) sites
       );
 
       groups = lib.mkMerge (
-        lib.mapAttrsToList (name: user: {
-          ${name} = {
+        lib.mapAttrsToList (_: siteCfg: {
+          ${siteCfg.user} = {
             members = [
-              name
+              siteCfg.user
             ];
           };
-        }) users
+        }) sites
       );
     };
   };

@@ -17,7 +17,13 @@
     user = lib.mkOption {
       type = lib.types.str;
       default = name;
-      description = "The system user to run the nginx worker processes as.";
+      description = "The system user to run all application processes as.";
+    };
+
+    authorizedKeys = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "List of SSH public keys to add to the user's authorized_keys file.";
     };
 
     forceWWW = lib.mkOption {

@@ -39,9 +39,7 @@ in
 {
   imports = [
     (import ../../modules/users.nixos.nix {
-      users = lib.mapAttrs (name: siteCfg: {
-        home = siteCfg.workingDir;
-      }) sites;
+      inherit sites;
     })
     ./submodules/laravel-scheduler.nixos.nix
     ./submodules/laravel-queue-worker.nixos.nix

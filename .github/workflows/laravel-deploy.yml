@@ -64,7 +64,7 @@ jobs:
           switches: >-
             -avzr
             --delete
-            --exclude-file=.github/config/laravel-excludes.txt
+            --exclude-from=.github/config/laravel-excludes.txt
 
           path: ./
           remote_path: ./

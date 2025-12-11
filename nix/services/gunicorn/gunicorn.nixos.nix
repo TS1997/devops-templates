@@ -32,23 +32,19 @@ in
   };
 
   config = lib.mkIf (cfg.enable) {
-    security.sudo.extraRules = lib.mapAttrs' (
-      serverName: serverCfg:
-      lib.nameValuePair "gunicorn-${serverName}" {
-        users = [ serverCfg.user ];
-        commands = [
-          {
-            command = "${pkgs.systemd}/bin/systemctl restart gunicorn-${serverName}";
-            options = [ "NOPASSWD" ];
-          }
-          {
-            command = "${pkgs.systemd}/bin/systemctl status gunicorn-${serverName}";
-            options = [ "NOPASSWD" ];
-          }
-        ];
-        nopasswd = true;
-      }
-    ) enabledServers;
+    security.sudo.extraRules = lib.mapAttrsToList (serverName: serverCfg: {
+      users = [ serverCfg.user ];
+      commands = [
+        {
+          command = "${pkgs.systemd}/bin/systemctl restart gunicorn-${serverName}";
+          options = [ "NOPASSWD" ];
+        }
+        {
+          command = "${pkgs.systemd}/bin/systemctl status gunicorn-${serverName}";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }) enabledServers;
 
     systemd.services = lib.mapAttrs' (
       serverName: serverCfg:

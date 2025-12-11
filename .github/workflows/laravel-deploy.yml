@@ -55,7 +55,7 @@ jobs:
 
       - name: Compile assets
         run: |
-          npm ci --prefer-offline
+          npm ci --production --prefer-offline
           npm run build
 
       - name: Deploy to server via rsync
@@ -67,6 +67,7 @@ jobs:
             --exclude='.git*'
             --exclude='node_modules'
             --exclude='tests'
+            --exclude='bootstrap/cache/*'
             --exclude='storage/logs/*.log'
             --exclude='storage/framework/cache/*'
             --exclude='storage/framework/sessions/*'

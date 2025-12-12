@@ -125,17 +125,22 @@ in
               --max-jobs=${toString siteCfg.queue.maxJobs} \
               --max-time=${toString siteCfg.queue.maxTime}
           '';
-          process-compose.depends_on = lib.mkMerge [
-            (lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "mysql") {
-              mysql.condition = "process_healthy";
-            })
-            (lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "pgsql") {
-              postgres.condition = "process_healthy";
-            })
-            (lib.mkIf siteCfg.redis.enable {
-              redis.condition = "process_healthy";
-            })
-          ];
+          process-compose = {
+            availability = {
+              restart = "always";
+            };
+            depends_on = lib.mkMerge [
+              (lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "mysql") {
+                mysql.condition = "process_healthy";
+              })
+              (lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "pgsql") {
+                postgres.condition = "process_healthy";
+              })
+              (lib.mkIf siteCfg.redis.enable {
+                redis.condition = "process_healthy";
+              })
+            ];
+          };
         };
       })
     ];

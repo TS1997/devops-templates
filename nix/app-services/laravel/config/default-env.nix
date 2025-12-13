@@ -52,7 +52,11 @@ in
   SESSION_PATH = "/";
   SESSION_DOMAIN = null;
 
-  SANCTUM_STATEFUL_DOMAINS = lib.concatStringsSep "," ([ siteCfg.appUrl ] ++ siteCfg.extraAppUrls);
+  SANCTUM_STATEFUL_DOMAINS = lib.concatStringsSep "," (
+    map (url: lib.replaceStrings [ "http://" "https://" ] [ "" "" ] url) (
+      [ siteCfg.appUrl ] ++ siteCfg.extraAppUrls
+    )
+  );
 
   BROADCAST_CONNECTION = "log";
   FILESYSTEM_DISK = "local";

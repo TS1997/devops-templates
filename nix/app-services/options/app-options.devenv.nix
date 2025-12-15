@@ -25,6 +25,8 @@
       description = "Whether to enable SSL for the application.";
     };
 
+    composer.install.enable = lib.mkEnableOption "Enable automatic Composer installation in development shell.";
+
     nodejs = lib.mkOption {
       type = util.submodule {
         options = {
@@ -103,7 +105,7 @@
     ) config.extraDomains;
 
     appEnv = lib.mkDefault "local";
-
+    composer.install.enable = lib.mkDefault true;
     workingDir = lib.mkDefault util.values.devenvRoot;
     database.user = lib.mkDefault "admin";
     mailpit.enable = lib.mkDefault true;

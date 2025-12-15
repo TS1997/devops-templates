@@ -64,6 +64,7 @@ in
       enable = true;
       basePackage = siteCfg.phpPool.basePackage;
       extensions = siteCfg.phpPool.extensions;
+      composer.install.enable = siteCfg.composer.install.enable;
       pools.${name} = builtins.removeAttrs siteCfg.phpPool [ "fullPackage" ];
     };
 

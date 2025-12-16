@@ -58,6 +58,12 @@ in
             
             ${vhostCfg.extraConfig}
 
+            location /healthcheck {
+              access_log off;
+              add_header Content-Type text/plain;
+              return 200 'OK';
+            }
+
             ${lib.concatStringsSep "\n\n" (
               lib.mapAttrsToList (locationName: locationCfg: ''
                 location ${locationName} {
@@ -93,10 +99,10 @@ in
           http_get = {
             host = (lib.head (lib.attrValues cfg.virtualHosts)).serverName;
             port = (lib.head (lib.attrValues cfg.virtualHosts)).port;
-            path = "/";
+            path = "/healthcheck";
           };
           initial_delay_seconds = 1;
-          period_seconds = 1;
+          period_seconds = 10;
           timeout_seconds = 5;
           success_threshold = 1;
           failure_threshold = 30;

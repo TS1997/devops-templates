@@ -25,6 +25,14 @@ on:
         type: string
         description: "Additional patterns to exclude from deployment (space-separated)."
 
+    secrets:
+      HOST:
+        required: true
+      USER:
+        required: true
+      SSH_KEY:
+        required: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest

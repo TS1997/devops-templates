@@ -24,6 +24,12 @@ on:
         default: ""
         type: string
         description: "Additional patterns to exclude from deployment (space-separated)."
+      environment:
+        required: false
+        default: "production"
+        type: string
+        description: "Environment to run workflow in."
+
 
     secrets:
       HOST:
@@ -36,7 +42,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    environment: ${{ inputs.environment }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

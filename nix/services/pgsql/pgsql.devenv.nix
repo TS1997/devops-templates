@@ -9,10 +9,26 @@ let
 
   extensionName = dbPkg: dbPkg.pname or dbPkg.name or "unknown_extension";
 
-  allExtensions = lib.unique (
+  normalizeExtensions =
+    dbCfg:
+    map (
+      extension:
+      if builtins.isString extension then
+        {
+          name = extension;
+          package = null;
+        }
+      else
+        {
+          name = extensionName extension;
+          package = extension;
+        }
+    ) (if dbCfg.extensions != null then dbCfg.extensions cfg.package.pkgs else [ ]);
+
+  allExtensionPackages = lib.unique (
     lib.flatten (
       map (
-        dbCfg: if dbCfg.extensions != null then dbCfg.extensions cfg.package.pkgs else [ ]
+        dbCfg: map (ext: ext.package) (lib.filter (ext: ext.package != null) (normalizeExtensions dbCfg))
       ) cfg.databases
     )
   );
@@ -33,7 +49,7 @@ in
     services.postgres = {
       enable = cfg.enable;
       package = cfg.package;
-      extensions = extensions: allExtensions;
+      extensions = _: allExtensionPackages;
       settings.port = cfg.port;
 
       initialDatabases = map (dbCfg: {
@@ -46,8 +62,8 @@ in
         ${lib.concatMapStringsSep "\n" (dbCfg: ''
           \c ${dbCfg.name}
           ${lib.optionalString (dbCfg.extensions != null) (
-            lib.concatMapStringsSep "\n" (ext: "CREATE EXTENSION IF NOT EXISTS \"${extensionName ext}\";") (
-              dbCfg.extensions cfg.package.pkgs
+            lib.concatMapStringsSep "\n" (ext: "CREATE EXTENSION IF NOT EXISTS \"${ext.name}\";") (
+              normalizeExtensions dbCfg
             )
           )}
         '') cfg.databases}

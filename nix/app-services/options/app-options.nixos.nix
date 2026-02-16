@@ -49,9 +49,25 @@
         options = {
           # Database extensions to be installed if using PostgreSQL
           extensions = lib.mkOption {
-            type = with lib.types; coercedTo (listOf path) (path: _ignorePg: path) (functionTo (listOf path));
+            type =
+              with lib.types;
+              coercedTo
+                (listOf (oneOf [
+                  path
+                  str
+                ]))
+                (items: _ignorePg: items)
+                (
+                  functionTo (
+                    listOf (oneOf [
+                      path
+                      str
+                    ])
+                  )
+                );
             default = _: [ ];
-            example = lib.literalExpression "ps: with ps; [ postgis pg_repack ]";
+            example = lib.literalExpression "ps: with ps; [ postgis \"postgis_raster\" pg_repack ]";
+            description = "PostgreSQL extensions to enable. Use package paths for installable extensions and strings for SQL extension names already provided by installed packages.";
           };
         };
       };

@@ -70,13 +70,24 @@
 
           # Database extensions to be installed if using PostgreSQL
           extensions = lib.mkOption {
-            type = with lib.types; nullOr (functionTo (listOf package));
+            type =
+              with lib.types;
+              nullOr (
+                functionTo (
+                  listOf (oneOf [
+                    package
+                    str
+                  ])
+                )
+              );
             default = null;
             example = extensions: [
               extensions.pg_cron
               extensions.postgis
+              "postgis_raster"
               extensions.timescaledb
             ];
+            description = "PostgreSQL extensions to enable. Use packages for installable extensions and strings for SQL extension names already provided by installed packages.";
           };
         };
 

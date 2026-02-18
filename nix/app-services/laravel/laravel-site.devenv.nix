@@ -150,11 +150,13 @@ in
       run-tests.exec = ''
         # Load environment variables from phpunit.xml
         while IFS= read -r line; do
-          name=$(echo "$line" | sed -n 's/.*name="\([^"]*\)".*/\1/p')
-          value=$(echo "$line" | sed -n 's/.*value="\([^"]*\)".*/\1/p')
-          
-          export "$name"="$value"
-        done < <(grep '<env ' phpunit.xml)
+          name=$(echo "$line" | sed -En 's/.*name="([^"]+)".*/\1/p')
+          value=$(echo "$line" | sed -En 's/.*value="([^"]*)".*/\1/p')
+
+          if [ -n "$name" ]; then
+            export "$name"="$value"
+          fi
+        done < <(grep -E '<env[[:space:]]+name=' phpunit.xml)
 
         # Run the tests
         php artisan test "$@"

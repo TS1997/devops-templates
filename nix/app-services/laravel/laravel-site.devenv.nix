@@ -79,7 +79,7 @@ in
       ]
       ++ lib.optionals siteCfg.database.testDatabase.enable [
         {
-          name = "${siteCfg.database.name}_test";
+          name = "${siteCfg.database.name}_testing";
           user = siteCfg.database.user;
           password = siteCfg.database.password;
         }
@@ -101,7 +101,7 @@ in
       ]
       ++ lib.optionals siteCfg.database.testDatabase.enable [
         {
-          name = "${siteCfg.database.name}_test";
+          name = "${siteCfg.database.name}_testing";
           user = siteCfg.database.user;
           extensions = siteCfg.database.extensions;
         }

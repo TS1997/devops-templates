@@ -68,6 +68,8 @@
 
           admin.enable = lib.mkEnableOption "Enable database admin user interface for the application.";
 
+          testDatabase.enable = lib.mkEnableOption "Enable automatic creation of a test database for the application.";
+
           # Database extensions to be installed if using PostgreSQL
           extensions = lib.mkOption {
             type =

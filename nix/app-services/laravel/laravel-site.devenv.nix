@@ -76,6 +76,13 @@ in
           user = siteCfg.database.user;
           password = siteCfg.database.password;
         }
+      ]
+      ++ lib.optionals siteCfg.database.testDatabase.enable [
+        {
+          name = "${siteCfg.database.name}_test";
+          user = siteCfg.database.user;
+          password = siteCfg.database.password;
+        }
       ];
       phpmyadmin = {
         enable = siteCfg.database.admin.enable;
@@ -88,6 +95,13 @@ in
       databases = [
         {
           name = siteCfg.database.name;
+          user = siteCfg.database.user;
+          extensions = siteCfg.database.extensions;
+        }
+      ]
+      ++ lib.optionals siteCfg.database.testDatabase.enable [
+        {
+          name = "${siteCfg.database.name}_test";
           user = siteCfg.database.user;
           extensions = siteCfg.database.extensions;
         }

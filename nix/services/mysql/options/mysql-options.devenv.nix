@@ -1,6 +1,5 @@
 {
   lib,
-  pkgs,
   util,
   ...
 }:
@@ -25,12 +24,6 @@
       type = util.submodule {
         options = {
           enable = lib.mkEnableOption "Enable phpMyAdmin for database management.";
-
-          package = lib.mkOption {
-            type = lib.types.package;
-            default = pkgs.phpmyadmin;
-            description = "The phpMyAdmin package to use.";
-          };
 
           host = lib.mkOption {
             type = lib.types.str;

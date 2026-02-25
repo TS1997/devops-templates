@@ -94,7 +94,7 @@
               "mysql"
               "pgsql"
             ];
-            default = "mysql";
+            default = "pgsql";
             description = "The database driver to use.";
           };
 

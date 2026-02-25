@@ -44,6 +44,6 @@ in
       };
     };
 
-    scripts.mail.exec = "open http://${cfg.ui.host}:${toString cfg.ui.port}";
+    scripts.mail.exec = "xdg-open http://${cfg.ui.host}:${toString cfg.ui.port}/ || open http://${cfg.ui.host}:${toString cfg.ui.port}/";
   };
 }

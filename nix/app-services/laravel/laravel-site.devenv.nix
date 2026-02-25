@@ -76,15 +76,8 @@ in
           user = siteCfg.database.user;
           password = siteCfg.database.password;
         }
-      ]
-      ++ lib.optionals siteCfg.database.testDatabase.enable [
-        {
-          name = "${siteCfg.database.name}_testing";
-          user = siteCfg.database.user;
-          password = siteCfg.database.password;
-        }
       ];
-      phpmyadmin = {
+      phpMyAdmin = {
         enable = siteCfg.database.admin.enable;
         host = siteCfg.domain;
       };
@@ -98,14 +91,11 @@ in
           user = siteCfg.database.user;
           extensions = siteCfg.database.extensions;
         }
-      ]
-      ++ lib.optionals siteCfg.database.testDatabase.enable [
-        {
-          name = "${siteCfg.database.name}_testing";
-          user = siteCfg.database.user;
-          extensions = siteCfg.database.extensions;
-        }
       ];
+      pgAdmin = {
+        enable = siteCfg.database.admin.enable;
+        host = siteCfg.domain;
+      };
     };
 
     services.ts1997.redis = lib.mkIf (siteCfg.redis.enable) {
@@ -142,7 +132,7 @@ in
           '';
           process-compose = {
             availability = {
-              restart = "always";
+              restart = "on_failure";
             };
             depends_on = lib.mkMerge [
               (lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "mysql") {

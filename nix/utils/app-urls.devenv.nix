@@ -1,7 +1,8 @@
 { config, lib, ... }:
 let
   nginxCfg = config.services.ts1997.nginx;
-  phpMyAdminCfg = config.services.ts1997.mysql.phpmyadmin;
+  phpMyAdminCfg = config.services.ts1997.mysql.phpMyAdmin;
+  pgAdminCfg = config.services.ts1997.pgsql.pgAdmin;
   mailpitCfg = config.services.ts1997.mailpit;
 
   # Helper functions
@@ -55,9 +56,14 @@ let
       ''echo -e "  ${vhost.http "http://${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port}/"}"''
       ''echo -e "  ${vhost.footer}"''
     ]
+    ++ lib.optionals (pgAdminCfg.enable) [
+      ''echo -e "  ${vhost.header "pgAdmin"}"''
+      ''echo -e "  ${vhost.http "http://${pgAdminCfg.host}:${toString pgAdminCfg.port}/"}"''
+      ''echo -e "  ${vhost.footer}"''
+    ]
   );
 
-  showDbManagement = phpMyAdminCfg.enable;
+  showDbManagement = phpMyAdminCfg.enable || pgAdminCfg.enable;
 in
 {
   config.processes.app-urls = {
@@ -83,6 +89,9 @@ in
       })
       (lib.mkIf phpMyAdminCfg.enable {
         phpmyadmin.condition = "process_healthy";
+      })
+      (lib.mkIf pgAdminCfg.enable {
+        pgadmin.condition = "process_healthy";
       })
       (lib.mkIf mailpitCfg.enable {
         mailpit.condition = "process_healthy";

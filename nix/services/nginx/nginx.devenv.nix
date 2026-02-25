@@ -114,9 +114,9 @@ in
       lib.mapAttrsToList (
         vhostName: vhostCfg:
         if (vhostCfg.enableSsl) then
-          "open https://${vhostCfg.serverName}:${toString vhostCfg.sslPort}/"
+          "xdg-open https://${vhostCfg.serverName}:${toString vhostCfg.sslPort}/ || open https://${vhostCfg.serverName}:${toString vhostCfg.sslPort}/"
         else
-          "open http://${vhostCfg.serverName}:${toString vhostCfg.port}/"
+          "xdg-open http://${vhostCfg.serverName}:${toString vhostCfg.port}/ || open http://${vhostCfg.serverName}:${toString vhostCfg.port}/"
       ) cfg.virtualHosts
     );
   };

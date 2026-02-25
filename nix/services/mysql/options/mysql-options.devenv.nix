@@ -21,7 +21,7 @@
       );
     };
 
-    phpmyadmin = lib.mkOption {
+    phpMyAdmin = lib.mkOption {
       type = util.submodule {
         options = {
           enable = lib.mkEnableOption "Enable phpMyAdmin for database management.";

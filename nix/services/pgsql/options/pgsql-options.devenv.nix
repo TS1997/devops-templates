@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   util,
   ...
 }:
@@ -39,6 +40,33 @@
           };
         }
       );
+    };
+
+    pgAdmin = lib.mkOption {
+      type = lib.types.submodule {
+        options = {
+          enable = lib.mkEnableOption "Whether to set up pgAdmin for this PostgreSQL instance.";
+
+          package = lib.mkOption {
+            type = lib.types.package;
+            default = pkgs.pgadmin4-desktopmode;
+            description = "The pgAdmin package to use.";
+          };
+
+          host = lib.mkOption {
+            type = lib.types.str;
+            default = "127.0.0.1";
+            description = "The pgAdmin server host.";
+          };
+
+          port = lib.mkOption {
+            type = lib.types.int;
+            default = 5050;
+            description = "The pgAdmin server port.";
+          };
+        };
+      };
+      default = { };
     };
   };
 

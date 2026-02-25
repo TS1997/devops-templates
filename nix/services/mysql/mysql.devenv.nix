@@ -6,14 +6,15 @@
   ...
 }:
 let
-  cfg = config.services.ts1997.mysql;
+  mysqlCfg = config.services.ts1997.mysql;
+  cfg = mysqlCfg.phpMyAdmin;
 
   phpmyadmin = (
     import ./submodules/phpmyadmin.nix {
       inherit pkgs util;
-      dbCfg = lib.head cfg.databases;
-      host = cfg.phpmyadmin.host;
-      port = cfg.phpmyadmin.port;
+      dbCfg = lib.head mysqlCfg.databases;
+      host = cfg.host;
+      port = cfg.port;
     }
   );
 in
@@ -38,7 +39,7 @@ in
         map (dbCfg: {
           name = dbCfg.name;
         }) cfg.databases
-        ++ lib.optionals (cfg.phpmyadmin.enable) [
+        ++ lib.optionals (cfg.enable) [
           {
             name = "phpmyadmin";
             schema = "${phpmyadmin}/sql/create_tables.sql";
@@ -66,14 +67,14 @@ in
         };
       };
 
-      phpmyadmin = lib.mkIf (cfg.phpmyadmin.enable) {
+      phpmyadmin = lib.mkIf (cfg.enable) {
         exec = ''
-          php -S ${cfg.phpmyadmin.host}:${toString cfg.phpmyadmin.port} -t ${phpmyadmin}
+          php -S ${cfg.host}:${toString cfg.port} -t ${phpmyadmin}
         '';
         process-compose.readiness_probe = {
           http_get = {
-            host = cfg.phpmyadmin.host;
-            port = cfg.phpmyadmin.port;
+            host = cfg.host;
+            port = cfg.port;
             path = "/";
           };
           initial_delay_seconds = 2;
@@ -86,7 +87,7 @@ in
     };
 
     scripts = {
-      phpmyadmin.exec = "open http://${cfg.phpmyadmin.host}:${toString cfg.phpmyadmin.port}/";
+      phpmyadmin.exec = "xdg-open http://${cfg.host}:${toString cfg.port}/ || open http://${cfg.host}:${toString cfg.port}/";
 
       mysql-local.exec = ''
         names=(${lib.concatStringsSep " " (map (db: db.name) cfg.databases)})

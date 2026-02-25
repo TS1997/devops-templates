@@ -45,6 +45,10 @@ in
     description = "PostgreSQL service configuration.";
   };
 
+  imports = [
+    ./submodules/pgadmin.nix
+  ];
+
   config = lib.mkIf (cfg.enable) {
     services.postgres = {
       enable = cfg.enable;
@@ -67,6 +71,10 @@ in
             )
           )}
         '') cfg.databases}
+      '';
+
+      hbaConf = ''
+        local all all trust
       '';
     };
 

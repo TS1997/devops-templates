@@ -132,7 +132,7 @@ in
           '';
           process-compose = {
             availability = {
-              restart = "on_failure";
+              restart = "always";
             };
             depends_on = lib.mkMerge [
               (lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "mysql") {

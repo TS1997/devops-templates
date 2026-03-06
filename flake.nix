@@ -3,6 +3,8 @@
   outputs =
     { self }:
     {
+      lib = import ./nix/lib/nixos.nix;
+
       nixosModules = {
         default = {
           imports = [

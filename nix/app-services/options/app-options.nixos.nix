@@ -43,7 +43,7 @@
       };
     };
 
-    basicAuth = lib.mkOption {
+    basicAuthFile = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
       default = null;
       example = "/path/to/htpasswd";

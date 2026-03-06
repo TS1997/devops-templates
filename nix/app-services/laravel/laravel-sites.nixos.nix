@@ -81,7 +81,7 @@ in
         serverAliases = siteCfg.extraDomains;
         root = siteCfg.webRoot;
         forceWWW = siteCfg.forceWWW;
-        basicAuthFile = siteCfg.basicAuth;
+        basicAuthFile = siteCfg.basicAuthFile;
         user = siteCfg.user;
         locations = mkLocations name siteCfg;
       }) sites;

@@ -23,6 +23,9 @@ in
     # Overwrite the file each time this is run
     > "$ROOT_DIR/.tokens.sh"
 
+    # Write the source file mtimes as a comment header for staleness checks
+    echo "# source_mtime=$(stat -c %Y ${tokensJsonAgeFilePath} 2>/dev/null || echo 0)" >> "$ROOT_DIR/.tokens.sh"
+
     for pair in "''${variable_pairs_to_export[@]}"; do
       json_key="''${pair%%:*}"
       env_var="''${pair##*:}"
@@ -37,13 +40,39 @@ in
     ROOT_DIR="$(pwd)"
     GREEN="\033[0;32m"
     RED="\033[0;31m"
+    YELLOW="\033[0;33m"
     RESET="\033[0m"
+
+    _tokens_is_stale() {
+      local tokens_file="$ROOT_DIR/.tokens.sh"
+
+      # No file at all — stale
+      [[ ! -f "$tokens_file" ]] && return 0
+
+      local recorded_mtime
+      recorded_mtime=$(grep '^# source_mtime=' "$tokens_file" | cut -d= -f2)
+
+      # No mtime header (old format) — stale
+      [[ -z "$recorded_mtime" ]] && return 0
+
+      local current_mtime
+      current_mtime=$(stat -c %Y ${tokensJsonAgeFilePath} 2>/dev/null || echo 0)
+
+      [[ "$current_mtime" != "$recorded_mtime" ]] && return 0
+
+      return 1
+    }
+
+    if _tokens_is_stale; then
+      echo -e "''${YELLOW}.tokens.sh is missing or outdated, regenerating...''${RESET}"
+      tokens
+    fi
 
     if [[ -f "$ROOT_DIR/.tokens.sh" ]]; then
       echo -e "''${GREEN}.tokens.sh found, setting environment.''${RESET}"
       source "$ROOT_DIR/.tokens.sh"
     else
-      echo -e "''${RED}.tokens.sh not found, run 'tokens''${RESET}"
+      echo -e "''${RED}.tokens.sh not found and could not be generated.''${RESET}"
     fi
   '';
 

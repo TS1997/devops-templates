@@ -48,7 +48,7 @@ in
   '';
 
   addSshKey = pkgs.writeShellScriptBin "add-ssh-key" ''
-    ssh_key=$(age --decrypt --identity ${sshKeyAgeFilePath})
+    ssh_key=$(age --decrypt --identity ${ageKey} ${sshKeyAgeFilePath})
     ssh-add <(echo "$ssh_key")
   '';
 }

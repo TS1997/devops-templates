@@ -66,6 +66,7 @@ in
               siteCfg.serverName;
           serverAliases = siteCfg.serverAliases;
           root = siteCfg.root;
+          basicAuthFile = siteCfg.basicAuthFile;
           extraConfig = siteCfg.extraConfig;
           locations = (siteCfg.locations) // {
             "~ /\\.(?!well-known).*" = {

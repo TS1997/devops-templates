@@ -16,6 +16,13 @@
       default = true;
       description = "Whether to force www prefix for this virtual host.";
     };
+
+    basicAuthFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = null;
+      example = "/path/to/htpasswd";
+      description = "Path to an htpasswd file for HTTP basic authentication on this virtual host.";
+    };
   };
 
   config = {

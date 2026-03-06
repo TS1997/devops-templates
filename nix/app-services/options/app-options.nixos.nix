@@ -43,6 +43,13 @@
       };
     };
 
+    basicAuth = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = null;
+      example = "/path/to/htpasswd";
+      description = "Path to an htpasswd file to enable HTTP basic authentication for the site.";
+    };
+
     database = lib.mkOption {
       # Use lib.types.submodule here instead of util.submodule to avoid circular dependency
       type = lib.types.submodule {

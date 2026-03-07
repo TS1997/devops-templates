@@ -61,7 +61,18 @@ in
 
   config = lib.mkIf (sites != { }) {
     system.activationScripts = lib.mkMerge (
-      lib.mapAttrsToList (
+      (lib.mapAttrsToList (name: siteCfg: {
+        "setup-laravel-dirs-${name}" = lib.stringAfter [ "users" "groups" ] ''
+          mkdir -p ${siteCfg.workingDir}/storage
+          chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}/storage
+          chmod -R 0770 ${siteCfg.workingDir}/storage
+
+          mkdir -p ${siteCfg.workingDir}/bootstrap
+          chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}/bootstrap
+          chmod -R 0770 ${siteCfg.workingDir}/bootstrap/cache
+        '';
+      }) sites)
+      ++ (lib.mapAttrsToList (
         name: siteCfg:
         lib.mkIf (siteCfg.generateEnv) {
           "generate-env-${name}" = (
@@ -71,7 +82,7 @@ in
             }
           );
         }
-      ) sites
+      ) sites)
     );
 
     services.ts1997.nginx = {
@@ -117,12 +128,5 @@ in
       }) redisSites;
     };
 
-    systemd.tmpfiles.rules = lib.flatten (
-      lib.mapAttrsToList (name: siteCfg: [
-        "d ${siteCfg.workingDir}/storage 0770 ${siteCfg.user} ${siteCfg.user} -"
-        "d ${siteCfg.workingDir}/bootstrap/cache 0770 ${siteCfg.user} ${siteCfg.user} -"
-        "f ${siteCfg.workingDir}/.env 0600 ${siteCfg.user} ${siteCfg.user} -"
-      ]) sites
-    );
   };
 }

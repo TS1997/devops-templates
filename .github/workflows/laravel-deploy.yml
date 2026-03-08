@@ -18,7 +18,12 @@ on:
         required: false
         default: ""
         type: string
-        description: "Additional deployment commands to run on the server."
+        description: "Additional deployment commands to run on the server before php artisan up."
+      post_deploy_commands:
+        required: false
+        default: ""
+        type: string
+        description: "Additional deployment commands to run on the server after php artisan up."
       additional_excludes:
         required: false
         default: ""
@@ -29,7 +34,6 @@ on:
         default: "production"
         type: string
         description: "Environment to run workflow in."
-
 
     secrets:
       HOST:
@@ -120,6 +124,7 @@ jobs:
             php artisan optimize
             ${{ inputs.additional_commands }}
             php artisan up
+            ${{ inputs.post_deploy_commands }}
 
       - name: Health check
         run: |

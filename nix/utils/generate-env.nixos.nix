@@ -8,7 +8,12 @@
 let
   mkValue =
     value:
-    if (lib.isString value && lib.stringLength value > 0) then "\"${value}\"" else toString value;
+    if lib.isBool value then
+      (if value then "true" else "false")
+    else if (lib.isString value && lib.stringLength value > 0) then
+      "\"${value}\""
+    else
+      toString value;
 in
 lib.stringAfter [ "agenix" ] ''
   # Start with regular env vars

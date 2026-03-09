@@ -1,7 +1,35 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   sites = config.services.ts1997.laravelSites;
   schedulerSites = lib.filterAttrs (name: siteCfg: siteCfg.scheduler.enable) sites;
+
+  dbPackage =
+    siteCfg:
+    if siteCfg.database.enable then
+      (
+        if siteCfg.database.driver == "pgsql" then
+          [ config.services.ts1997.pgsql.package ]
+        else
+          [ config.services.ts1997.mysql.package ]
+      )
+    else
+      [ ];
+
+  mkPackages =
+    siteCfg:
+    with pkgs;
+    [
+      gzip
+      gnutar
+      siteCfg.phpPool.fullPackage
+    ]
+    ++ dbPackage siteCfg
+    ++ siteCfg.scheduler.packages;
 in
 {
   config = lib.mkIf (schedulerSites != { }) {
@@ -15,6 +43,8 @@ in
         ];
         wants = [ "phpfpm-${name}.service" ];
         wantedBy = [ "multi-user.target" ];
+
+        path = mkPackages siteCfg;
 
         serviceConfig = {
           Type = "oneshot";

@@ -52,6 +52,7 @@ in
           ../options/app-options.base.nix
           ../options/app-options.nixos.nix
           ./options/laravel-options.base.nix
+          ./options/laravel-options.nixos.nix
         ];
       }
     );

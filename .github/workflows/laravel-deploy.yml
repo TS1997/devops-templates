@@ -119,9 +119,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             php artisan down
-            php artisan migrate --force
-            php artisan optimize:clear
             php artisan optimize
+            php artisan migrate --force
             ${{ inputs.additional_commands }}
             php artisan up
             ${{ inputs.post_deploy_commands }}

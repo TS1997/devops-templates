@@ -35,6 +35,12 @@ in
       enable = cfg.enable;
       package = cfg.package;
 
+      settings = {
+        mysqld = {
+          log_bin_trust_function_creators = 1;
+        };
+      };
+
       initialDatabases =
         map (dbCfg: {
           name = dbCfg.name;

@@ -35,7 +35,7 @@ in
     description = "Laravel application configuration";
   };
 
-  config = lib.mkIf (siteCfg != { }) {
+  config = lib.mkIf (siteCfg.enable) {
     env = defaultEnv // siteCfg.env;
 
     languages.javascript = {
@@ -70,6 +70,7 @@ in
 
     services.ts1997.mysql = lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "mysql") {
       enable = true;
+      package = siteCfg.database.package;
       databases = [
         {
           name = siteCfg.database.name;
@@ -85,6 +86,7 @@ in
 
     services.ts1997.pgsql = lib.mkIf (siteCfg.database.enable && siteCfg.database.driver == "pgsql") {
       enable = true;
+      package = siteCfg.database.package;
       databases = [
         {
           name = siteCfg.database.name;

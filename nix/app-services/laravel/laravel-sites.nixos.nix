@@ -6,7 +6,7 @@
   ...
 }:
 let
-  sites = config.services.ts1997.laravelSites;
+  sites = lib.filterAttrs (_: siteCfg: siteCfg.enable) config.services.ts1997.laravelSites;
 
   mysqlSites = lib.filterAttrs (
     name: siteCfg: siteCfg.database.enable && siteCfg.database.driver == "mysql"

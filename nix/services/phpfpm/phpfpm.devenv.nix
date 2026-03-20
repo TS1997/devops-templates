@@ -36,6 +36,7 @@ in
         ./options/phpfpm-options.devenv.nix
       ];
     };
+    default = { };
     description = "PHP-FPM configuration.";
   };
 

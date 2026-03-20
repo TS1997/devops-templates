@@ -50,7 +50,7 @@
           };
         }
       );
-      default = { };
+      default = [];
       description = "Configuration for individual MySQL databases.";
     };
   };

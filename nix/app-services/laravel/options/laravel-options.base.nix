@@ -1,4 +1,4 @@
-{ lib, util, ... }:
+{ lib, util, pkgs, ... }:
 {
   options = {
     scheduler.enable = lib.mkEnableOption "Enable Laravel Scheduler";
@@ -62,5 +62,6 @@
   config = {
     scheduler.enable = lib.mkDefault true;
     queue.enable = lib.mkDefault true;
+    database.package = lib.mkDefault pkgs.postgresql_18;
   };
 }

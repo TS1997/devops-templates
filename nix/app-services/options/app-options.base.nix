@@ -6,6 +6,8 @@
 }:
 {
   options = {
+    enable = lib.mkEnableOption "Enable Site.";
+
     domain = lib.mkOption {
       type = lib.types.str;
       description = "The domain name of the application.";
@@ -78,7 +80,14 @@
       type = util.submodule {
         imports = [ ../../services/phpfpm/options/phpfpm-pool-options.base.nix ];
 
-        config.extensions = if (config.redis.enable) then extensions: [ extensions.redis ] else [ ];
+        config.extensions =
+          extensions:
+          [
+            extensions.mysqli
+            extensions.pdo
+            extensions.pdo_mysql
+          ]
+          ++ lib.optionals config.redis.enable [ extensions.redis ];
       };
       default = { };
       description = "PHP-FPM pool configuration for the application.";
@@ -96,6 +105,11 @@
             ];
             default = "pgsql";
             description = "The database driver to use.";
+          };
+
+          package = lib.mkOption {
+            type = lib.types.package;
+            description = "The MySQL package to use.";
           };
 
           name = lib.mkOption {

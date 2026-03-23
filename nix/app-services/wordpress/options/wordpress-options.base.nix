@@ -1,4 +1,9 @@
-{ lib, util, pkgs, ... }:
+{
+  lib,
+  util,
+  pkgs,
+  ...
+}:
 {
   options = {
     tablePrefix = lib.mkOption {
@@ -52,6 +57,7 @@
   };
 
   config = {
+    database.driver = lib.mkDefault "mysql";
     database.package = lib.mkDefault pkgs.mysql84;
   };
 }

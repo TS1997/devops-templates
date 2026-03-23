@@ -12,7 +12,7 @@
       description = "Path to a file containing environment variable secrets to be merged into the generated .env file.";
     };
 
-    generateEnv = lib.mkEnableOption "Whether to generate the .env file for this Laravel site.";
+    generateEnv = lib.mkEnableOption "Whether to generate the .env file for this application.";
 
     user = lib.mkOption {
       type = lib.types.str;

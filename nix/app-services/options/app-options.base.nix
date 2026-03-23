@@ -51,6 +51,7 @@
       type = lib.types.enum [
         "production"
         "staging"
+        "development"
         "local"
       ];
       description = "The application environment.";

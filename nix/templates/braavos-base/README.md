@@ -68,6 +68,17 @@ Then, depending on the setup, use the following command to build:
 npm install
 ```
 
+## Copying predefined assets and db
+```sh
+Init-assets
+```
+This script copies images from the data/uploads directory to public/content/uploads.
+
+```sh
+reset-db
+```
+This script resets the server database and executes the database file.
+
 ## Starting Local Services
 
 Services declared in `devenv.nix` can be started and managed with:

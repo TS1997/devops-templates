@@ -15,6 +15,7 @@ in
         ./options/phpfpm-options.nixos.nix
       ];
     };
+    default = { };
     description = "PHP-FPM configuration.";
   };
 

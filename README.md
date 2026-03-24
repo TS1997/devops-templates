@@ -1,4 +1,4 @@
-# Bravo Flake Templates
+# Flake Templates
 
 ## Usage
 

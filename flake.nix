@@ -17,17 +17,17 @@
 
       templates = {
         wp-base = {
-          path = ./templates/braavos-base;
+          path = ./nix/templates/braavos-base;
           description = "A wordpress braavos-base template using Nix flake and Devenv.";
         };
 
         wp-flake = {
-          path = ./templates/wp-project;
+          path = ./nix/templates/wp-project;
           description = "A wordpress template using Nix flake and Devenv.";
         };
 
         laravel = {
-          path = ./templates/laravel-project;
+          path = ./nix/templates/laravel-project;
           description = "A laravel template using Nix flake and Devenv.";
         };
       };

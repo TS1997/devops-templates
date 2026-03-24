@@ -14,11 +14,11 @@ To create at Wordpress project.
 
 ```sh
 
-nix flake init --refresh --template "github:ts1997/templates?ref=master#wp-flake"
+nix flake init --refresh --template "github:ts1997/devops-templates?ref=master#wp-flake"
 ```
 
 To create at Braavos base wp project.
 
 ```sh
-nix flake init --refresh --template "github:ts1997/templates?ref=master#wp-base"
+nix flake init --refresh --template "github:ts1997/devops-templates?ref=master#wp-base"
 ``

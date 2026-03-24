@@ -1,0 +1,18 @@
+@layer components {
+
+    .cta {
+        @apply btn-group;
+
+        & [class*="__button"] {
+            @apply btn-secondary;
+
+            &[class*="--primary"] {
+                @apply btn;
+            }
+
+            &[class*="--link"] {
+                @apply btn-link;
+            }
+        }
+    }
+}

@@ -1,0 +1,10 @@
+.search-header {
+	@apply mb-8 pt-14;
+
+	/** LG */
+	@apply lg:pt-24;
+
+	&__title {
+		@apply heading-xl mt-0;
+	}
+}

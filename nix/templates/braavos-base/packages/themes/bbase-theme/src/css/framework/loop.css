@@ -1,0 +1,16 @@
+body {
+
+	&.blog,
+	&.archive,
+	&.search {
+		@apply bg-grey-50;
+
+		& .entry-header {
+			@apply max-w-none;
+		}
+
+		& .entry-content {
+			@apply ml-0;
+		}
+	}
+}

@@ -1,0 +1,49 @@
+@layer components {
+
+	.accordion {
+		@apply toggle border-b border-solid border-grey-600 py-3;
+
+		/** LG */
+		@apply lg:py-4;
+
+		&:last-of-type {
+			@apply border-b-0 pb-0;
+		}
+
+		&:first-of-type {
+			@apply pt-0;
+		}
+
+		&[open] {
+
+			& summary {
+				@apply font-bold;
+			}
+		}
+
+		summary {
+
+			&::before,
+			&::after {
+				@apply mt-3;
+
+				/** LG */
+				@apply lg:mt-4;
+			}
+		}
+
+		& [class*="__title"] {
+			@apply my-3 mr-9 text-md;
+
+			/** LG */
+			@apply lg:my-4;
+		}
+
+		& [class*="__content"] {
+			@apply my-3;
+
+			/** LG */
+			@apply lg:my-4;
+		}
+	}
+}

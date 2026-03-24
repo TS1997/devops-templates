@@ -1,0 +1,26 @@
+.entry-header {
+	@apply mx-auto mb-14 max-w-screen-md pt-14;
+
+	/** LG */
+	@apply lg:pt-24;
+
+	&__title {
+		@apply heading-xl mt-0;
+	}
+
+	&__image {
+		@apply mb-4 aspect-[4/3] w-full object-cover;
+	}
+
+	&__cta {
+		@apply cta;
+	}
+
+	&__lead {
+		@apply lead;
+	}
+
+	&__meta {
+		@apply mb-8;
+	}
+}

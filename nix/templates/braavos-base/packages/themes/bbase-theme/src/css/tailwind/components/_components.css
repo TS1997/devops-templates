@@ -1,0 +1,21 @@
+/**
+ * This injects Tailwind's component classes and any component classes
+ * registered by plugins.
+ */
+
+@import "tailwindcss/components";
+@import "card";
+@import "btn";
+@import "btn-group";
+@import "cta";
+@import "icon";
+@import "wysiwyg";
+@import "heading";
+@import "sheet";
+@import "list";
+@import "lead";
+@import "blockquote";
+@import "braavos-columns";
+@import "toggle";
+@import "accordion";
+@import "skip-to-content-link";

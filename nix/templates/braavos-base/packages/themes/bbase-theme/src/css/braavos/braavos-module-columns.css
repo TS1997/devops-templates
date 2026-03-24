@@ -1,0 +1,26 @@
+.braavos-module-columns {
+	@apply full-screen;
+
+	& .braavos-post {
+		@apply card card-compact;
+	}
+
+	&.module-layout-slider {
+		@apply relative;
+
+		& .braavos-posts {
+			@apply block;
+		}
+
+		& .swiper-wrapper {
+
+			& .braabos-post {
+				@apply box-border w-3/4;
+			}
+
+			&.pagination {
+				@apply mb-12;
+			}
+		}
+	}
+}

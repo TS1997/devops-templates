@@ -1,0 +1,288 @@
+.site-navigation {
+	@apply ml-auto flex shrink-0 items-center justify-end gap-2;
+
+	/** LG */
+	@apply lg:gap-10;
+
+	& .menu-swipe {
+		@apply !right-full;
+
+		& .menu-swipe {
+			@apply !right-0;
+		}
+	}
+
+	&__toggle {
+		@apply relative z-50 items-center;
+
+		& .icon {
+			@apply h-10 w-10 flex-col justify-between px-1.5 py-2.5 first:flex;
+
+			/** LG */
+			@apply lg:mr-2;
+
+			i {
+				@apply relative left-0 top-0 block h-[3px] w-full bg-foreground transition-all duration-300;
+			}
+		}
+
+		& .label {
+			@apply heading-md m-0 hidden;
+
+			/** LG */
+			@apply lg:block;
+		}
+
+		&[aria-expanded="true"] {
+
+			& .icon {
+
+				i {
+
+					&:nth-of-type(2) {
+						@apply left-1/2 w-0;
+					}
+
+					&:nth-of-type(1) {
+						@apply top-1/2 -translate-y-1/2 -rotate-45;
+					}
+
+					&:nth-of-type(3) {
+						@apply -top-1/2 translate-y-1/2 rotate-45;
+					}
+				}
+			}
+
+			& + .site-navigation__container {
+				@apply z-40 translate-x-0;
+			}
+		}
+
+		&[aria-hidden="true"] {
+			@apply hidden;
+		}
+
+		&[aria-hidden="false"] {
+			@apply flex;
+		}
+	}
+
+	&__primary,
+	&__primary .sub-menu {
+		/* stylelint-disable */
+		width: calc(100vw - 40px);
+		/* stylelint-enable */
+		@apply max-w-screen-sm p-8 pt-28 transition-all;
+
+		/** MD */
+		@apply md:p-14 md:pt-36;
+	}
+
+	&__extra {
+		@apply hidden items-center gap-4;
+
+		/** LG */
+		@apply lg:flex;
+
+		& .menu-item {
+			@apply heading-sm m-0;
+
+			&.button {
+
+				& a {
+					@apply btn;
+				}
+			}
+
+			& .sub-menu {
+				@apply hidden;
+			}
+		}
+	}
+
+	&__container {
+		@apply fixed bottom-0 right-0 top-0 z-40 block h-screen w-auto translate-x-full overflow-y-auto overflow-x-hidden bg-background transition-all duration-300;
+	}
+
+	&__inner {
+		@apply grid gap-2;
+
+		& + .site-navigation__inner {
+			@apply mb-3 border-b border-solid border-grey-400 pb-3;
+		}
+	}
+
+	&__primary {
+		@apply relative right-0 flex flex-col-reverse;
+
+		&[aria-hidden="true"] {
+
+			/* @apply hidden; */
+		}
+
+		&:target,
+		&[aria-hidden="false"] {
+			@apply flex;
+		}
+
+		& .sub-menu {
+			@apply absolute -right-full top-0;
+
+			&[aria-hidden="true"] {
+				@apply hidden;
+			}
+
+			&:target,
+			&[aria-hidden="false"] {
+				@apply block;
+			}
+		}
+
+		& .site-navigation__inner {
+
+			& > .menu-item,
+			& .sub-menu__title {
+				@apply text-foreground;
+
+				& > a {
+					@apply heading-sm m-0 text-foreground;
+
+					/** LG */
+					@apply lg:heading-md lg:m-0;
+				}
+			}
+
+			& + .site-navigation__secondary {
+				@apply lg:hidden;
+			}
+		}
+
+		& .menu-item {
+			@apply w-full text-md font-medium text-grey-600;
+
+			/** HOVER */
+			@apply hover:text-foreground;
+
+			& a {
+				@apply flex w-full items-center justify-between py-2;
+			}
+
+			&.current-menu-item {
+				@apply font-bold text-foreground;
+
+				/** HOVER **/
+				@apply hover:text-grey-600;
+			}
+
+			&.sub-menu__title {
+				@apply relative inline-block w-auto mb-6;
+
+				&::after {
+					@apply absolute bottom-1 h-0 w-full content-[''];
+				}
+
+				&:hover,
+				&.current-menu-item {
+
+					&::after {
+						@apply h-px bg-foreground;
+					}
+				}
+			}
+
+			&.sub-menu__back {
+				@apply heading-xs my-0 mb-6 text-foreground;
+
+				& > a {
+					@apply flex items-center justify-start;
+
+					&::before {
+						@apply icon mr-2 transition-transform content-['\e317'];
+					}
+
+					&:hover::before {
+						@apply -translate-x-2;
+					}
+				}
+			}
+
+			&-has-children {
+				@apply whitespace-nowrap;
+
+				& > a::after {
+					@apply icon transition-transform content-['\e941'];
+				}
+
+				&:hover {
+
+					& > a::after {
+						@apply translate-x-2;
+					}
+				}
+			}
+		}
+	}
+}
+
+/* body.no-js {
+    & [data-responsive-nav-control] {
+        @media (--width-medium) {
+            display: none;
+        }
+    }
+    & .primary-menu {
+        display: none;
+        list-style: none;
+        margin: 0;
+        padding-left: 0;
+
+        @media (--width-medium) {
+            display: block;
+        }
+
+        &:target {
+            display: block;
+        }
+
+        & ul {
+            list-style: none;
+            margin: 0;
+            padding-left: 0;
+        }
+        & li {
+            position: relative;
+
+            &:hover,
+            &:focus-within {
+                & > ul {
+                    display: block;
+                }
+            }
+
+            & > a {
+                &:focus {
+                    & > ul {
+                        display: block;
+                    }
+                }
+            }
+
+            & > ul {
+                display: none;
+
+                @media (--width-medium) {
+                    left: 0;
+                    position: absolute;
+                    top: 100%;
+                }
+            }
+        }
+        & > li {
+            display: block;
+
+            @media (--width-medium) {
+                display: inline-block;
+            }
+        }
+    }
+} */

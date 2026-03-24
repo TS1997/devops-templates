@@ -1,0 +1,9 @@
+@layer utilities {
+
+    .base-margin {
+        @apply mt-6 mb-8;
+
+        /** LG */
+        @apply lg:mb-10;
+    }
+}

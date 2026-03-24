@@ -1,0 +1,7 @@
+.loop-item {
+	@apply card;
+
+	&__excerpt {
+		@apply mb-8 !line-clamp-2;
+	}
+}

@@ -1,0 +1,11 @@
+.error-404 {
+
+    &__cta {
+        @apply cta;
+        @apply justify-center my-16;
+    }
+
+    &__search {
+        @apply justify-center my-16;
+    }
+}

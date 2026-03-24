@@ -1,0 +1,20 @@
+.braavos-module-wysiwyg {
+
+    & .braavos-content {
+        @apply wysiwyg mx-auto;
+    }
+
+    &.content-position-left {
+
+        & .braavos-content {
+            @apply mr-auto ml-0;
+        }
+    }
+
+    &.content-position-right {
+
+        & .braavos-content {
+            @apply mr-0 ml-auto;
+        }
+    }
+}

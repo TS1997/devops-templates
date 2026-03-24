@@ -1,0 +1,42 @@
+{
+  "name": "gotenevatten-wp",
+  "version": "1.0.0",
+  "description": "WordPress Project for Götene Vatten & Värme",
+  "scripts": {
+    "postinstall": "npm run prepare",
+    "lint:js": "eslint \"packages/**/*.{js,jsx,mjs,cjs}\"",
+    "fix:js": "eslint \"packages/**/*.{js,jsx,mjs,cjs}\" --fix",
+    "lint:css": "stylelint \"packages/**/*.css\"",
+    "fix:css": "stylelint \"packages/**/*.css\" --fix",
+    "lint": "npm run lint:js && npm run lint:css",
+    "fix": "npm run fix:js && npm run fix:css",
+    "lint:all": "npm run lint:js && npm run lint:css && composer lint:php",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "packages/**/*.{js,jsx,mjs,cjs}": "npm run fix:js",
+    "packages/**/*.{css,scss}": "npm run fix:css",
+    "packages/**/*.{php,inc}": "composer fix:php"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/bravomedia/gotenevatten-wp.git"
+  },
+  "devDependencies": {
+    "@wordpress/eslint-plugin": "^22.15.0",
+    "@wordpress/stylelint-config": "^23.21.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-jsdoc": "^54.1.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
+    "postcss": "^8.5.6",
+    "postcss-html": "^1.8.0",
+    "postcss-reporter": "^7.1.0",
+    "postcss-scss": "^4.0.9",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "stylelint": "^16.23.1",
+    "stylelint-config-tailwindcss": "^1.0.0",
+    "stylelint-scss": "^6.12.1"
+  }
+}

@@ -1,0 +1,62 @@
+.site-footer {
+	@apply bg-grey-800 text-foreground-light text-md;
+
+	&__container {
+		@apply container grid grid-cols-1 gap-14 py-14;
+
+		/** md */
+		@apply md:grid-cols-2;
+
+		/** lg */
+		@apply lg:grid-cols-4;
+	}
+
+	&__column {
+
+		& > *:first-child {
+			@apply mt-0;
+		}
+
+		& h3{
+			@apply heading-sm mb-6;
+		}
+
+		& a {
+			@apply underline;
+
+			/** Hover */
+			@apply hover:no-underline;
+		}
+	}
+
+	&__heading {
+		@apply heading-xs mb-4 font-bold;
+	}
+
+	&__branding {
+
+		& figcaption {
+			@apply wysiwyg ml-0 w-full max-w-md;
+		}
+	}
+
+	&__logo {
+		@apply mb-10 h-16;
+	}
+
+	&__menu {
+
+		& li > a {
+			@apply my-4 block no-underline;
+
+			/** Hover */
+			@apply hover:underline;
+		}
+
+		/** Hide submenus */
+
+		& li > ul li {
+			@apply hidden;
+		}
+	}
+}

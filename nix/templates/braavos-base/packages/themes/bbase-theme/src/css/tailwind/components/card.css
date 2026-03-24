@@ -1,0 +1,42 @@
+@layer components {
+
+	.card {
+		@apply relative block bg-background p-6;
+
+		& [class*="__image"] {
+			@apply mb-4 aspect-[4/3] w-full object-cover;
+		}
+
+		& [class$="__title"] {
+			@apply heading-md mb-4 mt-0;
+		}
+
+		& [class$="__excerpt"] {
+			@apply wysiwyg mb-8 hidden;
+
+			/** MD */
+			@apply md:line-clamp-3;
+		}
+
+		& [class$="__link"] {
+			@apply btn-link self-end;
+		}
+
+		&-compact {
+
+			& [class$="__title"] {
+				@apply mb-2 mt-0;
+
+				/** LG */
+				@apply lg:mb-4;
+			}
+
+			& [class$="__excerpt"] {
+				@apply mb-4;
+
+				/** LG */
+				@apply lg:mb-8;
+			}
+		}
+	}
+}

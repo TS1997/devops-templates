@@ -1,0 +1,45 @@
+{
+    "key": "group_665ee11eb9d18",
+    "title": "Post",
+    "fields": [
+        {
+            "key": "field_665ee11f88e6b",
+            "label": "Lead",
+            "name": "lead",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 4,
+            "placeholder": "",
+            "new_lines": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "post"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "acf_after_title",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": false,
+    "description": "bbase-theme",
+    "show_in_rest": 0,
+    "modified": 1717578952
+}

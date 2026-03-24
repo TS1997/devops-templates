@@ -1,0 +1,165 @@
+# Copyright (C) 2025 Bravomedia AB
+# This file is distributed under the GPL-2.0+.
+msgid ""
+msgstr ""
+"Project-Id-Version: BbaseTheme Theme 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/bbase-theme\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-02-13T07:29:43+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.10.0\n"
+"X-Domain: bbase-theme\n"
+
+#. Plugin Name of the plugin
+#: functions.php
+msgid "BbaseTheme Theme"
+msgstr ""
+
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+#: functions.php
+msgid "https://www.bravomedia.se/"
+msgstr ""
+
+#. Description of the plugin
+#: functions.php
+msgid "Theme"
+msgstr ""
+
+#. Author of the plugin
+#: functions.php
+msgid "Bravomedia AB"
+msgstr ""
+
+#: 404.php:17
+msgid "Oops! That page can&rsquo;t be found."
+msgstr ""
+
+#: 404.php:21
+msgid "It looks like nothing was found at this location. Maybe navigate to the start page or try a search?"
+msgstr ""
+
+#: 404.php:31
+msgid "Start page"
+msgstr ""
+
+#: header.php:26
+msgid "Skip to content"
+msgstr ""
+
+#: header.php:40
+msgid "Close"
+msgstr ""
+
+#: header.php:55
+msgid "Search"
+msgstr ""
+
+#: header.php:59
+msgid "Menu"
+msgstr ""
+
+#: includes/class-braavos.php:124
+msgid "Transparent"
+msgstr ""
+
+#: includes/class-braavos.php:125
+msgid "Primary"
+msgstr ""
+
+#: includes/class-braavos.php:126
+msgid "Secondary"
+msgstr ""
+
+#: includes/class-braavos.php:127
+msgid "Tetriary"
+msgstr ""
+
+#: includes/class-braavos.php:128
+msgid "Grey"
+msgstr ""
+
+#: includes/class-braavos.php:134
+msgid "Module theme"
+msgstr ""
+
+#: includes/class-braavos.php:409
+msgid "Call to action"
+msgstr ""
+
+#: includes/class-braavos.php:452
+#: template-parts/loop-item.php:35
+msgid "Read more"
+msgstr ""
+
+#: includes/class-images.php:71
+msgid "Content width"
+msgstr ""
+
+#: includes/class-images.php:75
+msgid "Grid width"
+msgstr ""
+
+#: includes/class-images.php:79
+msgid "Full HD"
+msgstr ""
+
+#: includes/class-images.php:83
+msgid "2k"
+msgstr ""
+
+#: includes/class-images.php:87
+msgid "4k"
+msgstr ""
+
+#: includes/class-nav-menu.php:54
+msgid "Everything"
+msgstr ""
+
+#: includes/class-setup.php:185
+msgid "Primary Menu"
+msgstr ""
+
+#: includes/class-setup.php:186
+msgid "Secondary Menu"
+msgstr ""
+
+#: includes/class-setup.php:187
+msgid "Footer Menu 1"
+msgstr ""
+
+#: includes/class-setup.php:188
+msgid "Footer Menu 2"
+msgstr ""
+
+#: includes/class-setup.php:189
+msgid "Social Media"
+msgstr ""
+
+#. translators: %s: search query.
+#: search.php:21
+msgid "Search Results for: %s"
+msgstr ""
+
+#: template-parts/content-none.php:13
+msgid "No search results"
+msgstr ""
+
+#. translators: %s: search query.
+#: template-parts/content-none.php:21
+msgid "Unfortunately, we could not find any search results for: %s. Check your spelling or try searching for a different word."
+msgstr ""
+
+#. translators: %s: Name of current post. Only visible to screen readers
+#: template-parts/content.php:45
+msgid "Continue reading<span class=\"screen-reader-text\"> \"%s\"</span>"
+msgstr ""
+
+#. translators: %s: post date in Y-m-d format
+#: template-parts/loop-item.php:22
+msgid "Published: %s"
+msgstr ""

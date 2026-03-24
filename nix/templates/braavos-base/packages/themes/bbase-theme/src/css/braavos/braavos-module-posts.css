@@ -1,0 +1,82 @@
+/**
+ * Braavos Module Posts styling
+ */
+
+[class*="braavos-module-posts"] {
+	@apply full-screen bg-grey-50;
+
+	&.item-layout-card {
+
+		& .braavos-post {
+			@apply card;
+		}
+	}
+
+	&.module-layout-slider {
+		@apply overflow-hidden;
+
+		& .braavos-module-inner {
+			@apply max-w-full px-0;
+			@apply lg:container;
+		}
+
+		& .swiper {
+			@apply lg:overflow-visible;
+		}
+
+		& .braavos-post {
+			@apply w-5/6;
+
+			/** MD */
+			@apply md:w-3/5;
+		}
+
+		& .braavos-heading {
+			@apply px-6;
+
+			/** MD */
+			@apply md:px-8;
+
+			/** LG */
+			@apply lg:px-0;
+		}
+
+		& .braavos-module-footer {
+			@apply mt-14 flex w-full justify-between px-6;
+
+			/** MD */
+			@apply md:px-8;
+
+			/** LG */
+			@apply lg:px-0;
+
+			&__link {
+				@apply btn-link text-foreground;
+
+				/** HOVER */
+				@apply hover:text-foreground;
+			}
+
+			& .swiper-button-next,
+			& .swiper-button-prev {
+				@apply static top-auto m-0 h-10 w-10 self-end rounded-full bg-background text-primary-700;
+
+				&.swiper-button-disabled {
+					@apply text-primary-700/50 opacity-100;
+				}
+			}
+
+			& .swiper-button-next::after {
+				@apply icon icon-fill content-['\e5c8'];
+			}
+
+			& .swiper-button-prev::after {
+				@apply icon icon-fill content-['\e5c4'];
+			}
+
+			& .swiper-navigation {
+				@apply relative ml-auto flex justify-end gap-6;
+			}
+		}
+	}
+}

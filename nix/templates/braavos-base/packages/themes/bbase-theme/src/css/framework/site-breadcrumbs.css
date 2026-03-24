@@ -1,0 +1,84 @@
+.site-breadcrumbs {
+	@apply relative border-b border-grey-50 bg-background transition-all;
+
+	&__container {
+		@apply container py-4 text-sm text-grey-600;
+	}
+
+	&__list {
+		@apply line-clamp-1;
+	}
+
+	&__item {
+		@apply inline;
+
+		&--last {
+			@apply text-foreground;
+		}
+	}
+
+	&__reveal {
+
+		/** MD */
+		@apply md:hidden;
+
+		& a {
+
+			& > .close {
+				@apply hidden;
+			}
+		}
+	}
+
+	&__hideable {
+		@apply hidden;
+
+		/** MD */
+		@apply md:inline-block;
+	}
+
+	&__separator {
+		@apply px-2;
+	}
+
+	&--expanded {
+
+		& .site-breadcrumbs {
+
+			&__list {
+				@apply line-clamp-none;
+			}
+
+			&__hideable {
+				@apply inline-block;
+			}
+
+			&__item {
+				@apply mb-4 list-item;
+			}
+
+			&__reveal {
+
+				& a {
+					@apply absolute right-0 top-0 mb-0 p-4;
+
+					& > .open {
+						@apply hidden;
+					}
+
+					& > .close {
+						@apply list-item text-foreground;
+
+						&::before {
+							@apply icon content-['\e5cd'];
+						}
+					}
+
+					& + .site-breadcrumbs__separator {
+						@apply hidden;
+					}
+				}
+			}
+		}
+	}
+}

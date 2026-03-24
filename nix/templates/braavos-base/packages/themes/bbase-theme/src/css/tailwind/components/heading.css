@@ -1,0 +1,43 @@
+@layer components {
+
+    .heading {
+        @apply mt-10 mb-6 font-semibold break-words;
+
+        & + * {
+            @apply mt-0;
+        }
+
+        &-xs {
+            @apply heading text-md font-medium;
+        }
+
+        &-sm {
+            @apply heading text-md;
+        }
+
+        &-md {
+            @apply heading text-lg;
+        }
+
+        &-lg {
+            @apply heading text-xl;
+        }
+
+        &-xl {
+            @apply heading text-2xl font-bold;
+
+            /** LG */
+            @apply lg:mb-10;
+        }
+
+        &-2xl {
+            @apply heading text-2xl font-bold;
+
+            /** MD */
+            @apply md:text-3xl;
+
+            /** LG */
+            @apply lg:text-4xl;
+        }
+    }
+}

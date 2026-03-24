@@ -1,0 +1,42 @@
+# WordPress
+public/wp
+public/.htaccess
+public/content
+
+# Logs
+*.log
+
+# Dotenv
+.env
+.env.*
+!.env.example
+
+# Composer
+vendor
+wp-translation-downloader.lock
+composer.auth.json
+
+# NPM
+node_modules
+
+# WP-CLI
+wp-cli.local.yml
+
+# Added by Laravel Mix
+mix-manifest.json
+
+# Added by bravo docker-compose
+.apache-*
+.docker-*
+.history/
+.DS_Store
+
+# VS Code
+.vscode
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+# Direnv
+.direnv

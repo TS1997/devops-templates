@@ -1,0 +1,26 @@
+.sub-footer {
+	@apply container py-2;
+
+	&__container {
+		@apply flex w-full flex-wrap justify-between gap-14 border-t-[0.5px] border-t-white py-6;
+	}
+
+	&__social-menu {
+		@apply flex flex-col gap-4;
+
+		/** MD */
+		@apply md:flex-row md:gap-10;
+
+		& li {
+			@apply inline-block;
+
+			& > ul li {
+				@apply hidden;
+			}
+		}
+	}
+
+	&__copyright {
+		@apply text-grey-400;
+	}
+}

@@ -1,0 +1,18 @@
+/**
+ * This injects Tailwind's utility classes and any utility classes registered
+ * by plugins.
+ */
+
+@import 'tailwindcss/utilities';
+@import 'base-margin';
+
+@layer utilities {
+
+    .full-screen {
+        /* stylelint-disable */
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        /* stylelint-enable */
+    }
+}

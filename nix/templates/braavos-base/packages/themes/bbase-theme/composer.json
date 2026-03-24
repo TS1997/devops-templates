@@ -1,0 +1,23 @@
+{
+    "name": "bravomedia/bbase-theme",
+    "type": "wordpress-theme",
+    "scripts": {
+      "lint:php": [
+        "phpcs"
+      ],
+      "fix:php": [
+        "phpcbf"
+      ]
+    },
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.1",
+        "phpcompatibility/php-compatibility": "^9.3",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "wp-coding-standards/wpcs": "^3.2"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

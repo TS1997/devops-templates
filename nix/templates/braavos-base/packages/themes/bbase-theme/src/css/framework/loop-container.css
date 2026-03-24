@@ -1,0 +1,6 @@
+.loop-container {
+	@apply my-10 grid gap-4;
+
+	/** MD */
+	@apply md:my-14 md:grid-cols-2 md:gap-6;
+}

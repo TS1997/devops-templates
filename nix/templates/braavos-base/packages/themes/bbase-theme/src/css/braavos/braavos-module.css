@@ -1,0 +1,55 @@
+.braavos-module {
+	@apply max-w-none;
+
+	& .braavos-module-inner {
+		@apply container py-14;
+
+		/** LG */
+		@apply lg:py-24;
+
+		& > .braavos-heading {
+			@apply heading-xl mb-10 mt-0;
+
+			/** LG */
+			@apply lg:mb-14;
+		}
+	}
+
+	&:not(.module-layout-slider) {
+		@apply braavos-columns;
+	}
+
+	&.module-width-full {
+		@apply full-screen;
+	}
+
+	&.module-theme-primary {
+		@apply bg-primary-100;
+	}
+
+	&.module-theme-secondary {
+		@apply bg-secondary-100;
+	}
+
+	&.module-theme-tetriary {
+		@apply bg-tetriary-100;
+	}
+
+	&.module-theme-grey {
+		@apply bg-grey-50;
+	}
+}
+
+.site-main > article,
+article > .entry-content {
+
+	& > :last-child {
+
+		&.braavos-module {
+			@apply -mb-14;
+
+			/** LG */
+			@apply lg:-mb-24;
+		}
+	}
+}

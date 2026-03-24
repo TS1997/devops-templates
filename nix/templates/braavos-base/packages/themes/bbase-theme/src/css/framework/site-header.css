@@ -1,0 +1,43 @@
+/**
+ * Site header
+ *
+ * Sets the design of the theme header
+ */
+
+.site-header {
+	@apply container fixed top-0 z-30 flex max-w-none grid-cols-2 items-center justify-between bg-background py-4 transition-transform border-b border-solid border-b-grey-800;
+
+	/** LG */
+	@apply lg:grid-cols-12 lg:gap-10 lg:py-6;
+
+	&.headroom--unpinned {
+		@apply -translate-y-full;
+	}
+
+	& .site-overlay {
+		@apply absolute;
+	}
+
+	&__branding {
+		@apply h-8 w-auto shrink-0;
+
+		/** LG */
+		@apply lg:h-10;
+	}
+
+	&__logo {
+		@apply h-full w-auto;
+	}
+}
+
+/** Fix for admin bar */
+
+body.admin-bar {
+
+	& .site-header {
+		@apply top-12;
+
+		/** MD */
+		@apply md:top-8;
+	}
+}

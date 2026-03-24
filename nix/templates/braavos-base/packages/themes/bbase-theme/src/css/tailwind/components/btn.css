@@ -1,0 +1,23 @@
+@layer components {
+
+	.btn {
+		@apply inline-block text-nowrap border border-solid border-primary-700 bg-primary-700 px-6 py-3 text-md font-bold text-foreground-light no-underline transition-colors;
+
+		/** HOVER **/
+		@apply text-foreground-light hover:border-primary-500 hover:bg-primary-500;
+
+		&-secondary {
+			@apply btn border border-solid border-foreground bg-transparent font-medium text-foreground;
+
+			/** HOVER */
+			@apply hover:border-grey-800 hover:bg-grey-800 hover:text-foreground-light;
+		}
+
+		&-link {
+			@apply btn border-none bg-transparent p-0 font-semibold leading-4 text-primary-700 transition-all;
+
+			/** HOVER */
+			@apply hover:bg-transparent hover:text-primary-700 hover:underline;
+		}
+	}
+}

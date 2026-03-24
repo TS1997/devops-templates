@@ -1,0 +1,6 @@
+@layer components {
+
+    .btn-group {
+        @apply flex gap-6 items-center;
+    }
+}

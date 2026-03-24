@@ -1,0 +1,80 @@
+@layer components {
+
+	.braavos-columns {
+
+		& .braavos-posts {
+			@apply grid gap-x-6 gap-y-8;
+
+			/** MD */
+			@apply md:gap-y-10;
+
+			/** LG */
+			@apply lg:gap-y-14;
+		}
+
+		&.columns-2 {
+
+			& .braavos-posts {
+				@apply grid-cols-1;
+
+				/** MD */
+				@apply md:grid-cols-2;
+			}
+		}
+
+		&.columns-3 {
+
+			& .braavos-posts {
+				@apply grid-cols-1;
+
+				/** MD */
+				@apply md:grid-cols-3;
+			}
+		}
+
+		&.columns-4 {
+
+			& .braavos-posts {
+				@apply grid-cols-1;
+
+				/** MD */
+				@apply md:grid-cols-2;
+
+				/** LG */
+				@apply lg:grid-cols-4;
+			}
+		}
+
+		&.columns-5 {
+
+			& .braavos-posts {
+				@apply grid-cols-1;
+
+				/** MD */
+				@apply md:grid-cols-2;
+
+				/** LG */
+				@apply lg:grid-cols-4;
+
+				/** XL */
+				@apply xl:grid-cols-5;
+			}
+		}
+
+		&.columns-6 {
+
+			& .braavos-posts {
+				@apply grid-cols-1;
+
+				/** MD */
+				@apply md:grid-cols-3;
+
+				/** LG */
+				@apply lg:grid-cols-4;
+
+				/** XL */
+				@apply xl:grid-cols-6;
+			}
+		}
+	}
+}

@@ -1,0 +1,42 @@
+@layer components {
+
+	/*
+	 * These styles are adapted from the original skip-link styles in WordPress.
+	 * They ensure that the "Skip to content" link is accessible and visible
+	 * when focused, while remaining hidden otherwise.
+	 *
+	 * We ignore linting for this block to allow for necessary CSS properties.
+	 */
+
+	/* stylelint-disable property-disallowed-list */
+
+	.skip-to-content-link {
+		border:0;
+		clip-path:inset(50%);
+		height:1px;
+		margin:-1px;
+		overflow:hidden;
+		padding:0;
+		position:absolute;
+		width:1px;
+		word-wrap:normal !important;
+
+		&:focus{
+			background-color:#ddd;
+			clip-path:none;
+			color:#444;
+			display:block;
+			font-size:1em;
+			height:auto;
+			left:5px;
+			line-height:normal;
+			padding:15px 23px 14px;
+			text-decoration:none;
+			top:5px;
+			width:auto;
+			z-index:100000;
+		}
+	}
+
+	/* stylelint-enable property-disallowed-list */
+}

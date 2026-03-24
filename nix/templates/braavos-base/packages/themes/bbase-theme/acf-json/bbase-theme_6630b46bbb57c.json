@@ -1,0 +1,43 @@
+{
+    "key": "group_6630b46bbb57c",
+    "title": "Title message",
+    "fields": [
+        {
+            "key": "field_6630b46c4b615",
+            "label": "Note: This title is not visible on frontend",
+            "name": "",
+            "aria-label": "",
+            "type": "message",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "The title above is only visible on the browser tab. The first headline, with the highest priority, used in any module will be the SEO title of the page.",
+            "new_lines": "wpautop",
+            "esc_html": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "page_template",
+                "operator": "==",
+                "value": "page-landing.php"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "acf_after_title",
+    "style": "seamless",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "bbase-theme",
+    "show_in_rest": 0,
+    "modified": 1714468146
+}

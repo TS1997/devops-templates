@@ -1,0 +1,41 @@
+@layer components {
+
+    /**
+     * Details and Summary-box component for a nice icon when opening and closing
+     **/
+
+	.toggle {
+		@apply list-none;
+
+		& > summary {
+			@apply relative cursor-pointer flex justify-between;
+			
+			&::after, &::before {
+				@apply icon font-bold text-primary-700 absolute right-0 w-6 h-6 transition-transform;
+			}
+
+            &::after {
+                @apply content-['\e145'] rotate-0 opacity-100;
+            }
+
+            &::before {
+                @apply content-['\e15b'] -rotate-90 opacity-0;
+            }
+		}
+
+		&[open] {
+
+			& > summary {
+
+				&::after {
+                    @apply rotate-90 opacity-0;
+                }
+
+                &::before {
+					@apply rotate-0 opacity-100;
+				}
+			}
+		}
+
+	}
+}

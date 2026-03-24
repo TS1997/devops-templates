@@ -1,0 +1,28 @@
+@layer components {
+
+	.sheet {
+		@apply mb-6 block w-full overflow-x-auto text-left text-sm;
+
+		/** MD */
+		@apply md:table;
+
+		/** lg */
+		@apply lg:mb-8;
+
+		th,
+		td {
+			@apply p-4;
+		}
+
+		thead {
+			@apply bg-grey-800 text-foreground-light;
+		}
+
+		tbody {
+
+			tr {
+				@apply odd:bg-grey-50;
+			}
+		}
+	}
+}

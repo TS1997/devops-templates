@@ -1,0 +1,33 @@
+.site-search {
+	@apply absolute inset-0 z-[60] hidden w-full items-center justify-start bg-background px-6;
+
+	&[aria-hidden="false"] {
+		@apply flex;
+	}
+
+	&__toggle {
+		@apply flex h-10 w-10 items-center justify-center;
+
+		& .label {
+			@apply sr-only;
+		}
+
+		&::before {
+			@apply icon text-2xl;
+		}
+
+		&--open {
+
+			&::before {
+				@apply content-['\e8b6'];
+			}
+		}
+
+		&--close {
+
+			&::before {
+				@apply content-['\e5cd'];
+			}
+		}
+	}
+}

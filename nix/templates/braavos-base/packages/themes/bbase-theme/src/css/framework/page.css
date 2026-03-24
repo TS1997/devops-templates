@@ -1,0 +1,6 @@
+#page {
+	@apply pt-[4.5rem];
+
+	/** LG */
+	@apply lg:pt-[5.5rem];
+}

@@ -1,0 +1,10 @@
+body.search {
+	@apply bg-grey-50;
+
+	& .search {
+
+		&__list {
+			@apply grid grid-cols-2 gap-6;
+		}
+	}
+}

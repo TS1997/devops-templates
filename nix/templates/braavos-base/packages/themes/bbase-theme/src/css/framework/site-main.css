@@ -1,0 +1,6 @@
+.site-main {
+	@apply container mb-14;
+
+	/** LG */
+	@apply lg:mb-24;
+}

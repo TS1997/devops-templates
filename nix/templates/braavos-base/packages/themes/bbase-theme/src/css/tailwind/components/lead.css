@@ -1,0 +1,6 @@
+@layer components {
+
+    .lead {
+        @apply wysiwyg text-lg base-margin tracking-wide;
+    }
+}

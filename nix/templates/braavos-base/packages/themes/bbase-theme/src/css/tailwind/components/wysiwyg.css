@@ -1,0 +1,161 @@
+@layer components {
+
+	.wysiwyg {
+		@apply list mx-auto w-full max-w-screen-md text-md;
+
+		& > * {
+			@apply max-w-full;
+
+			&:first-child {
+				@apply mt-0;
+			}
+
+			&:last-child {
+				@apply mb-0;
+			}
+		}
+
+		/**
+         * Headings
+         */
+
+		h1,
+		h2,
+		h2 code {
+			@apply heading-lg;
+		}
+
+		h3,
+		h3 code {
+			@apply heading-md;
+		}
+
+		h4 {
+			@apply heading-sm;
+		}
+
+		h5 {
+			@apply heading-xs;
+		}
+
+		h6 {
+			@apply heading-xs;
+		}
+
+		/**
+         * Text Tags
+         */
+
+		a {
+			@apply underline;
+		}
+
+		p {
+			@apply my-6;
+		}
+
+		b,
+		strong {
+			@apply font-bold;
+		}
+
+		[class~="lead"] {
+			@apply text-lg base-margin tracking-wide;
+		}
+
+		blockquote {
+			@apply blockquote;
+		}
+
+		kbd {
+			@apply px-2 py-1 text-sm;
+		}
+
+		code {
+			@apply text-sm;
+		}
+
+		pre {
+			@apply my-6 p-6 text-sm leading-6;
+		}
+
+		/**
+         * Images & Video
+         *
+         */
+
+		img,
+		picture,
+		video,
+		figure,
+		& .wp-caption {
+			@apply base-margin;
+		}
+
+		picture > img {
+			@apply my-0;
+		}
+
+		figure,
+		& .wp-caption {
+
+			& > * {
+				@apply my-0;
+			}
+		}
+
+		figcaption,
+		& .wp-caption-text,
+		& .wp-caption-dd {
+			@apply mt-3 ps-0 text-md font-thin italic;
+		}
+
+		& .aligncenter {
+			@apply mx-auto block;
+		}
+
+		& .alignleft {
+			@apply float-left my-2 mr-4;
+		}
+
+		& .alignright {
+			@apply float-right my-2 ml-4;
+		}
+
+		/**
+         * HR TAG
+         */
+
+		hr {
+			@apply my-12;
+
+			& + * {
+				@apply mt-0;
+			}
+		}
+
+		/**
+         * TABLE
+         */
+
+		table {
+			@apply sheet;
+		}
+
+		/**
+         * BUTTON
+         */
+
+		& .button {
+			@apply btn btn-secondary;
+
+			&--primary {
+				@apply btn;
+			}
+
+			&--link {
+				@apply btn-link;
+			}
+		}
+	}
+}

@@ -1,0 +1,23 @@
+.search-form {
+	@apply z-40 flex w-full items-center justify-start rounded-full bg-grey-50 border border-solid border-grey-50;
+
+	& label {
+		@apply w-full;
+	}
+
+	& input[type="submit"] {
+		@apply hidden;
+	}
+
+	& input {
+		@apply w-full bg-transparent p-2 text-foreground;
+
+		&::placeholder {
+			@apply text-grey-800;
+		}
+	}
+
+	&::before {
+		@apply icon ml-2 text-lg text-grey-800 content-['\e8b6'];
+	}
+}

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<ruleset name="Project Rules">
+  <description>WordPress + PHPCompatibility for the project's code.</description>
+
+  <!-- Where should PHPCS look? -->
+  <file>packages</file>
+
+  <!-- Ignore generated/package folders -->
+  <exclude-pattern>*/vendor/*</exclude-pattern>
+  <exclude-pattern>*/node_modules/*</exclude-pattern>
+  <exclude-pattern>*/dist/*</exclude-pattern>
+  <exclude-pattern>*/build/*</exclude-pattern>
+
+  <!-- Use WordPress coding standard + PHP compatibility -->
+  <rule ref="WordPress"/>
+  <rule ref="WordPress-Docs"/>
+  <rule ref="WordPress-Extra"/>
+  <!-- Set base levels so it is not too strict initially -->
+  <config name="basepath" value="."/>
+  <config name="report_width" value="120"/>
+
+  <!-- PHPCompatibility, choose target versions that you need to support -->
+  <rule ref="PHPCompatibilityWP"/>
+  <config name="testVersion" value="7.4-8.3"/>
+
+  <!-- WordPress-specific settings -->
+  <config name="minimum_supported_wp_version" value="6.0"/>
+
+  <!-- File extensions -->
+  <arg name="extensions" value="php,php5,inc"/>
+  <!-- Show full paths -->
+  <arg value="sp"/>
+
+  <!-- Sniff-tuning example (remove if you don't want to change default) -->
+  <rule ref="WordPress.Files.FileName">
+    <severity>0</severity>
+  </rule>
+</ruleset>
+

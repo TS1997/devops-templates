@@ -1,0 +1,16 @@
+.site-overlay {
+	@apply pointer-events-none fixed inset-0 z-20 h-full w-full bg-grey-800/25 opacity-0 transition-opacity;
+}
+
+body.menu-open,
+body.search-open {
+
+	& .site-overlay {
+		@apply pointer-events-auto opacity-100;
+	}
+}
+
+html.menu-open,
+html.search-open {
+	@apply overflow-hidden;
+}

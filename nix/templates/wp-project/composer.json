@@ -1,0 +1,119 @@
+{
+  "scripts": {
+    "move-bedrock-autoloader" : [
+      "ln -sf ../../../packages/mu-plugins/bedrock-autoloader.php public/content/mu-plugins/bedrock-autoloader.php"
+    ],
+    "post-install-cmd": [
+      "@move-bedrock-autoloader",
+      "@translate"
+    ],
+    "post-update-cmd": [
+      "@move-bedrock-autoloader",
+      "@translate"
+    ],
+    "create-theme": [
+      "Bravomedia\\Command\\CreateThemeCommand"
+    ],
+    "create-plugin": [
+      "Bravomedia\\Command\\CreatePluginCommand"
+    ],
+    "create-module": [
+      "Bravomedia\\Command\\CreateModuleCommand"
+    ],
+    "translate": [
+      "composer wp-translation-downloader:download"
+    ],
+    "lint:php": [
+      "phpcs"
+    ],
+    "fix:php": [
+      "phpcbf"
+    ],
+    "lint:all": [
+      "npm run lint",
+      "composer lint:php"
+    ]
+  },
+  "require": {
+    "php": "^8.3",
+    "inpsyde/wp-translation-downloader": "^2.5",
+    "oscarotero/env": "^2.1",
+    "roots/bedrock-autoloader": "^1.0",
+    "roots/bedrock-disallow-indexing": "^2.0",
+    "roots/wordpress": "^6.6",
+    "roots/wp-config": "^1",
+    "symfony/var-dumper": "^6.3",
+    "vinkla/headache": "^3.5",
+    "vlucas/phpdotenv": "^5.5",
+    "wpackagist-plugin/classic-editor": "^1.6",
+    "wpackagist-plugin/classic-widgets": "^0.3.0",
+    "wpackagist-plugin/redirection": "^5.3"
+  },
+  "require-dev": {
+    "bravomedia/create-command": "^0.1.0",
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.1",
+    "phpcompatibility/php-compatibility": "^9.3",
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "wp-coding-standards/wpcs": "^3.2"
+  },
+  "repositories": {
+    "wpackagist": {
+      "type": "composer",
+      "url": "https://wpackagist.org"
+    },
+    "bravomedia": {
+      "type": "composer",
+      "url": "https://packages.bravomedia.se"
+    },
+    "themes": {
+      "type": "path",
+      "url": "packages/themes/*",
+      "options": {
+        "symlink": true
+      }
+    },
+    "plugins": {
+      "type": "path",
+      "url": "packages/plugins/*",
+      "options": {
+        "symlink": true
+      }
+    },
+    "mu-plugins": {
+      "type": "path",
+      "url": "packages/mu-plugins/*",
+      "options": {
+        "symlink": true
+      }
+    }
+  },
+  "extra": {
+    "wordpress-install-dir": "public/wp",
+    "installer-paths": {
+      "public/content/plugins/{$name}/": "type:wordpress-plugin",
+      "public/content/themes/{$name}/": "type:wordpress-theme",
+      "public/content/mu-plugins/{$name}/": "type:wordpress-muplugin"
+    },
+    "wp-translation-downloader": {
+      "auto-run": false,
+      "languages": [
+        "sv_SE",
+        "en_US"
+      ],
+      "directory": "public/content/languages",
+      "excludes": [
+        "bravomedia/*"
+      ]
+    }
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "composer/installers": true,
+      "inpsyde/wp-translation-downloader": true,
+      "optimize-autoloader": true,
+      "roots/wordpress-core-installer": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  }
+}

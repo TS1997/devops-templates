@@ -1,0 +1,17 @@
+inputs:
+  nixpkgs:
+    url: github:NixOS/nixpkgs
+  # Example of a specific revision
+  # nixpkgs-old:
+    # url: github:NixOS/nixpkgs?rev=99fcf0ee74957231ff0471228e9a59f976a0266b
+  templates:
+    url: github:ts1997/devops-templates
+    # Example of a specific branch
+    # url: github:ts1997/devops-templates?ref=feat/feature-branch
+imports:
+  - templates
+
+# Example of using a local templates folder
+# url: /home/user/work/templates
+# or for older devenv versions
+# url: path:/home/user/work/templates

@@ -1,0 +1,3 @@
+npm run lint
+composer lint:php
+npx mix --production

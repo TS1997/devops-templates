@@ -1,0 +1,24 @@
+.braavos-module-posts_faq {
+
+	& .braavos-module-inner {
+		@apply w-full;
+
+		/** MD */
+		@apply md:max-w-screen-md;
+	}
+
+	& details.braavos-post {
+		@apply accordion;
+
+		& .braavos-post__content {
+			@apply wysiwyg;
+		}
+	}
+
+	&.braavos-module {
+
+		& .braavos-posts {
+			@apply flex flex-col gap-0;
+		}
+	}
+}

@@ -1,0 +1,72 @@
+.braavos-module-media_content {
+
+	& .braavos-module-inner {
+		@apply grid gap-10;
+
+		/** LG */
+		@apply lg:grid-cols-2 lg:gap-24;
+	}
+
+	&.content-position-left {
+
+		& .braavos-media {
+
+			/** LG */
+			@apply lg:order-2;
+		}
+	}
+
+	& .braavos-media {
+		@apply relative aspect-4/3 w-full;
+
+		/** MD */
+
+		&__image {
+			@apply absolute inset-0 h-full w-full object-cover;
+		}
+	}
+
+	& .braavos-content {
+		@apply box-border w-full self-center;
+
+		&__pretitle {
+			@apply heading-xs mb-4 mt-0 text-grey-800;
+		}
+
+		&__title {
+			@apply heading-xl mb-6 mt-0;
+
+			/** LG */
+			@apply lg:mb-8;
+		}
+
+		&__lead {
+			@apply wysiwyg base-margin;
+		}
+
+		&__cta {
+			@apply btn-secondary;
+		}
+	}
+
+	&.module-theme-primary {
+
+		& .braavos-content__pretitle {
+			@apply text-primary-700;
+		}
+	}
+
+	&.module-theme-tetriary {
+
+		& .braavos-content__pretitle {
+			@apply text-tetriary-700;
+		}
+	}
+
+	&.module-theme-secondary {
+
+		& .braavos-content__pretitle {
+			@apply text-secondary-700;
+		}
+	}
+}

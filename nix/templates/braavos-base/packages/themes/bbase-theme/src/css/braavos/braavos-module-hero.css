@@ -1,0 +1,103 @@
+.braavos-module-hero {
+	@apply relative;
+
+	& .braavos-module-inner {
+		@apply relative flex flex-wrap py-0;
+	}
+
+	& .braavos-background {
+		@apply absolute inset-0 m-0 h-full w-full;
+
+		/** MD */
+
+		& img,
+		video {
+			@apply absolute inset-0 h-full w-full object-cover;
+
+			&.narrow {
+
+				/** LG */
+				@apply lg:hidden;
+			}
+		}
+	}
+
+	& .braavos-foreground {
+		@apply relative box-border flex h-full min-h-[520px] w-full flex-col items-center justify-center;
+
+		/** MD */
+		@apply md:min-h-[600px] md:flex-row md:justify-between;
+
+		&::after {
+			@apply full-screen absolute inset-0 h-full w-full bg-gradient-to-r from-black/50 to-grey-800/0 content-[''];
+		}
+
+		&__content {
+			@apply z-10 my-8 w-full text-foreground-light;
+
+			/** MD */
+			@apply md:max-w-screen-sm;
+		}
+
+		&__title {
+			@apply heading-2xl mt-0;
+		}
+
+		&__lead {
+			@apply lead text-md;
+
+			/** md */
+			@apply md:text-lg;
+		}
+
+		&__cta {
+			@apply cta;
+		}
+
+		&__emblem {
+			@apply relative z-10 mb-10 w-20 self-end;
+
+			/** LG **/
+			@apply lg:w-32;
+		}
+	}
+
+	&.content-position-left {
+
+		& .braavos-foreground {
+
+			/** MD */
+			@apply md:justify-start;
+		}
+	}
+
+	&.content-position-right {
+
+		& .braavos-foreground {
+
+			/** MD */
+			@apply md:justify-end;
+		}
+	}
+
+	&.content-position-center {
+
+		& .braavos-foreground {
+
+			/** MD */
+			@apply md:justify-center;
+		}
+	}
+
+	&.module-width-full {
+
+		& .braavos-background,
+		& .braavos-foreground {
+			@apply full-screen;
+		}
+
+		& .braavos-foreground {
+			@apply m-0 w-full;
+		}
+	}
+}

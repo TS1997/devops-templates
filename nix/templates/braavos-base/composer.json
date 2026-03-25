@@ -48,14 +48,13 @@
     "roots/bedrock-disallow-indexing": "^2.0",
     "roots/wordpress": "^6.6",
     "roots/wp-config": "^1",
-    "symfony/var-dumper": "^6.3",
+    "symfony/var-dumper": "^8.0",
     "vinkla/headache": "^3.5",
     "vlucas/phpdotenv": "^5.5",
     "wpackagist-plugin/classic-editor": "^1.6",
     "wpackagist-plugin/classic-widgets": "^0.3.0",
     "wpackagist-plugin/duplicate-post": "@dev",
-    "wpackagist-plugin/instant-images": "@dev",
-    "wpackagist-plugin/redirection": "^5.3"
+    "wpackagist-plugin/instant-images": "@dev"
   },
   "require-dev": {
     "bravomedia/create-command": "^0.1.0",
@@ -116,10 +115,10 @@
   },
   "config": {
     "sort-packages": true,
+    "optimize-autoloader": true,
     "allow-plugins": {
       "composer/installers": true,
       "inpsyde/wp-translation-downloader": true,
-      "optimize-autoloader": true,
       "roots/wordpress-core-installer": true,
       "dealerdirect/phpcodesniffer-composer-installer": true
     }

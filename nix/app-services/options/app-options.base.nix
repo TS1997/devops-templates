@@ -77,18 +77,28 @@
       description = "The application locale.";
     };
 
+    maxExecutionTime = lib.mkOption {
+      type = lib.types.int;
+      default = 300;
+      description = "The maximum execution time for application scripts in seconds.";
+    };
+
     phpPool = lib.mkOption {
       type = util.submodule {
         imports = [ ../../services/phpfpm/options/phpfpm-pool-options.base.nix ];
 
-        config.extensions =
-          extensions:
-          [
-            extensions.mysqli
-            extensions.pdo
-            extensions.pdo_mysql
-          ]
-          ++ lib.optionals config.redis.enable [ extensions.redis ];
+        config = {
+          maxExecutionTime = config.maxExecutionTime;
+
+          extensions =
+            extensions:
+            [
+              extensions.mysqli
+              extensions.pdo
+              extensions.pdo_mysql
+            ]
+            ++ lib.optionals config.redis.enable [ extensions.redis ];
+        };
       };
       default = { };
       description = "PHP-FPM pool configuration for the application.";

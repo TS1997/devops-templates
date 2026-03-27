@@ -21,6 +21,7 @@ in
       fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
       fastcgi_index index.php;
       fastcgi_hide_header X-Powered-By;
+      fastcgi_read_timeout ${toString (siteCfg.maxExecutionTime + 60)}s;
       include ${nginxPackage}/conf/fastcgi_params;
     '';
   };

@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, ... }:
 {
   imports = [ ./phpfpm-package-options.base.nix ];
 
@@ -15,6 +15,12 @@
       description = "Environment variables for the PHP-FPM pool.";
     };
 
+    maxExecutionTime = lib.mkOption {
+      type = lib.types.int;
+      default = 300;
+      description = "The maximum execution time for PHP scripts in seconds.";
+    };
+
     phpOptions = lib.mkOption {
       type = lib.types.lines;
       default = ''
@@ -24,7 +30,7 @@
         upload_max_filesize = 50M
         post_max_size = 50M
         memory_limit = 512M
-        max_execution_time = 300
+        max_execution_time = ${toString config.maxExecutionTime}
       '';
       description = "PHP options for the PHP-FPM pool.";
     };
@@ -44,7 +50,7 @@
         "pm.start_servers" = 10;
         "pm.min_spare_servers" = 1;
         "pm.max_spare_servers" = 10;
-        "request_terminate_timeout" = 360;
+        "request_terminate_timeout" = config.maxExecutionTime + 60;
         "php_flag[display_errors]" = true;
         "php_admin_flag[log_errors]" = true;
         "php_value[memory_limit]" = "512M";

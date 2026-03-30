@@ -7,17 +7,11 @@
 let
   mailpitCfg = config.services.ts1997.mailpit or null;
   dbCfg = config.services.ts1997.mysql;
-
-  wpHome =
-    if siteCfg.enableSsl then
-      "https://${siteCfg.domain}:${toString siteCfg.sslPort}"
-    else
-      "http://${siteCfg.domain}:${toString siteCfg.port}";
 in
 {
   WP_ENV = siteCfg.appEnv;
-  WP_HOME = wpHome;
-  WP_SITEURL = "${wpHome}/wp";
+  WP_HOME = siteCfg.appUrl;
+  WP_SITEURL = "${siteCfg.appUrl}/wp";
 
   DB_NAME = "${siteCfg.database.name}";
   DB_USER = "${siteCfg.database.user}";

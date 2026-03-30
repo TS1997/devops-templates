@@ -15,7 +15,7 @@ in
 
   DB_NAME = "${siteCfg.database.name}";
   DB_USER = "${siteCfg.database.user}";
-  # DB_PASSWORD = "${siteCfg.database.password or ""}";
+  DB_PASSWORD = "${siteCfg.database.password or ""}";
   DB_HOST = "localhost:${dbCfg.socket}";
 
   DB_TABLE_PREFIX = "${siteCfg.tablePrefix}";

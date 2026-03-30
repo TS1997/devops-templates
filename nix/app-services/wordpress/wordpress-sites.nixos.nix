@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   util,
   ...
 }:
@@ -9,6 +10,17 @@ let
 
   mysqlSites = lib.filterAttrs (name: siteCfg: siteCfg.database.enable) sites;
   redisSites = lib.filterAttrs (name: siteCfg: siteCfg.redis.enable) sites;
+
+  mkDefaultEnv =
+    name: siteCfg:
+    import ./config/default-env.nix {
+      inherit
+        config
+        lib
+        name
+        siteCfg
+        ;
+    };
 
   mkLocations =
     name: siteCfg:
@@ -41,7 +53,7 @@ in
 
   config = lib.mkIf (sites != { }) {
     system.activationScripts = lib.mkMerge (
-      lib.mapAttrsToList (name: siteCfg: {
+      (lib.mapAttrsToList (name: siteCfg: {
         "setup-wordpress-dirs-${name}" = lib.stringAfter [ "users" "groups" ] ''
           mkdir -p ${siteCfg.workingDir}
           chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}
@@ -52,7 +64,18 @@ in
           chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.uploadsDir}
           chmod -R 0755 ${siteCfg.uploadsDir}
         '';
-      }) sites
+      }) sites)
+      ++ (lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf (siteCfg.generateEnv) {
+          "generate-env-${name}" = (
+            import ../../utils/generate-env.nixos.nix {
+              inherit lib pkgs siteCfg;
+              defaultEnv = (mkDefaultEnv name siteCfg);
+            }
+          );
+        }
+      ) sites)
     );
 
     services.ts1997.nginx = {

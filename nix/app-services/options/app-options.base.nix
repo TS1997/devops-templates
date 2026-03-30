@@ -79,7 +79,7 @@
 
     maxExecutionTime = lib.mkOption {
       type = lib.types.int;
-      default = 300;
+      default = 60;
       description = "The maximum execution time for application scripts in seconds.";
     };
 

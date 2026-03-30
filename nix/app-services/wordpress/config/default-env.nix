@@ -15,7 +15,7 @@ let
       "http://${siteCfg.domain}:${toString siteCfg.port}";
 in
 {
-  WP_ENV = "development";
+  WP_ENV = siteCfg.appEnv;
   WP_HOME = wpHome;
   WP_SITEURL = "${wpHome}/wp";
 

@@ -19,7 +19,7 @@ in
   DB_PASSWORD = "${siteCfg.database.password or ""}";
   DB_HOST = "localhost:${dbCfg.socket}";
 
-  DB_TABLE_PREFIX = "${siteCfg.tablePrefix}";
+  DB_PREFIX = "${siteCfg.tablePrefix}";
 
   SMTP_HOST = if (mailpitCfg != null && mailpitCfg.enable) then mailpitCfg.smtp.host else "127.0.0.1";
   SMTP_PORT = if (mailpitCfg != null && mailpitCfg.enable) then mailpitCfg.smtp.port else 1025;

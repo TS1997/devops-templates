@@ -12,6 +12,7 @@ in
   WP_ENV = siteCfg.appEnv;
   WP_HOME = siteCfg.appUrl;
   WP_SITEURL = "${siteCfg.appUrl}/wp";
+  WP_DEBUG_LOG = config.languages.php.fpm.settings.error_log;
 
   DB_NAME = "${siteCfg.database.name}";
   DB_USER = "${siteCfg.database.user}";
@@ -22,4 +23,5 @@ in
 
   SMTP_HOST = if (mailpitCfg != null && mailpitCfg.enable) then mailpitCfg.smtp.host else "127.0.0.1";
   SMTP_PORT = if (mailpitCfg != null && mailpitCfg.enable) then mailpitCfg.smtp.port else 1025;
+
 }

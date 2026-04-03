@@ -8,7 +8,7 @@
   options = {
     basePackage = lib.mkOption {
       type = lib.types.package;
-      default = pkgs.php;
+      default = pkgs.php84;
       description = "The PHP-FPM package to use.";
     };
 

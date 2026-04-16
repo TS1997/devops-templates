@@ -24,6 +24,9 @@
   config = {
     packages = with pkgs; [ wl-clipboard ];
 
+    # Give rust tooling time to mature
+    process.manager.implementation = "process-compose";
+
     processes = {
       env-config.exec = "devenv info";
     };

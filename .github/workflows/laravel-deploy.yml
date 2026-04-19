@@ -18,12 +18,14 @@ on:
         required: false
         default: ""
         type: string
-        description: "Additional deployment commands to run on the server before php artisan up."
+        description: "Additional deployment commands to run on the server before php
+          artisan up."
       post_deploy_commands:
         required: false
         default: ""
         type: string
-        description: "Additional deployment commands to run on the server after php artisan up."
+        description: "Additional deployment commands to run on the server after php
+          artisan up."
       additional_excludes:
         required: false
         default: ""
@@ -42,7 +44,7 @@ on:
         required: true
       SSH_KEY:
         required: true
-      
+
       AUTH_JSON:
         required: false
 
@@ -58,7 +60,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.php_version }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite,
+            bcmath, soap, intl, gd, exif, iconv
           coverage: none
           tools: composer:v2
 
@@ -84,31 +87,22 @@ jobs:
       - name: Compile assets
         run: |
           npm ci --prefer-offline
-          npm run build
+          NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
       - name: Deploy to server via rsync
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: >-
-            -avzr
-            --delete
-            --exclude='.zsh_history'
-            --exclude='.git*'
-            --exclude='node_modules'
-            --exclude='tests'
-            --exclude='bootstrap/cache/*'
-            --exclude='storage/logs/*.log'
+            -avzr --delete --exclude='.zsh_history' --exclude='.git*'
+            --exclude='node_modules' --exclude='tests'
+            --exclude='bootstrap/cache/*' --exclude='storage/logs/*.log'
             --exclude='storage/framework/cache/*'
             --exclude='storage/framework/sessions/*'
-            --exclude='storage/framework/views/*'
-            --exclude='.env*'
-            --exclude='phpunit.xml'
-            --exclude='README.md'
-            --exclude='.editorconfig'
-            --exclude='.eslintrc.json'
-            --exclude='.prettierrc'
-            --exclude='.devenv*'
-            ${{ inputs.additional_excludes }}
+            --exclude='storage/framework/views/*' --exclude='.env*'
+            --exclude='phpunit.xml' --exclude='README.md'
+            --exclude='.editorconfig' --exclude='.eslintrc.json'
+            --exclude='.prettierrc' --exclude='.devenv*' ${{
+            inputs.additional_excludes }}
 
           path: ./
           remote_path: ./

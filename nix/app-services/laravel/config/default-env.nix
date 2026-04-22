@@ -75,7 +75,11 @@ in
   MAIL_MAILER = if (mailpitCfg != null && mailpitCfg.enable) then "smtp" else "log";
   MAIL_SCHEME = null;
   MAIL_HOST = if (mailpitCfg != null && mailpitCfg.enable) then mailpitCfg.smtp.host else "127.0.0.1";
-  MAIL_PORT = if (mailpitCfg != null && mailpitCfg.enable) then mailpitCfg.smtp.port else 2525;
+  MAIL_PORT =
+    if (mailpitCfg != null && mailpitCfg.enable) then
+      config.processes.mailpit.ports.smtp.value
+    else
+      2525;
   MAIL_USERNAME = null;
   MAIL_PASSWORD = null;
   MAIL_FROM_ADDRESS = "hello@example.com";

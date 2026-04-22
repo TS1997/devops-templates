@@ -32,7 +32,7 @@ in
         readiness_probe = {
           http_get = {
             host = cfg.ui.host;
-            port = cfg.ui.port;
+            port = config.processes.mailpit.ports.ui.value;
             path = "/";
           };
           initial_delay_seconds = 1;

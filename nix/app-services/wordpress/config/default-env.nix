@@ -22,6 +22,10 @@ in
   DB_PREFIX = "${siteCfg.tablePrefix}";
 
   SMTP_HOST = if (mailpitCfg != null && mailpitCfg.enable) then mailpitCfg.smtp.host else "127.0.0.1";
-  SMTP_PORT = if (mailpitCfg != null && mailpitCfg.enable) then mailpitCfg.smtp.port else 1025;
+  SMTP_PORT =
+    if (mailpitCfg != null && mailpitCfg.enable) then
+      config.processes.mailpit.ports.smtp.value
+    else
+      1025;
 
 }

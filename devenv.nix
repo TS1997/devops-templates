@@ -4,6 +4,9 @@
   pkgs,
   ...
 }:
+let
+  system = pkgs.stdenv.system;
+in
 {
   imports = [
     (import ./nix/utils/util.nix {
@@ -22,7 +25,7 @@
   ];
 
   config = {
-    packages = with pkgs; [ wl-clipboard ];
+    packages = if system != "aarch64-darwin" then (with pkgs; [ wl-clipboard ]) else [ ];
 
     # Give rust tooling time to mature
     process.manager.implementation = "process-compose";

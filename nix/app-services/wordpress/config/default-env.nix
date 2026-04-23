@@ -6,6 +6,7 @@
 }:
 let
   mailpitCfg = config.services.ts1997.mailpit or null;
+  mailpitPorts = config.processes.mailpit.ports or null;
   dbCfg = config.services.ts1997.mysql;
 in
 {
@@ -22,10 +23,6 @@ in
   DB_PREFIX = "${siteCfg.tablePrefix}";
 
   SMTP_HOST = if (mailpitCfg != null && mailpitCfg.enable) then mailpitCfg.smtp.host else "127.0.0.1";
-  SMTP_PORT =
-    if (mailpitCfg != null && mailpitCfg.enable) then
-      config.processes.mailpit.ports.smtp.value
-    else
-      1025;
+  SMTP_PORT = if (mailpitCfg != null && mailpitCfg.enable) then mailpitPorts.smtp.value else 1025;
 
 }

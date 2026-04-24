@@ -89,6 +89,16 @@ jobs:
           npm ci --prefer-offline
           NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
+      - name: Activate maintenance mode
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            php artisan down
+            php artisan optimize:clear
+
       - name: Deploy to server via rsync
         uses: burnett01/rsync-deployments@7.0.1
         with:
@@ -117,7 +127,6 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            php artisan down
             php artisan optimize
             php artisan migrate --force
             ${{ inputs.additional_commands }}

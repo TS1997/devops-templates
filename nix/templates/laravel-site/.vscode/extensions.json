@@ -1,0 +1,20 @@
+{
+  "recommendations": [
+    "github.copilot-chat",
+    "mkhl.direnv",
+    "bmewburn.vscode-intelephense-client",
+    "redhat.vscode-yaml",
+    "xdebug.php-debug",
+    "pestphp.pest-vscode",
+    "open-southeners.laravel-pint",
+    "onecentlin.laravel-blade",
+    "shufo.vscode-blade-formatter",
+    "amiralizadeh9480.laravel-extra-intellisense",
+    "bradlc.vscode-tailwindcss",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "editorconfig.editorconfig",
+    "mikestead.dotenv",
+    "jnoortheen.nix-ide"
+  ]
+}

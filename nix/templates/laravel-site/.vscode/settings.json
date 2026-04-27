@@ -1,0 +1,82 @@
+{
+  "postman.settings.dotenv-detection-notification-visibility": false,
+
+  // Format on save, with language-specific formatters matching project tooling.
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  "[php]": {
+    "editor.defaultFormatter": "open-southeners.laravel-pint",
+    "editor.formatOnSave": true
+  },
+  "[blade]": {
+    "editor.defaultFormatter": "shufo.vscode-blade-formatter"
+  },
+  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[yaml]": { "editor.defaultFormatter": "redhat.vscode-yaml" },
+  "[nix]": { "editor.defaultFormatter": "jnoortheen.nix-ide" },
+
+  // Laravel Pint (uses project pint.json automatically).
+  "laravel-pint.enable": true,
+  "laravel-pint.executablePath": "vendor/bin/pint",
+
+  // Use the workspace TypeScript version so everyone matches package.json.
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+
+  // ESLint: auto-fix on save, scoped to the JS source directory.
+  "eslint.workingDirectories": [{ "pattern": "./" }],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never"
+  },
+
+  // Disable built-in PHP suggest to avoid duplicates.
+  "php.suggest.basic": false,
+
+  // Tailwind v4 + cn()/clsx() helpers get class completions.
+  "tailwindCSS.experimental.classRegex": [
+    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["clsx\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ],
+  "tailwindCSS.includeLanguages": {
+    "blade": "html",
+    "php": "html"
+  },
+
+  // Keep search snappy — hide generated and vendored output.
+  "search.exclude": {
+    "**/vendor": true,
+    "**/node_modules": true,
+    "**/public/build": true,
+    "**/public/vendor": true,
+    "**/bootstrap/cache": true,
+    "**/bootstrap/ssr": true,
+    "**/storage/framework": true,
+    "**/storage/logs": true,
+    "**/.devenv": true,
+    "**/.direnv": true,
+    "**/_ide_helper*.php": true,
+    "**/.phpstorm.meta.php": true,
+    "**/.scribe-sol": true,
+    "composer.lock": true,
+    "package-lock.json": true
+  },
+  "files.watcherExclude": {
+    "**/vendor/**": true,
+    "**/node_modules/**": true,
+    "**/.devenv/**": true,
+    "**/.direnv/**": true,
+    "**/storage/framework/**": true,
+    "**/storage/logs/**": true,
+    "**/public/build/**": true,
+    "**/bootstrap/cache/**": true
+  }
+}

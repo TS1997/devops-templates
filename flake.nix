@@ -1,9 +1,18 @@
 {
   description = "DevOps Templates";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/release-25.11";
+  inputs.flake-utils.url = "github:numtide/flake-utils";
+
   outputs =
-    { self }:
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
     {
       lib = import ./nix/lib/nixos.nix;
+
+      apps = import ./nix/apps/apps.nix { inherit nixpkgs self flake-utils; };
 
       nixosModules = {
         default = {
@@ -24,11 +33,6 @@
         wp-flake = {
           path = ./nix/templates/wp-project;
           description = "A wordpress template using Nix flake and Devenv.";
-        };
-
-        laravel = {
-          path = ./nix/templates/laravel-project;
-          description = "A laravel template using Nix flake and Devenv.";
         };
       };
     };

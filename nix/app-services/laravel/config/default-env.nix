@@ -89,4 +89,13 @@ in
   AWS_USE_PATH_STYLE_ENDPOINT = false;
 
   VITE_APP_NAME = "${siteCfg.appName}";
+
+  INERTIA_SSR_ENABLED = siteCfg.inertiaSsr.enable or false;
+  INERTIA_SSR_URL =
+    if (siteCfg.inertiaSsr.enable or false) then
+      "${
+        if (siteCfg.enableSsl or false) then "https" else "http"
+      }://${siteCfg.inertiaSsr.host}:${toString siteCfg.inertiaSsr.port}"
+    else
+      null;
 }

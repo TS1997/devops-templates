@@ -63,9 +63,32 @@
       default = { };
       description = "Laravel Queue Worker configuration.";
     };
+
+    inertiaSsr = lib.mkOption {
+      type = util.submodule {
+        options = {
+          enable = lib.mkEnableOption "Enable Inertia.js Server-Side Rendering server.";
+
+          host = lib.mkOption {
+            type = lib.types.str;
+            default = "127.0.0.1";
+            description = "The host the Inertia SSR server binds to.";
+          };
+
+          port = lib.mkOption {
+            type = lib.types.int;
+            default = 13714;
+            description = "The port the Inertia SSR server listens on.";
+          };
+        };
+      };
+      default = { };
+      description = "Inertia.js SSR configuration.";
+    };
   };
 
   config = {
+    inertiaSsr.enable = lib.mkDefault true;
     scheduler.enable = lib.mkDefault true;
     queue.enable = lib.mkDefault true;
     database.package = lib.mkDefault (

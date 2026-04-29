@@ -14,6 +14,14 @@ let
       config.services.ts1997.pgsql
     else
       config.services.ts1997.mysql;
+
+  ssrUrl =
+    if (siteCfg.inertiaSsr.enable) then
+      "${
+        if (siteCfg.enableSsl or false) then "https" else "http"
+      }://${siteCfg.inertiaSsr.host}:${toString siteCfg.inertiaSsr.port}"
+    else
+      null;
 in
 {
   APP_NAME = "${siteCfg.appName}";
@@ -90,12 +98,6 @@ in
 
   VITE_APP_NAME = "${siteCfg.appName}";
 
-  INERTIA_SSR_ENABLED = siteCfg.inertiaSsr.enable or false;
-  INERTIA_SSR_URL =
-    if (siteCfg.inertiaSsr.enable or false) then
-      "${
-        if (siteCfg.enableSsl or false) then "https" else "http"
-      }://${siteCfg.inertiaSsr.host}:${toString siteCfg.inertiaSsr.port}"
-    else
-      null;
+  INERTIA_SSR_ENABLED = siteCfg.inertiaSsr.enable;
+  INERTIA_SSR_URL = ssrUrl;
 }

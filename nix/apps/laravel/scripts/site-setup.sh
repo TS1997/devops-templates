@@ -1,13 +1,5 @@
 #!/usr/bin/env bash
-# Laravel site setup.
-#
-# Prompts for a project name (or takes it as arguments), derives a slug for the
-# project directory, runs the interactive `laravel new` installer so it creates
-# the project directory itself, then overlays the Laravel devenv template files
-# on top of the fresh app.
-#
-# Expected environment:
-#   TEMPLATE_DIR  Path to the Laravel devenv template source directory.
+# Create a Laravel project from the bundled template.
 
 set -euo pipefail
 
@@ -21,73 +13,100 @@ else
   reset=""
 fi
 
-error() {
+fail() {
   printf '%s\n' "${red}${bold}Error:${reset} $*" >&2
-}
-
-die() {
-  error "$*"
   exit 1
 }
 
-[[ -n "${TEMPLATE_DIR:-}" ]] || die "TEMPLATE_DIR is not set. Run this script through the Nix app so the template path is configured."
-[[ -d "$TEMPLATE_DIR" ]] || die "Template directory does not exist: $TEMPLATE_DIR"
-
-project_name=${*:-}
-
-if [[ -z "$project_name" ]]; then
-  read -r -p "Project name: " project_name || die "Project name is required."
-fi
-
-[[ -n "$project_name" ]] || die "Project name is required."
-
-folder_slug=$(printf '%s' "$project_name" \
-  | tr '[:upper:]' '[:lower:]' \
-  | sed -E 's/[^a-z0-9]+/-/g; s/^-//; s/-$//')
-
-site_slug=$(printf '%s' "$project_name" \
-  | tr '[:upper:]' '[:lower:]' \
-  | sed -E 's/[^a-z0-9]+//g')
-
-[[ -n "$folder_slug" ]] || die "Unable to derive a project directory from '$project_name'. Use at least one letter or number."
-[[ -n "$site_slug" ]] || die "Unable to derive a site slug from '$project_name'. Use at least one letter or number."
-
-target_dir=$folder_slug
-
-[[ ! -e "$target_dir" ]] || die "Target directory already exists: ./$target_dir"
+slugify() {
+  local separator=$1
+  tr '[:upper:]' '[:lower:]' \
+    | sed -E "s/[^a-z0-9]+/${separator}/g; s/^${separator}//; s/${separator}$//"
+}
 
 escape_sed_replacement() {
   printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
 }
 
-site_name_replacement=$(escape_sed_replacement "$project_name")
-site_slug_replacement=$(escape_sed_replacement "$site_slug")
+copy_template() {
+  rsync \
+    -aL \
+    --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r \
+    "$TEMPLATE_DIR/" \
+    "$target_dir/"
+}
 
+replace_placeholders() {
+  local app_key_replacement site_name_replacement site_slug_replacement
+
+  app_key_replacement=$(escape_sed_replacement "$app_key")
+  site_name_replacement=$(escape_sed_replacement "$project_name")
+  site_slug_replacement=$(escape_sed_replacement "$site_slug")
+
+  sed -i \
+    -e "s|{{SITE_NAME}}|$site_name_replacement|" \
+    -e "s|{{SITE_SLUG}}|$site_slug_replacement|" \
+    -e "s|{{APP_KEY}}|$app_key_replacement|" \
+    "$target_dir/devenv.nix"
+}
+
+install_dependencies() {
+  (
+    cd "$target_dir"
+
+    COMPOSER_NO_DEV=0 \
+    APP_NAME="$project_name" \
+    APP_ENV="${APP_ENV:-local}" \
+    APP_LOCALE="${APP_LOCALE:-en}" \
+    APP_FALLBACK_LOCALE="${APP_FALLBACK_LOCALE:-en}" \
+    APP_KEY="$app_key" \
+    CACHE_STORE="${CACHE_STORE:-file}" \
+    DB_CONNECTION="${DB_CONNECTION:-sqlite}" \
+      composer install --no-interaction --prefer-dist --no-progress
+
+    npm install
+  )
+}
+
+[[ -n "${TEMPLATE_DIR:-}" ]] || fail "TEMPLATE_DIR is not set. Run this script through the Nix app."
+[[ -d "$TEMPLATE_DIR" ]] || fail "Template directory does not exist: $TEMPLATE_DIR"
+
+project_name=${*:-}
+
+if [[ -z "$project_name" ]]; then
+  read -r -p "Project name: " project_name || fail "Project name is required."
+fi
+
+[[ -n "$project_name" ]] || fail "Project name is required."
+
+folder_slug=$(printf '%s' "$project_name" | slugify '-')
+site_slug=$(printf '%s' "$project_name" | slugify '')
+
+[[ -n "$folder_slug" ]] || fail "Unable to derive a project directory from '$project_name'. Use at least one letter or number."
+[[ -n "$site_slug" ]] || fail "Unable to derive a site slug from '$project_name'. Use at least one letter or number."
+
+target_dir=$folder_slug
 app_key="base64:$(openssl rand -base64 32)"
-app_key_replacement=$(escape_sed_replacement "$app_key")
 
-# 1. Run the interactive Laravel installer. It creates $target_dir itself.
-if ! laravel new "$target_dir"; then
-  die "Laravel installer failed. If ./$target_dir was partially created, remove it before trying again."
-fi
+[[ ! -e "$target_dir" ]] || fail "Target directory already exists: ./$target_dir"
 
-[[ -d "$target_dir" ]] || die "Laravel installer completed, but the project directory was not created: ./$target_dir"
+mkdir "$target_dir" || fail "Failed to create project directory: ./$target_dir"
+copy_template || fail "Failed to copy template files into ./$target_dir"
 
-# 2. Overlay the template files on top of the fresh Laravel app.
-if ! rsync -rl "$TEMPLATE_DIR/" "$target_dir/"; then
-  die "Failed to copy template files from $TEMPLATE_DIR to ./$target_dir"
-fi
+[[ -f "$target_dir/devenv.nix" ]] || fail "Template copy completed, but ./$target_dir/devenv.nix is missing."
+replace_placeholders || fail "Failed to fill placeholders in ./$target_dir/devenv.nix"
 
-[[ -f "$target_dir/devenv.nix" ]] || die "Template copy completed, but ./$target_dir/devenv.nix is missing."
+: > "$target_dir/.env" || fail "Failed to create ./$target_dir/.env"
+chmod 755 "$target_dir/artisan" || fail "Failed to make ./$target_dir/artisan executable"
 
-# 3. Fill in the placeholders in devenv.nix.
-if ! sed -i \
-  -e "s|{{SITE_NAME}}|$site_name_replacement|" \
-  -e "s|{{SITE_SLUG}}|$site_slug_replacement|" \
-  -e "s|{{APP_KEY}}|$app_key_replacement|" \
-  "$target_dir/devenv.nix"; then
-  die "Failed to fill placeholders in ./$target_dir/devenv.nix"
-fi
+for writable_dir in "$target_dir/storage" "$target_dir/bootstrap/cache"; do
+  [[ -d "$writable_dir" ]] || continue
+  chmod -R u+rwX,go+rX "$writable_dir" || fail "Failed to set permissions on $writable_dir"
+done
+
+command -v composer >/dev/null 2>&1 || fail "composer is not on PATH."
+command -v npm >/dev/null 2>&1 || fail "npm is not on PATH."
+install_dependencies || fail "Failed to install dependencies in ./$target_dir"
 
 cat <<EOF
 Created $project_name in ./$target_dir
@@ -95,4 +114,5 @@ Created $project_name in ./$target_dir
 Next steps:
   cd $target_dir
   devenv up
+  php artisan migrate:fresh --seed
 EOF

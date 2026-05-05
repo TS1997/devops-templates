@@ -10,10 +10,15 @@ You can install the package via composer:
 composer require ts1997/{{package_slug}}
 ```
 
-You can publish and run the migrations with:
+You can optionally publish the migrations with:
 
 ```bash
 php artisan vendor:publish --tag="{{package_slug}}-migrations"
+```
+
+Run the migrations with:
+
+```bash
 php artisan migrate
 ```
 

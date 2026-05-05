@@ -15,9 +15,23 @@ class {{class_name}}ServiceProvider extends PackageServiceProvider {
          */
         $package
             ->name('{{package_slug}}')
+            ->discoversMigrations()
+            ->runsMigrations()
             ->hasConfigFile()
-            ->hasViews()
-            ->hasMigration('create_{{migration_table_name}}_table')
             ->hasCommand({{class_name}}Command::class);
+    }
+
+    public function packageBooted(): void {
+        $this->configureTranslations();
+    }
+
+    protected function configureTranslations(): void {
+        // Load translations
+        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', '{{package_slug}}');
+
+        // Publish translations
+        $this->publishes([
+            __DIR__.'/../resources/lang' => lang_path('vendor/{{package_slug}}'),
+        ], '{{package_slug}}-translations');
     }
 }

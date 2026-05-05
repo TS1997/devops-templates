@@ -86,7 +86,6 @@ mkdir "$target_dir" || fail "Failed to create package directory: ./$target_dir"
 copy_template || fail "Failed to copy template files into ./$target_dir"
 
 [[ -f "$target_dir/devenv.nix" ]] || fail "Template copy completed, but ./$target_dir/devenv.nix is missing."
-rm -f "$target_dir/configure.php" || fail "Failed to remove ./$target_dir/configure.php"
 replace_template_placeholders || fail "Failed to configure Laravel package in ./$target_dir"
 
 cat <<EOF

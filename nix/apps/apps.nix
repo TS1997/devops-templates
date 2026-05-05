@@ -9,6 +9,7 @@ flake-utils.lib.eachDefaultSystemMap (
     pkgs = import nixpkgs { inherit system; };
   in
   {
+    laravel-package = import ./laravel/package.nix { inherit pkgs self flake-utils; };
     laravel-site = import ./laravel/site.nix { inherit pkgs self flake-utils; };
   }
 )

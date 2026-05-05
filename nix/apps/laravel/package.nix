@@ -4,18 +4,15 @@
   flake-utils,
 }:
 let
-  templateDir = "${self}/nix/templates/laravel-site";
+  templateDir = "${self}/nix/templates/laravel-package";
 
   bootstrap = pkgs.writeShellApplication {
-    name = "laravel-site-setup";
+    name = "laravel-package-setup";
 
     runtimeInputs = with pkgs; [
       coreutils
+      findutils
       gnused
-      laravel
-      nodejs
-      openssl
-      php.packages.composer
       rsync
     ];
 
@@ -24,11 +21,11 @@ let
 
       ${builtins.readFile ./scripts/common.sh}
 
-      ${builtins.readFile ./scripts/site-setup.sh}
+      ${builtins.readFile ./scripts/package-setup.sh}
     '';
   };
 in
 flake-utils.lib.mkApp {
   drv = bootstrap;
-  name = "laravel-site-setup";
+  name = "laravel-package-setup";
 }

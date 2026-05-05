@@ -3,39 +3,6 @@
 
 set -euo pipefail
 
-if [[ -t 2 ]]; then
-  red=$'\033[31m'
-  bold=$'\033[1m'
-  reset=$'\033[0m'
-else
-  red=""
-  bold=""
-  reset=""
-fi
-
-fail() {
-  printf '%s\n' "${red}${bold}Error:${reset} $*" >&2
-  exit 1
-}
-
-slugify() {
-  local separator=$1
-  tr '[:upper:]' '[:lower:]' \
-    | sed -E "s/[^a-z0-9]+/${separator}/g; s/^${separator}//; s/${separator}$//"
-}
-
-escape_sed_replacement() {
-  printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
-}
-
-copy_template() {
-  rsync \
-    -aL \
-    --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r \
-    "$TEMPLATE_DIR/" \
-    "$target_dir/"
-}
-
 replace_placeholders() {
   local app_key_replacement site_name_replacement site_slug_replacement
 
@@ -68,8 +35,7 @@ install_dependencies() {
   )
 }
 
-[[ -n "${TEMPLATE_DIR:-}" ]] || fail "TEMPLATE_DIR is not set. Run this script through the Nix app."
-[[ -d "$TEMPLATE_DIR" ]] || fail "Template directory does not exist: $TEMPLATE_DIR"
+require_template_dir
 
 project_name=${*:-}
 
@@ -104,8 +70,8 @@ for writable_dir in "$target_dir/storage" "$target_dir/bootstrap/cache"; do
   chmod -R u+rwX,go+rX "$writable_dir" || fail "Failed to set permissions on $writable_dir"
 done
 
-command -v composer >/dev/null 2>&1 || fail "composer is not on PATH."
-command -v npm >/dev/null 2>&1 || fail "npm is not on PATH."
+require_command composer
+require_command npm
 install_dependencies || fail "Failed to install dependencies in ./$target_dir"
 
 cat <<EOF

@@ -1,10 +1,10 @@
 <?php
 
-namespace TS1997\{{class_name}}\Commands;
+namespace TS1997\Skeleton\Commands;
 
 use Illuminate\Console\Command;
 
-class {{class_name}}Command extends Command {
+class SkeletonCommand extends Command {
     public $signature = '{{package_slug}}';
 
     public $description = 'My command';

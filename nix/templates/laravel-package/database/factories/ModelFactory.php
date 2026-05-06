@@ -1,6 +1,6 @@
 <?php
 
-namespace TS1997\{{class_name}}\Database\Factories;
+namespace TS1997\Skeleton\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 

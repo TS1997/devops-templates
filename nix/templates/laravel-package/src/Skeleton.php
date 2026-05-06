@@ -1,6 +1,6 @@
 <?php
 
-namespace TS1997\{{class_name}};
+namespace TS1997\Skeleton;
 
-class {{class_name}} {
+class Skeleton {
 }

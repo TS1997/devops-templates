@@ -1,23 +1,23 @@
 <?php
 
-namespace TS1997\{{class_name}}\Tests;
+namespace TS1997\Skeleton\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use TS1997\{{class_name}}\{{class_name}}ServiceProvider;
+use TS1997\Skeleton\SkeletonServiceProvider;
 
 class TestCase extends Orchestra {
     protected function setUp(): void {
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn(string $modelName) => 'TS1997\\{{class_name}}\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
+            fn(string $modelName) => 'TS1997\\Skeleton\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
         );
     }
 
     protected function getPackageProviders($app) {
         return [
-            {{class_name}}ServiceProvider::class,
+            SkeletonServiceProvider::class,
         ];
     }
 

@@ -27,3 +27,11 @@ phpstan.neon
 testbench.yaml
 /docs
 /coverage
+
+# Devenv
+.devenv*
+devenv.local.nix
+*-devenv.local.nix
+
+# direnv
+.direnv

@@ -1,4 +1,4 @@
 <?php
 
-// config for TS1997/{{class_name}}
+// config for TS1997/Skeleton
 return [];

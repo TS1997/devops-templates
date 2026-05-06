@@ -8,6 +8,14 @@
 let
   packageCfg = config.services.ts1997.laravelPackage;
 
+  packageScript = pkgs.writeShellApplication {
+    name = "laravel-package";
+    runtimeInputs = [ packageCfg.phpPackage ];
+    text = ''
+      php ${./scripts/package-make.php} "$@"
+    '';
+  };
+
   initComposerScript = pkgs.writeShellScript "init-laravel-package-composer.sh" ''
     LOCK_HASH_FILE=${util.values.devenvDotfile}/laravel-package-composer.lockhash
 
@@ -76,16 +84,16 @@ in
     '';
 
     scripts = {
+      package.exec = ''
+        ${packageScript}/bin/laravel-package "$@"
+      '';
+
       run-tests.exec = ''
         composer test "$@"
       '';
 
       format.exec = ''
         composer format "$@"
-      '';
-
-      analyse.exec = ''
-        composer analyse "$@"
       '';
     };
   };

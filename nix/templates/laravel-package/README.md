@@ -53,6 +53,27 @@ $panel
 
 <!-- END FILAMENT_PLUGIN -->
 
+## Package development
+
+This package includes Devenv tooling for running Testbench commands against the package while keeping generated files in package directories.
+
+Use `package make:*` instead of `vendor/bin/testbench make:*` when generating package files:
+
+```bash
+package make:model Post --migration --factory
+package make:migration create_posts_table
+package make:factory PostFactory --model=Post
+```
+
+The command runs the matching Testbench generator, moves generated files out of Workbench paths, rewrites namespaces, removes duplicate imports, and deletes the temporary `workbench` directory.
+
+For other Testbench or Artisan-style commands, use the same `package` wrapper:
+
+```bash
+package list
+package migrate
+```
+
 ## Testing
 
 ```bash

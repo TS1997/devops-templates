@@ -4,7 +4,6 @@ namespace TS1997\Skeleton;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use TS1997\Skeleton\Commands\SkeletonCommand;
 
 class SkeletonServiceProvider extends PackageServiceProvider {
     public function configurePackage(Package $package): void {
@@ -17,8 +16,7 @@ class SkeletonServiceProvider extends PackageServiceProvider {
             ->name('{{package_slug}}')
             ->discoversMigrations()
             ->runsMigrations()
-            ->hasConfigFile()
-            ->hasCommand(SkeletonCommand::class);
+            ->hasConfigFile();
     }
 
     public function packageBooted(): void {

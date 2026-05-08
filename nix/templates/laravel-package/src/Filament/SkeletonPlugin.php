@@ -1,6 +1,6 @@
 <?php
 
-namespace TS1997\Skeleton\Filament;
+namespace PackageVendor\Skeleton\Filament;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;

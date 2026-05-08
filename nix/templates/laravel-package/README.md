@@ -7,7 +7,7 @@ This is where your description should go. Limit it to a paragraph or two. Consid
 You can install the package via composer:
 
 ```bash
-composer require ts1997/{{package_slug}}
+composer require {{vendor_slug}}/{{package_slug}}
 ```
 
 Most packages work without publishing anything. Only publish files when you need to customize them in your application.
@@ -43,7 +43,7 @@ php artisan vendor:publish --tag="{{package_slug}}-translations"
 Register the plugin in your Filament panel provider:
 
 ```php
-use TS1997\Skeleton\Filament\SkeletonPlugin;
+use {{vendor_namespace}}\Skeleton\Filament\SkeletonPlugin;
 
 $panel
     ->plugins([

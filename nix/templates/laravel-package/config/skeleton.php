@@ -1,4 +1,4 @@
 <?php
 
-// config for TS1997/Skeleton
+// config for {{vendor_namespace}}/Skeleton
 return [];

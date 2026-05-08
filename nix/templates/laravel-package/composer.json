@@ -1,12 +1,12 @@
 {
-    "name": "ts1997/{{package_slug}}",
+    "name": "{{vendor_slug}}/{{package_slug}}",
     "description": "{{package_description}}",
     "keywords": [
-        "ts1997",
+        "{{vendor_slug}}",
         "laravel",
         "{{package_slug}}"
     ],
-    "homepage": "https://github.com/ts1997/{{package_slug}}",
+    "homepage": "https://github.com/{{vendor_slug}}/{{package_slug}}",
     "license": "MIT",
     "require": {
         "php": "^8.4",
@@ -24,13 +24,13 @@
     },
     "autoload": {
         "psr-4": {
-            "TS1997\\Skeleton\\": "src/",
-            "TS1997\\Skeleton\\Database\\Factories\\": "database/factories/"
+            "{{vendor_namespace}}\\Skeleton\\": "src/",
+            "{{vendor_namespace}}\\Skeleton\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "TS1997\\Skeleton\\Tests\\": "tests/",
+            "{{vendor_namespace}}\\Skeleton\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },
@@ -50,10 +50,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "TS1997\\Skeleton\\SkeletonServiceProvider"
+                "{{vendor_namespace}}\\Skeleton\\SkeletonServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "TS1997\\Skeleton\\Facades\\Skeleton"
+                "Skeleton": "{{vendor_namespace}}\\Skeleton\\Facades\\Skeleton"
             }
         }
     },

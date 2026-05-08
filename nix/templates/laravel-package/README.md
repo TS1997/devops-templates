@@ -71,7 +71,6 @@ For other Testbench or Artisan-style commands, use the same `package` wrapper:
 
 ```bash
 package list
-package migrate
 ```
 
 ## Testing

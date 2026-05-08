@@ -355,15 +355,25 @@ function patchPhpFile(string $path, string $packageNamespace, ?string $factoryNa
 
 function destinationForGeneratedFile(string $path): ?string {
     $path = normalizePath($path);
+    $testbenchLaravelPrefix = 'vendor/orchestra/testbench-core/laravel/';
+
+    if (str_starts_with($path, $testbenchLaravelPrefix)) {
+        $path = substr($path, strlen($testbenchLaravelPrefix));
+    }
 
     $prefixes = [
         'workbench/app/' => 'src/',
         'app/' => 'src/',
         'workbench/database/' => 'database/',
+        'database/' => 'database/',
         'workbench/tests/' => 'tests/',
+        'tests/' => 'tests/',
         'workbench/routes/' => 'routes/',
+        'routes/' => 'routes/',
         'workbench/config/' => 'config/',
+        'config/' => 'config/',
         'workbench/resources/' => 'resources/',
+        'resources/' => 'resources/',
     ];
 
     foreach ($prefixes as $sourcePrefix => $destinationPrefix) {
@@ -432,7 +442,17 @@ if (!$shouldRelocateGeneratedFiles) {
     exit($exitCode);
 }
 
-$trackedRoots = ['workbench', 'app', 'database', 'tests', 'src', 'routes', 'config', 'resources'];
+$trackedRoots = [
+    'workbench',
+    'app',
+    'database',
+    'tests',
+    'src',
+    'routes',
+    'config',
+    'resources',
+    'vendor/orchestra/testbench-core/laravel',
+];
 $before = listFiles($trackedRoots);
 $exitCode = runCommand(array_merge(['vendor/bin/testbench', $command], $args));
 

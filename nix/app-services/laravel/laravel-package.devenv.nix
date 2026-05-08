@@ -74,6 +74,13 @@ in
   config = lib.mkIf packageCfg.enable {
     env = packageCfg.env;
 
+    files = {
+      ".github/instructions/laravel-package-tooling.instructions.md".source =
+        ./copilot/instructions/laravel-package-tooling.instructions.md;
+      ".github/skills/laravel-package-development/SKILL.md".source =
+        ./copilot/skills/laravel-package-development/SKILL.md;
+    };
+
     languages.php = {
       enable = true;
       package = packageCfg.phpPackage;

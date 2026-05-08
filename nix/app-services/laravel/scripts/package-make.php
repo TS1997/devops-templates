@@ -111,6 +111,115 @@ function removeEmptyDirectories(string $root): void {
     @rmdir($root);
 }
 
+function ensureDirectory(string $directory): void {
+    if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
+        fail("Unable to create directory {$directory}.");
+    }
+}
+
+function hasOption(array $args, string $option): bool {
+    foreach ($args as $arg) {
+        if ($arg === $option || str_starts_with($arg, $option . '=')) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function commandNeedsPackageFilamentPanel(string $command): bool {
+    return str_starts_with($command, 'make:filament-')
+        && $command !== 'make:filament-panel';
+}
+
+function commandAcceptsPackageFilamentPanelOption(string $command): bool {
+    return in_array($command, [
+        'make:filament-cluster',
+        'make:filament-page',
+        'make:filament-relation-manager',
+        'make:filament-resource',
+        'make:filament-theme',
+        'make:filament-user',
+        'make:filament-widget',
+    ], true);
+}
+
+function createTemporaryPackageFilamentPanel(): array {
+    $providerPath = 'workbench/app/Providers/Filament/PackageMakePanelProvider.php';
+    $providersPath = 'workbench/bootstrap/providers.php';
+    $createdFiles = [];
+    $originalProviders = is_file($providersPath) ? file_get_contents($providersPath) : null;
+    $packageRoot = var_export(normalizePath(getcwd()), true);
+
+    ensureDirectory(dirname($providerPath));
+    ensureDirectory(dirname($providersPath));
+
+    if (!is_file($providerPath)) {
+        $provider = str_replace('{{PACKAGE_ROOT}}', $packageRoot, <<<'PHP'
+<?php
+
+namespace Workbench\App\Providers\Filament;
+
+use Filament\Panel;
+use Filament\PanelProvider;
+
+class PackageMakePanelProvider extends PanelProvider {
+    private const PACKAGE_ROOT = {{PACKAGE_ROOT}};
+
+    public function panel(Panel $panel): Panel {
+        return $panel
+            ->default()
+            ->id('package')
+            ->path('package')
+            ->discoverResources(in: self::PACKAGE_ROOT . '/workbench/app/Filament/Resources', for: 'Workbench\\App\\Filament\\Resources')
+            ->discoverPages(in: self::PACKAGE_ROOT . '/workbench/app/Filament/Pages', for: 'Workbench\\App\\Filament\\Pages')
+            ->discoverClusters(in: self::PACKAGE_ROOT . '/workbench/app/Filament/Clusters', for: 'Workbench\\App\\Filament\\Clusters');
+    }
+}
+PHP);
+
+        file_put_contents($providerPath, $provider);
+        $createdFiles[] = $providerPath;
+    }
+
+    $providerClass = 'Workbench\\App\\Providers\\Filament\\PackageMakePanelProvider::class';
+    $providers = is_string($originalProviders) ? $originalProviders : "<?php\n\nreturn [\n];\n";
+
+    if (!str_contains($providers, $providerClass)) {
+        $providers = preg_replace('/\];\s*$/', "    {$providerClass},\n];\n", $providers, 1) ?? $providers;
+        file_put_contents($providersPath, $providers);
+
+        if ($originalProviders === null) {
+            $createdFiles[] = $providersPath;
+        }
+    }
+
+    return [
+        'createdFiles' => $createdFiles,
+        'providersPath' => $providersPath,
+        'originalProviders' => $originalProviders,
+    ];
+}
+
+function cleanupTemporaryPackageFilamentPanel(?array $temporaryPanel): void {
+    if ($temporaryPanel === null) {
+        return;
+    }
+
+    if (is_string($temporaryPanel['originalProviders'])) {
+        file_put_contents($temporaryPanel['providersPath'], $temporaryPanel['originalProviders']);
+    }
+
+    foreach (array_reverse($temporaryPanel['createdFiles']) as $file) {
+        if (is_file($file)) {
+            unlink($file);
+        }
+    }
+
+    removeEmptyDirectories('workbench/app/Providers/Filament');
+    removeEmptyDirectories('workbench/bootstrap');
+}
+
 function removeDirectory(string $root): void {
     if (!is_dir($root)) {
         return;
@@ -254,6 +363,7 @@ function destinationForGeneratedFile(string $path): ?string {
         'workbench/tests/' => 'tests/',
         'workbench/routes/' => 'routes/',
         'workbench/config/' => 'config/',
+        'workbench/resources/' => 'resources/',
     ];
 
     foreach ($prefixes as $sourcePrefix => $destinationPrefix) {
@@ -302,16 +412,33 @@ $packageNamespace = composerPsr4Namespace($composer, 'src/')
 $factoryNamespace = composerPsr4Namespace($composer, 'database/factories/');
 $testNamespace = composerPsr4Namespace($composer, 'tests/');
 $force = in_array('--force', $args, true) || in_array('-f', $args, true);
+$temporaryPanel = null;
 
-if (!$shouldRelocateGeneratedFiles) {
-    exit(runCommand(array_merge(['vendor/bin/testbench', $command], $args)));
+if (commandNeedsPackageFilamentPanel($command)) {
+    $temporaryPanel = createTemporaryPackageFilamentPanel();
+    register_shutdown_function(static function () use (&$temporaryPanel): void {
+        cleanupTemporaryPackageFilamentPanel($temporaryPanel);
+    });
+
+    if (commandAcceptsPackageFilamentPanelOption($command) && !hasOption($args, '--panel')) {
+        $args[] = '--panel=package';
+    }
 }
 
-$trackedRoots = ['workbench', 'app', 'database', 'tests', 'src', 'routes', 'config'];
+if (!$shouldRelocateGeneratedFiles) {
+    $exitCode = runCommand(array_merge(['vendor/bin/testbench', $command], $args));
+    cleanupTemporaryPackageFilamentPanel($temporaryPanel);
+
+    exit($exitCode);
+}
+
+$trackedRoots = ['workbench', 'app', 'database', 'tests', 'src', 'routes', 'config', 'resources'];
 $before = listFiles($trackedRoots);
 $exitCode = runCommand(array_merge(['vendor/bin/testbench', $command], $args));
 
 if ($exitCode !== 0) {
+    cleanupTemporaryPackageFilamentPanel($temporaryPanel);
+
     exit($exitCode);
 }
 

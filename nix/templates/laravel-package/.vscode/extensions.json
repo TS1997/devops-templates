@@ -1,0 +1,15 @@
+{
+    "recommendations": [
+        "github.copilot-chat",
+        "mkhl.direnv",
+        "bmewburn.vscode-intelephense-client",
+        "redhat.vscode-yaml",
+        "xdebug.php-debug",
+        "pestphp.pest-vscode",
+        "open-southeners.laravel-pint",
+        "esbenp.prettier-vscode",
+        "editorconfig.editorconfig",
+        "mikestead.dotenv",
+        "jnoortheen.nix-ide"
+    ]
+}

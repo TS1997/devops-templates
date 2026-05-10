@@ -1,0 +1,27 @@
+# Example production deployment workflow.
+# To enable it, rename this file to deploy-production.yml.
+# Before enabling, replace {{DOMAIN}} with the production domain and add the
+# HOST, USER, and SSH_KEY secrets to the staging environment in GitHub.
+
+name: Deploy Production
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    uses: TS1997/devops-templates/.github/workflows/laravel-deploy.yml@master
+    with:
+      domain: "{{DOMAIN}}"
+      environment: "staging"
+    secrets:
+      HOST: ${{ secrets.HOST }}
+      USER: ${{ secrets.USER }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}

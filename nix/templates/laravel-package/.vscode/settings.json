@@ -1,0 +1,38 @@
+{
+    // Format on save, with PHP delegated to Laravel Pint.
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+    "[php]": {
+        "editor.defaultFormatter": "open-southeners.laravel-pint",
+        "editor.formatOnSave": true
+    },
+    "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+    "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+    "[yaml]": { "editor.defaultFormatter": "redhat.vscode-yaml" },
+    "[nix]": { "editor.defaultFormatter": "jnoortheen.nix-ide" },
+
+    // Laravel Pint uses the project pint.json automatically.
+    "laravel-pint.enable": true,
+    "laravel-pint.executablePath": "vendor/bin/pint",
+
+    // Disable built-in PHP suggest to avoid duplicate suggestions.
+    "php.suggest.basic": false,
+
+    // Keep search and file watching snappy.
+    "search.exclude": {
+        "**/vendor": true,
+        "**/node_modules": true,
+        "**/.devenv": true,
+        "**/.direnv": true,
+        "**/.phpunit.cache": true,
+        "composer.lock": true
+    },
+    "files.watcherExclude": {
+        "**/vendor/**": true,
+        "**/node_modules/**": true,
+        "**/.devenv/**": true,
+        "**/.direnv/**": true,
+        "**/.phpunit.cache/**": true
+    }
+}

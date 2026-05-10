@@ -18,8 +18,14 @@ cd new-project
 nix flake init --refresh --template "github:ts1997/devops-templates?ref=master#wp-base"
 ```
 
-To create a Laravel site with one command:
+To create a new Laravel site:
 
 ```sh
 nix run "github:ts1997/devops-templates?ref=master#laravel-site"
+```
+
+To create a new Laravel package:
+
+```sh
+nix run "github:ts1997/devops-templates?ref=master#laravel-package"
 ```

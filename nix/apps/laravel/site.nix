@@ -13,12 +13,16 @@ let
       coreutils
       gnused
       laravel
+      nodejs
       openssl
+      php.packages.composer
       rsync
     ];
 
     text = ''
       export TEMPLATE_DIR=${pkgs.lib.escapeShellArg templateDir}
+
+      ${builtins.readFile ./scripts/common.sh}
 
       ${builtins.readFile ./scripts/site-setup.sh}
     '';

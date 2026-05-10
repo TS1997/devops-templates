@@ -1,0 +1,107 @@
+{
+  config,
+  lib,
+  pkgs,
+  util,
+  ...
+}:
+let
+  packageCfg = config.services.ts1997.laravelPackage;
+
+  packageScript = pkgs.writeShellApplication {
+    name = "laravel-package";
+    runtimeInputs = [ packageCfg.phpPackage ];
+    text = ''
+      php ${./scripts/package-make.php} "$@"
+    '';
+  };
+
+  initComposerScript = pkgs.writeShellScript "init-laravel-package-composer.sh" ''
+    LOCK_HASH_FILE=${util.values.devenvDotfile}/laravel-package-composer.lockhash
+
+    if [ -f composer.lock ]; then
+      CURRENT_HASH=$(sha256sum composer.lock | cut -d' ' -f1)
+      STORED_HASH=$(cat "$LOCK_HASH_FILE" 2>/dev/null || true)
+
+      if [ "$CURRENT_HASH" != "$STORED_HASH" ]; then
+        composer install \
+          --no-interaction \
+          --prefer-dist \
+          --no-progress
+
+        echo "$CURRENT_HASH" > "$LOCK_HASH_FILE"
+      fi
+    fi
+  '';
+in
+{
+  options.services.ts1997.laravelPackage = lib.mkOption {
+    type = util.submodule {
+      options = {
+        enable = lib.mkEnableOption "Enable Laravel package development tooling.";
+
+        env = lib.mkOption {
+          type =
+            with lib.types;
+            attrsOf (
+              nullOr (oneOf [
+                str
+                bool
+                int
+              ])
+            );
+          default = { };
+          description = "Environment variables for Laravel package development.";
+        };
+
+        phpPackage = lib.mkOption {
+          type = lib.types.package;
+          default = pkgs.php;
+          description = "The PHP package to use for package development.";
+        };
+
+        composer.install.enable = lib.mkEnableOption "Enable automatic Composer installation in development shell.";
+      };
+
+      config = {
+        composer.install.enable = lib.mkDefault true;
+      };
+    };
+    default = { };
+    description = "Laravel package development configuration.";
+  };
+
+  config = lib.mkIf packageCfg.enable {
+    env = packageCfg.env;
+
+    files = {
+      ".github/instructions/laravel-package-tooling.instructions.md".source =
+        ./copilot/instructions/laravel-package-tooling.instructions.md;
+      ".github/skills/laravel-package-development/SKILL.md".source =
+        ./copilot/skills/laravel-package-development/SKILL.md;
+    };
+
+    languages.php = {
+      enable = true;
+      package = packageCfg.phpPackage;
+    };
+
+    enterShell = lib.mkIf packageCfg.composer.install.enable ''
+      source ${initComposerScript}
+    '';
+
+    scripts = {
+      package.exec = ''
+        ${packageScript}/bin/laravel-package "$@"
+      '';
+
+      run-tests.exec = ''
+        composer test "$@"
+      '';
+
+      format.exec = ''
+        composer format "$@"
+      '';
+    };
+  };
+}

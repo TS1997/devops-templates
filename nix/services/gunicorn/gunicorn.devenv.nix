@@ -55,15 +55,13 @@ in
             --reload \
             ${cfg.server.entrypoint}
         '';
-        process-compose = {
-          readiness_probe = {
-            exec.command = "${pkgs.curl}/bin/curl -sf --unix-socket ${cfg.server.socket} http://localhost/healthcheck";
-            initial_delay_seconds = 1;
-            period_seconds = 1;
-            timeout_seconds = 5;
-            success_threshold = 1;
-            failure_threshold = 30;
-          };
+        ready = {
+          exec = "${pkgs.curl}/bin/curl -sf --unix-socket ${cfg.server.socket} http://localhost/healthcheck";
+          initial_delay = 1;
+          period = 1;
+          probe_timeout = 5;
+          success_threshold = 1;
+          failure_threshold = 30;
         };
       };
     };

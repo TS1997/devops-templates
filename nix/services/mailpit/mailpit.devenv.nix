@@ -6,7 +6,6 @@
 }:
 let
   cfg = config.services.ts1997.mailpit;
-  uiPort = config.processes.mailpit.ports.ui.value;
 in
 {
   options.services.ts1997.mailpit = lib.mkOption {
@@ -29,22 +28,20 @@ in
     };
 
     processes.mailpit = {
-      process-compose = {
-        readiness_probe = {
-          http_get = {
-            host = cfg.ui.host;
-            port = uiPort;
-            path = "/";
-          };
-          initial_delay_seconds = 1;
-          period_seconds = 1;
-          timeout_seconds = 5;
-          success_threshold = 1;
-          failure_threshold = 30;
+      ready = {
+        http.get = {
+          host = cfg.ui.host;
+          port = cfg.ui.port;
+          path = "/";
         };
+        initial_delay = 1;
+        period = 1;
+        probe_timeout = 5;
+        success_threshold = 1;
+        failure_threshold = 30;
       };
     };
 
-    scripts.mail.exec = "xdg-open http://${cfg.ui.host}:${toString uiPort}/ || open http://${cfg.ui.host}:${toString uiPort}/";
+    scripts.mail.exec = "xdg-open http://${cfg.ui.host}:${toString cfg.ui.port}/ || open http://${cfg.ui.host}:${toString cfg.ui.port}/";
   };
 }

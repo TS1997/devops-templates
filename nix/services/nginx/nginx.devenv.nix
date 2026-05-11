@@ -94,19 +94,17 @@ in
     };
 
     processes.nginx = {
-      process-compose = {
-        readiness_probe = {
-          http_get = {
-            host = (lib.head (lib.attrValues cfg.virtualHosts)).serverName;
-            port = (lib.head (lib.attrValues cfg.virtualHosts)).port;
-            path = "/healthcheck";
-          };
-          initial_delay_seconds = 1;
-          period_seconds = 10;
-          timeout_seconds = 5;
-          success_threshold = 1;
-          failure_threshold = 30;
+      ready = {
+        http.get = {
+          host = (lib.head (lib.attrValues cfg.virtualHosts)).serverName;
+          port = (lib.head (lib.attrValues cfg.virtualHosts)).port;
+          path = "/healthcheck";
         };
+        initial_delay = 1;
+        period = 10;
+        probe_timeout = 5;
+        success_threshold = 1;
+        failure_threshold = 30;
       };
     };
 

@@ -27,9 +27,6 @@ in
   config = {
     packages = if system != "aarch64-darwin" then (with pkgs; [ wl-clipboard ]) else [ ];
 
-    # Give rust tooling time to mature
-    process.manager.implementation = "process-compose";
-
     processes = {
       env-config.exec = "devenv info";
     };

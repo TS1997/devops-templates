@@ -57,15 +57,15 @@ in
 
         exec "${cfg.package}/bin/pgadmin4"
       '';
-      process-compose.readiness_probe = {
-        http_get = {
+      ready = {
+        http.get = {
           host = cfg.host;
           port = cfg.port;
           path = "/";
         };
-        initial_delay_seconds = 2;
-        period_seconds = 1;
-        timeout_seconds = 5;
+        initial_delay = 2;
+        period = 1;
+        probe_timeout = 5;
         success_threshold = 1;
         failure_threshold = 30;
       };

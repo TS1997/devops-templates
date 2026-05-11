@@ -83,19 +83,11 @@ in
 
       echo ""
     '';
-    process-compose.depends_on = lib.mkMerge [
-      (lib.mkIf nginxCfg.enable {
-        nginx.condition = "process_healthy";
-      })
-      (lib.mkIf phpMyAdminCfg.enable {
-        phpmyadmin.condition = "process_healthy";
-      })
-      (lib.mkIf pgAdminCfg.enable {
-        pgadmin.condition = "process_healthy";
-      })
-      (lib.mkIf mailpitCfg.enable {
-        mailpit.condition = "process_healthy";
-      })
+    after = lib.flatten [
+      (lib.optionals nginxCfg.enable [ "devenv:processes:nginx" ])
+      (lib.optionals phpMyAdminCfg.enable [ "devenv:processes:phpmyadmin" ])
+      (lib.optionals pgAdminCfg.enable [ "devenv:processes:pgadmin" ])
+      (lib.optionals mailpitCfg.enable [ "devenv:processes:mailpit" ])
     ];
   };
 }

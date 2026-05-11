@@ -63,11 +63,11 @@ in
 
     processes = {
       mysql = {
-        process-compose.readiness_probe = {
-          exec.command = "${cfg.package}/bin/mysqladmin ping --socket=${cfg.socket}";
-          initial_delay_seconds = 1;
-          period_seconds = 1;
-          timeout_seconds = 5;
+        ready = {
+          exec = "${cfg.package}/bin/mysqladmin ping --socket=${cfg.socket}";
+          initial_delay = 1;
+          period = 1;
+          probe_timeout = 5;
           success_threshold = 1;
           failure_threshold = 30;
         };
@@ -77,15 +77,15 @@ in
         exec = ''
           php -S ${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port} -t ${phpmyadmin}
         '';
-        process-compose.readiness_probe = {
-          http_get = {
+        ready = {
+          http.get = {
             host = phpMyAdminCfg.host;
             port = phpMyAdminCfg.port;
             path = "/";
           };
-          initial_delay_seconds = 2;
-          period_seconds = 1;
-          timeout_seconds = 5;
+          initial_delay = 2;
+          period = 1;
+          probe_timeout = 5;
           success_threshold = 1;
           failure_threshold = 30;
         };

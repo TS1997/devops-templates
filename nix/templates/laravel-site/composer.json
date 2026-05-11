@@ -29,7 +29,7 @@
         "nunomaduro/collision": "^8.9.3",
         "pestphp/pest": "^4.6",
         "pestphp/pest-plugin-laravel": "^4.1",
-        "ts1997/laravel-devenv-testing": "^1.0"
+        "ts1997/laravel-dev-tools": "^1.0"
     },
     "autoload": {
         "psr-4": {
@@ -46,8 +46,6 @@
     "scripts": {
         "setup": [
             "composer install",
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
-            "@php artisan key:generate",
             "@php artisan migrate --force",
             "npm install",
             "npm run build"
@@ -80,6 +78,7 @@
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
+            "@php artisan vendor:publish --tag=dev-tools-pint --ansi --force",
             "@php artisan boost:update --ansi --discover"
         ],
         "post-root-package-install": [
@@ -112,7 +111,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@github.com:ts1997/laravel-devenv-testing.git"
+            "url": "git@github.com:ts1997/laravel-dev-tools.git"
         }
     ]
 }

@@ -90,5 +90,9 @@ in
       smtp.host = siteCfg.domain;
       ui.host = siteCfg.domain;
     };
+
+    processes = lib.mkIf (siteCfg.nodejs.enable && siteCfg.nodejs.script != null) {
+      nodejs.exec = siteCfg.nodejs.script;
+    };
   };
 }

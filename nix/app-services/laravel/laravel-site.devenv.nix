@@ -109,6 +109,10 @@ in
     };
 
     processes = lib.mkMerge [
+      (lib.mkIf (siteCfg.nodejs.enable && siteCfg.nodejs.script != null) {
+        nodejs.exec = siteCfg.nodejs.script;
+      })
+
       (lib.mkIf (siteCfg.scheduler.enable) {
         scheduler.exec = "php artisan schedule:work";
       })

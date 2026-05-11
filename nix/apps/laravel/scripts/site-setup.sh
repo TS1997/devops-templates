@@ -73,12 +73,19 @@ done
 require_command composer
 require_command npm
 install_dependencies || fail "Failed to install dependencies in ./$target_dir"
+git -C "$target_dir" init -b master || fail "Failed to initialize a Git repository in ./$target_dir"
 
 cat <<EOF
 Created $project_name in ./$target_dir
 
 Next steps:
   cd $target_dir
+
+  git remote add origin <repository-url>
+  git add .
+  git commit -m "Initial commit"
+  git push -u origin master
+  
   devenv up
   php artisan migrate:fresh --seed
 EOF

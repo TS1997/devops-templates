@@ -78,12 +78,10 @@
         ],
         "post-install-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
-            "@php artisan vendor:publish --tag=dev-tools-pint --ansi --force",
             "@php artisan boost:update --ansi --discover"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
-            "@php artisan vendor:publish --tag=dev-tools-pint --ansi --force",
             "@php artisan boost:update --ansi --discover"
         ],
         "post-root-package-install": [

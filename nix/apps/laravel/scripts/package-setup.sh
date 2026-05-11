@@ -194,11 +194,19 @@ copy_template || fail "Failed to copy template files into ./$target_dir"
 [[ -f "$target_dir/devenv.nix" ]] || fail "Template copy completed, but ./$target_dir/devenv.nix is missing."
 configure_filament_plugin_template || fail "Failed to configure Filament plugin files in ./$target_dir"
 replace_template_placeholders || fail "Failed to configure Laravel package in ./$target_dir"
+git -C "$target_dir" init -b master || fail "Failed to initialize a Git repository in ./$target_dir"
 
 cat <<EOF
 Created Laravel package project in ./$target_dir
 
 Next steps:
   cd $target_dir
+
+  git remote add origin <repository-url>
+  git add .
+  git commit -m "Initial commit"
+  git push -u origin master
+  
+  composer install
   composer test
 EOF

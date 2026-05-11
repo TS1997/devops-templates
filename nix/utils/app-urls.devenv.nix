@@ -12,22 +12,22 @@ let
   bold = text: "\\033[1m${text}\\033[0m";
 
   box = {
-    top = width: "╔${repeat "═" width}╗";
-    bottom = width: "╚${repeat "═" width}╝";
+    top = width: "+${repeat "=" width}+";
+    bottom = width: "+${repeat "=" width}+";
     line =
       text: width:
       let
         baseLength = lib.stringLength text;
         padding = width - 2 - baseLength;
       in
-      "║  ${bold text}${repeat " " padding}║";
+      "|  ${bold text}${repeat " " padding}|";
   };
 
   vhost = {
-    header = name: "╭─ ${bold name}";
-    ssl = url: "│  🔒 ${url}";
-    http = url: "│  🌐 ${url}";
-    footer = "╰${repeat "─" 50}";
+    header = name: "+-- ${bold name}";
+    ssl = url: "|  [https] ${url}";
+    http = url: "|  [http]  ${url}";
+    footer = "+${repeat "-" 50}";
   };
 
   section = title: content: ''

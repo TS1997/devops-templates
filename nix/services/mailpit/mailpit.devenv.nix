@@ -6,6 +6,7 @@
 }:
 let
   cfg = config.services.ts1997.mailpit;
+  uiPort = config.processes.mailpit.ports.ui.value;
 in
 {
   options.services.ts1997.mailpit = lib.mkOption {
@@ -42,6 +43,6 @@ in
       };
     };
 
-    scripts.mail.exec = "xdg-open http://${cfg.ui.host}:${toString cfg.ui.port}/ || open http://${cfg.ui.host}:${toString cfg.ui.port}/";
+    scripts.mail.exec = "xdg-open http://${cfg.ui.host}:${toString uiPort}/ || open http://${cfg.ui.host}:${toString uiPort}/";
   };
 }

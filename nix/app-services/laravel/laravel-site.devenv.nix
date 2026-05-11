@@ -114,7 +114,7 @@ in
     };
 
     processes = lib.mkMerge [
-      (lib.mkIf (siteCfg.nodejs.enable) {
+      (lib.mkIf (siteCfg.nodejs.enable && siteCfg.nodejs.script != null) {
         nodejs.exec = siteCfg.nodejs.script;
       })
 

@@ -5,43 +5,46 @@
   pkgs,
   ...
 }:
+let
+  inherit (lib) types mkOption mkEnableOption;
+in
 {
   options = {
-    port = lib.mkOption {
-      type = lib.types.int;
+    port = mkOption {
+      type = types.int;
       default = 8080;
       description = "The port that the application will be served on.";
     };
 
-    sslPort = lib.mkOption {
-      type = lib.types.int;
+    sslPort = mkOption {
+      type = types.int;
       default = 5443;
       description = "The SSL port that the application will be served on.";
     };
 
-    enableSsl = lib.mkOption {
-      type = lib.types.bool;
+    enableSsl = mkOption {
+      type = types.bool;
       default = true;
       description = "Whether to enable SSL for the application.";
     };
 
-    composer.install.enable = lib.mkEnableOption "Enable automatic Composer installation in development shell.";
+    composer.install.enable = mkEnableOption "Enable automatic Composer installation in development shell.";
 
-    nodejs = lib.mkOption {
+    nodejs = mkOption {
       type = util.submodule {
         options = {
-          enable = lib.mkEnableOption "Enable Node.js development server for the application.";
+          enable = mkEnableOption "Enable Node.js development server for the application.";
 
-          install.enable = lib.mkEnableOption "Enable automatic installation of Node.js dependencies.";
+          install.enable = mkEnableOption "Enable automatic installation of Node.js dependencies.";
 
-          package = lib.mkOption {
-            type = lib.types.package;
+          package = mkOption {
+            type = types.package;
             default = pkgs.nodejs_24;
             description = "The Node.js package to use for the application.";
           };
 
-          script = lib.mkOption {
-            type = lib.types.str;
+          script = mkOption {
+            type = types.nullOr types.str;
             default = "npm run dev";
             description = "The npm script to run for the development server.";
           };
@@ -56,22 +59,22 @@
       description = "Node.js configuration for the application.";
     };
 
-    database = lib.mkOption {
-      # Use lib.types.submodule here instead of util.submodule to avoid circular dependency
-      type = lib.types.submodule {
+    database = mkOption {
+      # Use types.submodule here instead of util.submodule to avoid circular dependency
+      type = types.submodule {
         options = {
-          password = lib.mkOption {
-            type = lib.types.str;
+          password = mkOption {
+            type = types.str;
             default = "1234";
             description = "The password for the database user.";
           };
 
-          admin.enable = lib.mkEnableOption "Enable database admin user interface for the application.";
+          admin.enable = mkEnableOption "Enable database admin user interface for the application.";
 
           # Database extensions to be installed if using PostgreSQL
-          extensions = lib.mkOption {
+          extensions = mkOption {
             type =
-              with lib.types;
+              with types;
               nullOr (
                 functionTo (
                   listOf (oneOf [
@@ -97,7 +100,7 @@
       };
     };
 
-    mailpit.enable = lib.mkEnableOption "Enable Mailpit service for email testing.";
+    mailpit.enable = mkEnableOption "Enable Mailpit service for email testing.";
   };
 
   config = {

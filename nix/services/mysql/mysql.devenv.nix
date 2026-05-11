@@ -62,17 +62,6 @@ in
     };
 
     processes = {
-      mysql = {
-        ready = {
-          exec = "${cfg.package}/bin/mysqladmin ping --socket=${cfg.socket}";
-          initial_delay = 1;
-          period = 1;
-          probe_timeout = 5;
-          success_threshold = 1;
-          failure_threshold = 30;
-        };
-      };
-
       phpmyadmin = lib.mkIf (phpMyAdminCfg.enable) {
         exec = ''
           php -S ${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port} -t ${phpmyadmin}

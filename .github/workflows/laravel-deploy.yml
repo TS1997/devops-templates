@@ -18,13 +18,15 @@ on:
         required: false
         default: ""
         type: string
-        description: "Additional deployment commands to run on the server before php
+        description:
+          "Additional deployment commands to run on the server before php
           artisan up."
       post_deploy_commands:
         required: false
         default: ""
         type: string
-        description: "Additional deployment commands to run on the server after php
+        description:
+          "Additional deployment commands to run on the server after php
           artisan up."
       additional_excludes:
         required: false
@@ -60,7 +62,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ inputs.php_version }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite,
+          extensions:
+            dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite,
             bcmath, soap, intl, gd, exif, iconv
           coverage: none
           tools: composer:v2
@@ -96,8 +99,12 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            php artisan down
-            php artisan optimize:clear
+            if [ -f artisan ]; then
+              php artisan down
+              php artisan optimize:clear
+            else
+              echo "No artisan file found; skipping maintenance mode."
+            fi
 
       - name: Deploy to server via rsync
         uses: burnett01/rsync-deployments@7.0.1

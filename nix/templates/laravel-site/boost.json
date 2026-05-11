@@ -1,17 +1,17 @@
 {
-    "agents": [
-        "copilot"
-    ],
+    "agents": ["copilot"],
     "cloud": false,
     "guidelines": true,
     "mcp": true,
     "nightwatch_mcp": false,
+    "packages": ["ts1997/laravel-dev-tools"],
     "sail": false,
     "skills": [
         "fortify-development",
         "laravel-best-practices",
         "pest-testing",
         "inertia-react-development",
-        "tailwindcss-development"
+        "tailwindcss-development",
+        "laravel-site-dev-tools"
     ]
 }

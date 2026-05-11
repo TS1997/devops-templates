@@ -29,7 +29,7 @@ install_dependencies() {
     APP_KEY="$app_key" \
     CACHE_STORE="${CACHE_STORE:-file}" \
     DB_CONNECTION="${DB_CONNECTION:-sqlite}" \
-      composer install --no-interaction --prefer-dist --no-progress
+      composer install --prefer-dist --no-progress
 
     npm install
   )

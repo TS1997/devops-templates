@@ -184,7 +184,7 @@ vendor_slug=$(printf '%s' "$package_vendor" | slugify '-')
 [[ -n "$folder_slug" ]] || fail "Unable to derive a package directory from '$package_name'. Use at least one letter or number."
 [[ -n "$vendor_slug" ]] || fail "Unable to derive a package vendor from '$package_vendor'. Use at least one letter or number."
 
-target_dir=$folder_slug
+target_dir=laravel-$folder_slug
 
 [[ ! -e "$target_dir" ]] || fail "Target directory already exists: ./$target_dir"
 

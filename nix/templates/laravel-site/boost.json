@@ -12,6 +12,6 @@
         "pest-testing",
         "inertia-react-development",
         "tailwindcss-development",
-        "laravel-site-dev-tools"
+        "laravel-dev-tools"
     ]
 }

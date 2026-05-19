@@ -113,8 +113,8 @@
     "minimum-stability": "stable",
     "repositories": [
         {
-            "type": "vcs",
-            "url": "git@github.com:ts1997/laravel-dev-tools.git"
+            "type": "composer",
+            "url": "https://packages.ts1997.com"
         }
     ]
 }

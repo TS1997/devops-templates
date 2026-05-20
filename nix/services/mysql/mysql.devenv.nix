@@ -9,6 +9,16 @@ let
   cfg = config.services.ts1997.mysql;
   phpMyAdminCfg = cfg.phpMyAdmin;
 
+  # Only because devenv has problems with the task system. This is not necessary otherwise.
+  initSql = pkgs.writeText "mysql-init.sql" (
+    lib.concatMapStrings (dbCfg: ''
+      CREATE DATABASE IF NOT EXISTS `${dbCfg.name}`;
+      CREATE USER IF NOT EXISTS '${dbCfg.user}'@'localhost' IDENTIFIED BY '${dbCfg.password}';
+      GRANT ALL PRIVILEGES ON *.* TO '${dbCfg.user}'@'localhost';
+      FLUSH PRIVILEGES;
+    '') cfg.databases
+  );
+
   phpmyadmin = (
     import ./submodules/phpmyadmin.nix {
       inherit pkgs util;
@@ -85,12 +95,9 @@ in
       phpmyadmin.exec = "xdg-open http://${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port}/ || open http://${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port}/";
 
       # Only added because task system is fucked as of 2026-05-20. Remove asap.
-      init-database.exec = lib.concatMapStrings (dbCfg: ''
-        CREATE DATABASE IF NOT EXISTS `${dbCfg.name}`;
-        CREATE USER IF NOT EXISTS '${dbCfg.user}'@'localhost' IDENTIFIED BY '${dbCfg.password}';
-        GRANT ALL PRIVILEGES ON *.* TO '${dbCfg.user}'@'localhost';
-        FLUSH PRIVILEGES;
-      '') cfg.databases;
+      init-database.exec = ''
+        mysql -u root < ${initSql}
+      '';
 
       mysql-local.exec = ''
         names=(${lib.concatStringsSep " " (map (db: db.name) cfg.databases)})

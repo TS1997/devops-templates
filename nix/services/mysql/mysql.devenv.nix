@@ -84,6 +84,14 @@ in
     scripts = {
       phpmyadmin.exec = "xdg-open http://${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port}/ || open http://${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port}/";
 
+      # Only added because task system is fucked as of 2026-05-20. Remove asap.
+      init-database.exec = lib.concatMapStrings (dbCfg: ''
+        CREATE DATABASE IF NOT EXISTS `${dbCfg.name}`;
+        CREATE USER IF NOT EXISTS '${dbCfg.user}'@'localhost' IDENTIFIED BY '${dbCfg.password}';
+        GRANT ALL PRIVILEGES ON *.* TO '${dbCfg.user}'@'localhost';
+        FLUSH PRIVILEGES;
+      '') cfg.databases;
+
       mysql-local.exec = ''
         names=(${lib.concatStringsSep " " (map (db: db.name) cfg.databases)})
         users=(${lib.concatStringsSep " " (map (db: db.user) cfg.databases)})

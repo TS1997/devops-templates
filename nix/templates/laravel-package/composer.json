@@ -1,12 +1,12 @@
 {
-    "name": "{{vendor_slug}}/{{package_slug}}",
+    "name": "{{vendor_slug}}/laravel-{{package_slug}}",
     "description": "{{package_description}}",
     "keywords": [
         "{{vendor_slug}}",
         "laravel",
-        "{{package_slug}}"
+        "laravel-{{package_slug}}"
     ],
-    "homepage": "https://github.com/{{vendor_slug}}/{{package_slug}}",
+    "homepage": "https://github.com/{{vendor_slug}}/laravel-{{package_slug}}",
     "license": "MIT",
     "require": {
         "php": "^8.4",
@@ -15,12 +15,14 @@
         "illuminate/contracts": "^11.0||^12.0||^13.0"
     },
     "require-dev": {
+        "laravel/boost": "^2.4",
         "laravel/pint": "^1.14",
         "nunomaduro/collision": "^8.8",
         "orchestra/testbench": "^11.0.0||^10.0.0||^9.0.0",
         "pestphp/pest": "^4.0",
         "pestphp/pest-plugin-arch": "^4.0",
-        "pestphp/pest-plugin-laravel": "^4.0"
+        "pestphp/pest-plugin-laravel": "^4.0",
+        "ts1997/laravel-package-dev-tools": "^1.0"
     },
     "autoload": {
         "psr-4": {
@@ -36,6 +38,14 @@
     },
     "scripts": {
         "post-autoload-dump": "@composer run prepare",
+        "post-install-cmd": [
+            "@php vendor/bin/testbench vendor:publish --tag=package-dev-tools-artisan --ansi --force",
+            "@php vendor/bin/testbench boost:update --ansi --discover"
+        ],
+        "post-update-cmd": [
+            "@php vendor/bin/testbench vendor:publish --tag=package-dev-tools-artisan --ansi --force",
+            "@php vendor/bin/testbench boost:update --ansi --discover"
+        ],
         "prepare": "@php vendor/bin/testbench package:discover --ansi",
         "test": "vendor/bin/pest",
         "test-coverage": "vendor/bin/pest --coverage",
@@ -58,5 +68,11 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packages.ts1997.com"
+        }
+    ]
 }

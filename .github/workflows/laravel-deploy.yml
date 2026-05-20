@@ -77,6 +77,8 @@ jobs:
         uses: "ramsey/composer-install@v3"
         env:
           COMPOSER_AUTH: ${{ secrets.AUTH_JSON }}
+        with:
+          composer-options: "--no-dev --no-interaction --prefer-dist --optimize-autoloader"
 
       - name: Cache Node modules
         uses: actions/cache@v4

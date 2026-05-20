@@ -40,4 +40,8 @@ copy_template() {
     --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r \
     "$TEMPLATE_DIR/" \
     "$target_dir/"
+
+  if [[ -f "$target_dir/.gitattributes.template" ]]; then
+    mv "$target_dir/.gitattributes.template" "$target_dir/.gitattributes"
+  fi
 }

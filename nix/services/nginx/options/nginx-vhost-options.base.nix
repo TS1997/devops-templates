@@ -30,6 +30,7 @@
         add_header X-Frame-Options "SAMEORIGIN";
         add_header X-Content-Type-Options "nosniff";
         charset utf-8;
+        client_max_body_size 64m;
       '';
       description = "These lines go to the end of the vhost verbatim.";
     };

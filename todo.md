@@ -1,0 +1,1 @@
+Vi vill implementera agenix-rekey i devops templates. Syftet med det är att kunna exportera hemligheter från en agenix secret till en dekrypterad fil i repot där man använder devops templates. .tokens.sh skapas genom devops templates-repot till det kundunika projektet.

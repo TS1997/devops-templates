@@ -114,10 +114,8 @@ jobs:
           switches: >-
             -avzr --delete --exclude='.zsh_history' --exclude='.git*'
             --exclude='node_modules' --exclude='tests'
-            --exclude='bootstrap/cache/*' --exclude='storage/logs/*.log'
-            --exclude='storage/framework/cache/*'
-            --exclude='storage/framework/sessions/*'
-            --exclude='storage/framework/views/*' --exclude='.env*'
+            --exclude='bootstrap/cache/*' --exclude='storage/***'
+            --exclude='public/storage' --exclude='.env*'
             --exclude='phpunit.xml' --exclude='README.md'
             --exclude='.editorconfig' --exclude='.eslintrc.json'
             --exclude='.prettierrc' --exclude='.devenv*' ${{
@@ -136,6 +134,7 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            mkdir -p storage/app/public storage/framework/cache storage/framework/sessions storage/framework/testing storage/framework/views storage/logs bootstrap/cache
             php artisan optimize
             php artisan migrate --force
             ${{ inputs.additional_commands }}

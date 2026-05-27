@@ -30,6 +30,7 @@ export default defineConfig({
         '**/storage/**',
         '**/bootstrap/cache/**',
         '**/public/build/**',
+        '**/vendor/**',
       ],
     },
   },

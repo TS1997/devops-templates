@@ -19,6 +19,9 @@ in
       fastcgi_index index.php;
       fastcgi_hide_header X-Powered-By;
       fastcgi_read_timeout ${toString (siteCfg.maxExecutionTime + 60)}s;
+      fastcgi_buffer_size 128k;
+      fastcgi_buffers 16 64k;
+      fastcgi_busy_buffers_size 256k;
       include ${nginxPackage}/conf/fastcgi_params;
     '';
   };

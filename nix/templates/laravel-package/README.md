@@ -7,7 +7,7 @@ This is where your description should go. Limit it to a paragraph or two. Consid
 You can install the package via composer:
 
 ```bash
-composer require {{vendor_slug}}/{{package_slug}}
+composer require {{vendor_slug}}/laravel-{{package_slug}}
 ```
 
 Most packages work without publishing anything. Only publish files when you need to customize them in your application.

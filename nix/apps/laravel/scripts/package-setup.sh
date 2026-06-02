@@ -177,7 +177,7 @@ target_dir=$folder_slug
 [[ ! -e "$target_dir" ]] || fail "Target directory already exists: ./$target_dir"
 
 mkdir "$target_dir" || fail "Failed to create package directory: ./$target_dir"
-copy_template || fail "Failed to copy template files into ./$target_dir"
+copy_template "$target_dir" || fail "Failed to copy template files into ./$target_dir"
 
 [[ -f "$target_dir/devenv.nix" ]] || fail "Template copy completed, but ./$target_dir/devenv.nix is missing."
 configure_filament_plugin_template || fail "Failed to configure Filament plugin files in ./$target_dir"

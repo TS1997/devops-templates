@@ -124,7 +124,7 @@ replace_template_placeholders() {
   class_name=$(title_case "$package_name")
   vendor_namespace=$(title_case "$package_vendor")
   vendor_slug=$(printf '%s' "$package_vendor" | slugify '-')
-  package_slug_without_prefix=$(remove_prefix 'laravel-' "$folder_slug")
+  package_slug_without_prefix=$(remove_prefix "$folder_slug")
 
   class_name_replacement=$(escape_sed_replacement "$class_name")
   vendor_name_replacement=$(escape_sed_replacement "$package_vendor")
@@ -184,23 +184,21 @@ vendor_slug=$(printf '%s' "$package_vendor" | slugify '-')
 [[ -n "$folder_slug" ]] || fail "Unable to derive a package directory from '$package_name'. Use at least one letter or number."
 [[ -n "$vendor_slug" ]] || fail "Unable to derive a package vendor from '$package_vendor'. Use at least one letter or number."
 
-target_dir=laravel-$folder_slug
+[[ ! -e "$folder_slug" ]] || fail "Target directory already exists: ./$folder_slug"
 
-[[ ! -e "$target_dir" ]] || fail "Target directory already exists: ./$target_dir"
+mkdir "$folder_slug" || fail "Failed to create package directory: ./$folder_slug"
+copy_template || fail "Failed to copy template files into ./$folder_slug"
 
-mkdir "$target_dir" || fail "Failed to create package directory: ./$target_dir"
-copy_template || fail "Failed to copy template files into ./$target_dir"
-
-[[ -f "$target_dir/devenv.nix" ]] || fail "Template copy completed, but ./$target_dir/devenv.nix is missing."
-configure_filament_plugin_template || fail "Failed to configure Filament plugin files in ./$target_dir"
-replace_template_placeholders || fail "Failed to configure Laravel package in ./$target_dir"
-git -C "$target_dir" init -b master || fail "Failed to initialize a Git repository in ./$target_dir"
+[[ -f "$folder_slug/devenv.nix" ]] || fail "Template copy completed, but ./$folder_slug/devenv.nix is missing."
+configure_filament_plugin_template || fail "Failed to configure Filament plugin files in ./$folder_slug"
+replace_template_placeholders || fail "Failed to configure Laravel package in ./$folder_slug"
+git -C "$folder_slug" init -b master || fail "Failed to initialize a Git repository in ./$folder_slug"
 
 cat <<EOF
-Created Laravel package project in ./$target_dir
+Created Laravel package project in ./$folder_slug
 
 Next steps:
-  cd $target_dir
+  cd $folder_slug
 
   git remote add origin <repository-url>
   git add .

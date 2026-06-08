@@ -76,5 +76,5 @@ package list
 ## Testing
 
 ```bash
-package test
+composer test
 ```

@@ -6,7 +6,7 @@
 }:
 {
   options = {
-    tablePrefix = lib.mkOption {
+    tablePrefix = lib.mkOption { # Should be moved to database.<some-attr>
       type = lib.types.str;
       default = "wp_";
       description = "The WordPress database table prefix.";

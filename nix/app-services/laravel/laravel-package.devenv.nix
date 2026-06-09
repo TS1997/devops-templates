@@ -60,6 +60,19 @@ in
           description = "The PHP package to use for package development.";
         };
 
+        nodejs = lib.mkOption {
+          type = util.submodule {
+            imports = [ ../../services/nodejs/options/nodejs-options.devenv.nix ];
+
+            config = {
+              enable = lib.mkDefault true;
+              install.enable = lib.mkDefault true;
+            };
+          };
+          default = { };
+          description = "Node.js development tooling configuration for the package.";
+        };
+
         composer.install.enable = lib.mkEnableOption "Enable automatic Composer installation in development shell.";
       };
 
@@ -78,6 +91,8 @@ in
       enable = true;
       package = packageCfg.phpPackage;
     };
+
+    services.ts1997.nodejs = packageCfg.nodejs;
 
     enterShell = lib.optionalString packageCfg.composer.install.enable ''
       source ${initComposerScript}

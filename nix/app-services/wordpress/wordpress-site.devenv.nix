@@ -21,6 +21,8 @@ let
     inherit config lib siteCfg;
     phpSocket = config.languages.php.fpm.pools.${name}.socket;
   };
+
+  createConfigScript = import ../../lib/create-config-script.devenv.nix { inherit config; };
 in
 {
   options.services.ts1997.wordpressSite = lib.mkOption {
@@ -38,13 +40,7 @@ in
   config = lib.mkIf (siteCfg.enable) {
     env = defaultEnv // siteCfg.env;
 
-    languages.javascript = {
-      enable = siteCfg.nodejs.enable;
-      package = siteCfg.nodejs.package;
-      npm = {
-        enable = siteCfg.nodejs.enable;
-      };
-    };
+    services.ts1997.nodejs = siteCfg.nodejs;
 
     services.ts1997.nginx = {
       enable = true;
@@ -95,8 +91,6 @@ in
       ui.host = siteCfg.domain;
     };
 
-    processes = lib.mkIf siteCfg.nodejs.enable {
-      nodejs.exec = siteCfg.nodejs.script;
-    };
+    scripts.create-config.exec = createConfigScript;
   };
 }

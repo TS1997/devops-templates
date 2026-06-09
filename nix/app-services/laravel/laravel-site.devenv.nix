@@ -38,14 +38,7 @@ in
   config = lib.mkIf (siteCfg.enable) {
     env = defaultEnv // siteCfg.env;
 
-    languages.javascript = {
-      enable = siteCfg.nodejs.enable;
-      package = siteCfg.nodejs.package;
-      npm = {
-        enable = siteCfg.nodejs.enable;
-        install.enable = siteCfg.nodejs.install.enable;
-      };
-    };
+    services.ts1997.nodejs = siteCfg.nodejs;
 
     services.ts1997.nginx = {
       enable = true;
@@ -114,10 +107,6 @@ in
     };
 
     processes = lib.mkMerge [
-      (lib.mkIf (siteCfg.nodejs.enable) {
-        nodejs.exec = siteCfg.nodejs.script;
-      })
-
       (lib.mkIf (siteCfg.scheduler.enable) {
         scheduler.exec = "php artisan schedule:work";
       })

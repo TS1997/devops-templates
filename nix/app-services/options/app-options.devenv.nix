@@ -2,7 +2,6 @@
   config,
   lib,
   util,
-  pkgs,
   ...
 }:
 {
@@ -29,27 +28,12 @@
 
     nodejs = lib.mkOption {
       type = util.submodule {
-        options = {
-          enable = lib.mkEnableOption "Enable Node.js development server for the application.";
-
-          install.enable = lib.mkEnableOption "Enable automatic installation of Node.js dependencies.";
-
-          package = lib.mkOption {
-            type = lib.types.package;
-            default = pkgs.nodejs_24;
-            description = "The Node.js package to use for the application.";
-          };
-
-          script = lib.mkOption {
-            type = lib.types.str;
-            default = "npm run dev";
-            description = "The npm script to run for the development server.";
-          };
-        };
+        imports = [ ../../services/nodejs/options/nodejs-options.devenv.nix ];
 
         config = {
           enable = lib.mkDefault true;
           install.enable = lib.mkDefault true;
+          script = lib.mkDefault "npm run dev";
         };
       };
       default = { };

@@ -21,10 +21,10 @@ let
     inherit config lib siteCfg;
     phpSocket = config.languages.php.fpm.pools.${name}.socket;
   };
-
-  createConfigScript = import ../../lib/create-config-script.devenv.nix { inherit config; };
 in
 {
+  imports = [ ./scripts ];
+
   options.services.ts1997.wordpressSite = lib.mkOption {
     type = util.submodule {
       imports = [
@@ -90,7 +90,5 @@ in
       smtp.host = siteCfg.domain;
       ui.host = siteCfg.domain;
     };
-
-    scripts.create-config.exec = createConfigScript;
   };
 }

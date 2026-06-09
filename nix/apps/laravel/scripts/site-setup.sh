@@ -57,7 +57,7 @@ app_key="base64:$(openssl rand -base64 32)"
 [[ ! -e "$target_dir" ]] || fail "Target directory already exists: ./$target_dir"
 
 mkdir "$target_dir" || fail "Failed to create project directory: ./$target_dir"
-copy_template || fail "Failed to copy template files into ./$target_dir"
+copy_template "$target_dir" || fail "Failed to copy template files into ./$target_dir"
 
 [[ -f "$target_dir/devenv.nix" ]] || fail "Template copy completed, but ./$target_dir/devenv.nix is missing."
 replace_placeholders || fail "Failed to fill placeholders in ./$target_dir/devenv.nix"

@@ -33,6 +33,8 @@ require_template_dir() {
 }
 
 copy_template() {
+  local target_dir=$1
+
   rsync \
     -aL \
     --no-owner \

@@ -1,13 +1,17 @@
-# Legacy functionality for creating config in old wordpress projects
-{pkgs, config, ...}:
+{ config, ... }:
 let
-  script = ''
+    # Unwraps env to empty string if not exists
+    unwrapEnv = envAttributeSet: envToUnwrap: envAttributeSet."${envToUnwrap}" or "";
+in
+{
+  # Legacy functionality for creating config in old wordpress projects
+  scripts.create-config.exec = ''
     set -euo pipefail
 
     CONFIG_FILE="${config.devenv.root}/.config.php"
 
     # Derive debug flags from WP_ENV
-    if [[ "${config.env.WP_ENV}" == "development" ]]; then
+    if [[ "${unwrapEnv config.env "WP_ENV"}" == "development" ]]; then
         WP_DEBUG_VAL="true"
         SAVEQUERIES_VAL="true"
     else
@@ -16,20 +20,20 @@ let
     fi
 
     # Assign config values to variables to prevent shell from interpreting special chars in the heredoc
-    DB_NAME='${config.env.DB_NAME}'
-    DB_USER='${config.env.DB_USER}'
-    DB_PASSWORD='${config.env.DB_PASSWORD}'
-    DB_HOST='${config.env.DB_HOST}'
-    DB_PREFIX='${config.env.DB_PREFIX}'
-    WP_ENV='${config.env.WP_ENV}'
-    AUTH_KEY='${config.env.AUTH_KEY}'
-    SECURE_AUTH_KEY='${config.env.SECURE_AUTH_KEY}'
-    LOGGED_IN_KEY='${config.env.LOGGED_IN_KEY}'
-    NONCE_KEY='${config.env.NONCE_KEY}'
-    AUTH_SALT='${config.env.AUTH_SALT}'
-    SECURE_AUTH_SALT='${config.env.SECURE_AUTH_SALT}'
-    LOGGED_IN_SALT='${config.env.LOGGED_IN_SALT}'
-    NONCE_SALT='${config.env.NONCE_SALT}'
+    DB_NAME='${unwrapEnv config.env "DB_NAME"}'
+    DB_USER='${unwrapEnv config.env "DB_USER"}'
+    DB_PASSWORD='${unwrapEnv config.env "DB_PASSWORD"}'
+    DB_HOST='${unwrapEnv config.env "DB_HOST"}'
+    DB_PREFIX='${unwrapEnv config.env "DB_PREFIX"}'
+    WP_ENV='${unwrapEnv config.env "WP_ENV"}'
+    AUTH_KEY='${unwrapEnv config.env "AUTH_KEY"}'
+    SECURE_AUTH_KEY='${unwrapEnv config.env "SECURE_AUTH_KEY"}'
+    LOGGED_IN_KEY='${unwrapEnv config.env "LOGGED_IN_KEY"}'
+    NONCE_KEY='${unwrapEnv config.env "NONCE_KEY"}'
+    AUTH_SALT='${unwrapEnv config.env "AUTH_SALT"}'
+    SECURE_AUTH_SALT='${unwrapEnv config.env "SECURE_AUTH_SALT"}'
+    LOGGED_IN_SALT='${unwrapEnv config.env "LOGGED_IN_SALT"}'
+    NONCE_SALT='${unwrapEnv config.env "NONCE_SALT"}'
 
     cat > "$CONFIG_FILE" <<EOF
     <?php
@@ -59,7 +63,4 @@ let
 
     echo "✓ Generated $CONFIG_FILE"
   '';
-in
-{
-  scripts.create-config.exec = script;
 }

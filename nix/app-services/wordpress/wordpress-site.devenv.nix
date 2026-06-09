@@ -23,6 +23,8 @@ let
   };
 in
 {
+  imports = [ ./scripts ];
+
   options.services.ts1997.wordpressSite = lib.mkOption {
     type = util.submodule {
       imports = [
@@ -38,13 +40,7 @@ in
   config = lib.mkIf (siteCfg.enable) {
     env = defaultEnv // siteCfg.env;
 
-    languages.javascript = {
-      enable = siteCfg.nodejs.enable;
-      package = siteCfg.nodejs.package;
-      npm = {
-        enable = siteCfg.nodejs.enable;
-      };
-    };
+    services.ts1997.nodejs = siteCfg.nodejs;
 
     services.ts1997.nginx = {
       enable = true;
@@ -93,10 +89,6 @@ in
       enable = siteCfg.mailpit.enable;
       smtp.host = siteCfg.domain;
       ui.host = siteCfg.domain;
-    };
-
-    processes = lib.mkIf (siteCfg.nodejs.enable && siteCfg.nodejs.script != null) {
-      nodejs.exec = siteCfg.nodejs.script;
     };
   };
 }

@@ -22,7 +22,6 @@ in
     ./nix/utils/app-urls.devenv.nix
     ./nix/services/devenv.nix
     ./nix/app-services/devenv.nix
-    ./nix/lib/scripts
   ];
 
   config = {

@@ -2,7 +2,6 @@
   config,
   lib,
   util,
-  pkgs,
   ...
 }:
 let
@@ -32,27 +31,12 @@ in
 
     nodejs = mkOption {
       type = util.submodule {
-        options = {
-          enable = mkEnableOption "Enable Node.js development server for the application.";
-
-          install.enable = mkEnableOption "Enable automatic installation of Node.js dependencies.";
-
-          package = mkOption {
-            type = types.package;
-            default = pkgs.nodejs_24;
-            description = "The Node.js package to use for the application.";
-          };
-
-          script = mkOption {
-            type = types.nullOr types.str;
-            default = "npm run dev";
-            description = "The npm script to run for the development server.";
-          };
-        };
+        imports = [ ../../services/nodejs/options/nodejs-options.devenv.nix ];
 
         config = {
           enable = lib.mkDefault true;
           install.enable = lib.mkDefault true;
+          script = lib.mkDefault "npm run dev";
         };
       };
       default = { };

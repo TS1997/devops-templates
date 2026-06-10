@@ -24,7 +24,7 @@ jobs:
     with:
       environment: "production"
       registry_url: "{{NPM_REGISTRY_URL}}"
-      npm_scope: "@{{vendor_slug}}"
+      npm_scope: "@{{VENDOR_SLUG}}"
     secrets:
       AUTH_JSON: ${{ secrets.AUTH_JSON }}
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

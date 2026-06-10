@@ -53,7 +53,7 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
               with:
-                  fetch-depth: 2
+                  fetch-depth: 0
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
@@ -88,15 +88,18 @@ jobs:
                     exit 1
                   fi
 
-                  if ! git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+                  current_commit="$(git rev-list -n 1 "$GITHUB_REF_NAME")"
+                  previous_tag="$(git describe --tags --abbrev=0 "${current_commit}^" 2>/dev/null || true)"
+
+                  if [ -z "$previous_tag" ]; then
                     echo "changed=true" >> "$GITHUB_OUTPUT"
-                    echo "No parent commit found; publishing generated package."
-                  elif git diff --quiet HEAD^ -- "$PACKAGE_DIRECTORY"; then
+                    echo "No previous tag found; publishing generated package."
+                  elif git diff --quiet "$previous_tag" -- "$PACKAGE_DIRECTORY"; then
                     echo "changed=false" >> "$GITHUB_OUTPUT"
-                    echo "Generated package did not change since the previous commit; skipping publish."
+                    echo "Generated package did not change since $previous_tag; skipping publish."
                   else
                     echo "changed=true" >> "$GITHUB_OUTPUT"
-                    echo "Generated package changed since the previous commit; publishing package."
+                    echo "Generated package changed since $previous_tag; publishing package."
                   fi
 
             - name: Resolve package version

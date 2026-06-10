@@ -51,7 +51,7 @@ jobs:
         environment: ${{ inputs.environment }}
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
               with:
                   fetch-depth: 0
 
@@ -63,7 +63,7 @@ jobs:
                   tools: composer:v2
 
             - name: Install Composer dependencies
-              uses: "ramsey/composer-install@v3"
+              uses: "ramsey/composer-install@4.0.0"
               env:
                   COMPOSER_AUTH: ${{ secrets.AUTH_JSON }}
               with:
@@ -117,7 +117,7 @@ jobs:
 
             - name: Setup Node.js
               if: steps.package.outputs.changed == 'true'
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: ${{ inputs.node_version }}
                   registry-url: ${{ inputs.registry_url }}

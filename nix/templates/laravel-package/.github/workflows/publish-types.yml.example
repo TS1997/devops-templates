@@ -1,0 +1,30 @@
+# Example generated types publishing workflow.
+# To enable it, rename this file to publish-types.yml.
+# Before enabling, add the NPM_TOKEN secret to the production environment in
+# GitHub. Add the AUTH_JSON secret too if the package needs Composer auth.
+# Replace {{NPM_REGISTRY_URL}} with your npm registry URL, or remove registry_url
+# to publish to the public npm registry.
+# The npm scope should match the vendor part of the generated package name.
+
+name: Publish Types
+
+on:
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
+
+concurrency:
+  group: publish-types-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish-types:
+    uses: TS1997/devops-templates/.github/workflows/laravel-publish-types.yml@master
+    with:
+      environment: "production"
+      registry_url: "{{NPM_REGISTRY_URL}}"
+      npm_scope: "@{{vendor_slug}}"
+    secrets:
+      AUTH_JSON: ${{ secrets.AUTH_JSON }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

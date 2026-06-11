@@ -39,9 +39,10 @@ on:
         secrets:
             AUTH_JSON:
                 required: false
-            NPM_TOKEN:
+            NPM_USER:
                 required: true
-
+            NPM_PASSWORD:
+                required: true
 permissions:
     contents: read
 
@@ -120,8 +121,27 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ inputs.node_version }}
-                  registry-url: ${{ inputs.registry_url }}
-                  scope: ${{ inputs.npm_scope }}
+
+            - name: Configure npm credentials
+              if: steps.package.outputs.changed == 'true'
+              shell: bash
+              env:
+                  REGISTRY_URL: ${{ inputs.registry_url }}
+                  NPM_SCOPE: ${{ inputs.npm_scope }}
+                  NPM_USERNAME: ${{ secrets.NPM_USER }}
+                  NPM_PASSWORD: ${{ secrets.NPM_PASSWORD }}
+              run: |
+                  registry_host="${REGISTRY_URL#https://}"
+                  registry_host="${registry_host#http://}"
+                  registry_host="${registry_host%/}"
+                  encoded_password="$(echo -n "${NPM_PASSWORD}" | base64 -w0)"
+
+                  {
+                    echo "${NPM_SCOPE}:registry=${REGISTRY_URL}"
+                    echo "//${registry_host}/:username=${NPM_USERNAME}"
+                    echo "//${registry_host}/:_password=${encoded_password}"
+                    echo "//${registry_host}/:always-auth=true"
+                  } > ~/.npmrc
 
             - name: Set package version
               if: steps.package.outputs.changed == 'true'
@@ -131,8 +151,6 @@ jobs:
             - name: Publish types package
               if: steps.package.outputs.changed == 'true'
               working-directory: ${{ inputs.package_directory }}
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
               run: npm publish
 
             - name: Publish summary

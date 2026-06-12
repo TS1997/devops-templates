@@ -135,6 +135,16 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             mkdir -p storage/app/public storage/framework/cache storage/framework/sessions storage/framework/testing storage/framework/views storage/logs bootstrap/cache
+
+            cat > bootstrap/cache/release-info.json <<EOF
+            {
+              "released_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+              "git_sha": "${{ github.sha }}",
+              "deployed_by": "${{ github.actor }}",
+              "build_number": "${{ github.run_number }}"
+            }
+            EOF
+
             php artisan optimize
             php artisan migrate --force
             ${{ inputs.additional_commands }}

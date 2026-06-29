@@ -2,6 +2,7 @@
 
 namespace PackageVendor\Skeleton;
 
+use Override;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -19,6 +20,7 @@ class SkeletonServiceProvider extends PackageServiceProvider {
             ->hasConfigFile();
     }
 
+    #[Override]
     public function packageBooted(): void {
         $this->configureTranslations();
     }

@@ -37,48 +37,7 @@ in
 {
   options.services.ts1997.laravelPackage = lib.mkOption {
     type = util.submodule {
-      options = {
-        enable = lib.mkEnableOption "Enable Laravel package development tooling.";
-
-        env = lib.mkOption {
-          type =
-            with lib.types;
-            attrsOf (
-              nullOr (oneOf [
-                str
-                bool
-                int
-              ])
-            );
-          default = { };
-          description = "Environment variables for Laravel package development.";
-        };
-
-        phpPackage = lib.mkOption {
-          type = lib.types.package;
-          default = pkgs.php;
-          description = "The PHP package to use for package development.";
-        };
-
-        nodejs = lib.mkOption {
-          type = util.submodule {
-            imports = [ ../../services/nodejs/options/nodejs-options.devenv.nix ];
-
-            config = {
-              enable = lib.mkDefault true;
-              install.enable = lib.mkDefault true;
-            };
-          };
-          default = { };
-          description = "Node.js development tooling configuration for the package.";
-        };
-
-        composer.install.enable = lib.mkEnableOption "Enable automatic Composer installation in development shell.";
-      };
-
-      config = {
-        composer.install.enable = lib.mkDefault true;
-      };
+      imports = [ ./options/laravel-package-options.devenv.nix ];
     };
     default = { };
     description = "Laravel package development configuration.";
@@ -109,6 +68,12 @@ in
 
       format.exec = ''
         composer format "$@"
+      '';
+    };
+
+    processes = {
+      generate-types.exec = lib.mkIf packageCfg.generate-types.enable ''
+        php artisan package-types:generate --watch
       '';
     };
   };

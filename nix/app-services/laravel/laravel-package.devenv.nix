@@ -71,8 +71,8 @@ in
       '';
     };
 
-    processes = {
-      generate-types.exec = lib.mkIf packageCfg.generate-types.enable ''
+    processes = lib.mkIf packageCfg.generate-types.enable {
+      generate-types.exec = ''
         php artisan package-types:generate --watch
       '';
     };

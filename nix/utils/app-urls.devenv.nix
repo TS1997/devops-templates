@@ -64,38 +64,45 @@ let
   );
 
   showDbManagement = phpMyAdminCfg.enable || pgAdminCfg.enable;
+
+  # Only expose app-urls when there's something web-facing to show
+  # (e.g. laravel-site / wordpress-site). laravel-package enables none
+  # of these, so the process is omitted entirely for it.
+  showAppUrls = nginxCfg.enable || showDbManagement || mailpitCfg.enable;
 in
 {
-  config.processes.app-urls = {
-    exec = ''
-      ${lib.optionalString (nginxCfg.enable) (section "Application URLs" appUrls)}
+  config.processes = lib.mkIf showAppUrls {
+    app-urls = {
+      exec = ''
+        ${lib.optionalString (nginxCfg.enable) (section "Application URLs" appUrls)}
 
-      ${lib.optionalString (showDbManagement) (section "Database Management" dbManagementUrls)}
+        ${lib.optionalString (showDbManagement) (section "Database Management" dbManagementUrls)}
 
-      ${lib.optionalString (mailpitCfg.enable) (
-        section "Mailpit URLs" ''
-          echo -e "  ${vhost.header "Mailpit UI"}"
-          echo -e "  ${vhost.http "http://${mailpitCfg.ui.host}:${toString mailpitCfg.ui.port}/"}"
-          echo -e "  ${vhost.footer}"
-          echo -e ""
-        ''
-      )}
+        ${lib.optionalString (mailpitCfg.enable) (
+          section "Mailpit URLs" ''
+            echo -e "  ${vhost.header "Mailpit UI"}"
+            echo -e "  ${vhost.http "http://${mailpitCfg.ui.host}:${toString mailpitCfg.ui.port}/"}"
+            echo -e "  ${vhost.footer}"
+            echo -e ""
+          ''
+        )}
 
-      echo ""
-    '';
-    process-compose.depends_on = lib.mkMerge [
-      (lib.mkIf nginxCfg.enable {
-        nginx.condition = "process_healthy";
-      })
-      (lib.mkIf phpMyAdminCfg.enable {
-        phpmyadmin.condition = "process_healthy";
-      })
-      (lib.mkIf pgAdminCfg.enable {
-        pgadmin.condition = "process_healthy";
-      })
-      (lib.mkIf mailpitCfg.enable {
-        mailpit.condition = "process_healthy";
-      })
-    ];
+        echo ""
+      '';
+      process-compose.depends_on = lib.mkMerge [
+        (lib.mkIf nginxCfg.enable {
+          nginx.condition = "process_healthy";
+        })
+        (lib.mkIf phpMyAdminCfg.enable {
+          phpmyadmin.condition = "process_healthy";
+        })
+        (lib.mkIf pgAdminCfg.enable {
+          pgadmin.condition = "process_healthy";
+        })
+        (lib.mkIf mailpitCfg.enable {
+          mailpit.condition = "process_healthy";
+        })
+      ];
+    };
   };
 }

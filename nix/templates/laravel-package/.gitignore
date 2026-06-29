@@ -1,5 +1,6 @@
 # Composer Related
 /vendor
+/composer.local.json
 
 # Frontend Assets
 /node_modules

@@ -35,7 +35,6 @@
 /yarn.lock          export-ignore
 /vite.config.js     export-ignore
 /resources/assets/css   export-ignore
-/resources/assets/js    export-ignore
 # END FILAMENT_ASSETS
 # BEGIN TYPESCRIPT_TYPES
 /resources/types/package-lock.json  export-ignore

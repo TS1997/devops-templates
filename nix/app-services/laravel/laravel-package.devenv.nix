@@ -53,7 +53,7 @@ in
 
     services.ts1997.nodejs =
       packageCfg.nodejs
-      // lib.optionalAttrs packageCfg.generate-types.enable {
+      // lib.optionalAttrs (packageCfg.generate-types.enable && !packageCfg.nodejs.enable) {
         enable = true;
         script = null;
       };

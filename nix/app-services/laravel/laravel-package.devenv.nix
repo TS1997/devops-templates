@@ -51,7 +51,12 @@ in
       package = packageCfg.phpPackage;
     };
 
-    services.ts1997.nodejs = packageCfg.nodejs;
+    services.ts1997.nodejs =
+      packageCfg.nodejs
+      // lib.optionalAttrs packageCfg.generate-types.enable {
+        enable = true;
+        script = null;
+      };
 
     enterShell = lib.optionalString packageCfg.composer.install.enable ''
       source ${initComposerScript}

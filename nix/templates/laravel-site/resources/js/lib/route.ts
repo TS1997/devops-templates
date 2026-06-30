@@ -21,10 +21,24 @@ let currentLocale = '';
 let currentDefaultLocale = '';
 
 /**
+ * Set the active locale used when building localized URLs. Safe to call during
+ * SSR and on the client; the values are typically sourced from the Inertia page
+ * props so server-rendered links match the client and avoid hydration drift.
+ */
+export function setRouteLocale(locale: string, defaultLocale: string): void {
+  currentLocale = locale;
+  currentDefaultLocale = defaultLocale;
+}
+
+/**
  * Seed locale from the initial page embedded in the DOM, then register the
  * Inertia navigate listener to keep it in sync on subsequent navigations.
  */
 export function initRouteLocale(): void {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
   const script = document.querySelector(
     'script[data-page][type="application/json"]',
   );

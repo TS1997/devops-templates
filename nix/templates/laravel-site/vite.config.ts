@@ -18,9 +18,6 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
-  ssr: {
-    noExternal: true,
-  },
   server: {
     watch: {
       ignored: [

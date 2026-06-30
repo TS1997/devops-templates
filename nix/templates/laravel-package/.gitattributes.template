@@ -28,12 +28,21 @@
 /pint.json          export-ignore
 /.vscode            export-ignore
 /composer.lock      export-ignore
+/composer.local.*   export-ignore
+# BEGIN FILAMENT_ASSETS
 /package-lock.json  export-ignore
 /package.json       export-ignore
 /yarn.lock          export-ignore
 /vite.config.js     export-ignore
-/resources/css/**   export-ignore
+/resources/assets/css   export-ignore
+/resources/assets/js    export-ignore
+# END FILAMENT_ASSETS
+# BEGIN TYPESCRIPT_TYPES
+/resources/types/package-lock.json  export-ignore
+# END TYPESCRIPT_TYPES
 
+# BEGIN FILAMENT_ASSETS
 # Generated frontend assets must be exported because the package inlines them at runtime,
 # but they should not count toward repository language statistics.
-/resources/dist/**  linguist-generated=true
+/resources/assets/dist/**  linguist-generated=true
+# END FILAMENT_ASSETS

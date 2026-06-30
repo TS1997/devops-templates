@@ -1,0 +1,8 @@
+@import "tailwindcss/theme" prefix(tw);
+
+@import "tailwindcss/utilities" source(none);
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@source "../../views/**/*.blade.php";
+@source "../../../src/**/*.php";

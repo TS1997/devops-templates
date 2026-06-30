@@ -53,6 +53,39 @@ $panel
 
 <!-- END FILAMENT_PLUGIN -->
 
+<!-- BEGIN FILAMENT_ASSETS -->
+
+## Filament assets
+
+This package ships a compiled CSS bundle that is inlined into the Filament panel at runtime.
+
+Edit the source styles in `resources/assets/css/{{package_slug}}.css`, then build the bundle:
+
+```bash
+npm install
+npm run build
+```
+
+During development you can rebuild on change with `npm run dev` (started automatically by Devenv).
+
+<!-- END FILAMENT_ASSETS -->
+
+<!-- BEGIN TYPESCRIPT_TYPES -->
+
+## TypeScript types
+
+This package generates TypeScript definitions from its PHP data objects.
+
+Generate the types with:
+
+```bash
+php artisan package-types:generate
+```
+
+The watcher runs automatically in the Devenv shell. The generated definitions are written to `resources/types`.
+
+<!-- END TYPESCRIPT_TYPES -->
+
 ## Package development
 
 This package includes Devenv tooling for running Testbench commands against the package while keeping generated files in package directories.

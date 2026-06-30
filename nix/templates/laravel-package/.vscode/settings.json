@@ -34,5 +34,10 @@
         "**/.devenv/**": true,
         "**/.direnv/**": true,
         "**/.phpunit.cache/**": true
+    },
+    // BEGIN FILAMENT_ASSETS
+    "files.associations": {
+        "*.css": "tailwindcss"
     }
+    // END FILAMENT_ASSETS
 }

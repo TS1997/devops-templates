@@ -28,6 +28,9 @@ phpstan.neon
 testbench.yaml
 /docs
 /coverage
+# BEGIN TYPESCRIPT_TYPES
+resources/types/node_modules
+# END TYPESCRIPT_TYPES
 
 # Devenv
 .devenv*

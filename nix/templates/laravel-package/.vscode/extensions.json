@@ -10,6 +10,9 @@
         "esbenp.prettier-vscode",
         "editorconfig.editorconfig",
         "mikestead.dotenv",
-        "jnoortheen.nix-ide"
+        "jnoortheen.nix-ide",
+        // BEGIN FILAMENT_ASSETS
+        "bradlc.vscode-tailwindcss"
+        // END FILAMENT_ASSETS
     ]
 }

@@ -1,8 +1,8 @@
-import type { SharedPagePropsData } from '@/generated/types/App/Data';
+import type { SharedPageProps } from '@/generated/types/App/Data';
 
 declare module '@inertiajs/core' {
   export interface InertiaConfig {
-    sharedPageProps: SharedPagePropsData & {
+    sharedPageProps: SharedPageProps & {
       [key: string]: unknown;
     };
   }

@@ -5,10 +5,10 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { ProfilePageData } from '@/generated/types/App/Data/Pages/Settings';
+import type { ProfilePage } from '@/generated/types/App/Data/Pages/Settings';
 import { route } from '@/lib/route';
 
-export default function Profile({ mustVerifyEmail, status }: ProfilePageData) {
+export default function Profile({ mustVerifyEmail, status }: ProfilePage) {
   const { user } = usePage().props;
 
   return (

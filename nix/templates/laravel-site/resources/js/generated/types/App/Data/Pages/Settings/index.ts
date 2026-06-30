@@ -1,8 +1,8 @@
-export type ProfilePageData = {
+export type ProfilePage = {
   mustVerifyEmail: boolean;
   status?: string;
 };
-export type SecurityPageData = {
+export type SecurityPage = {
   canManageTwoFactor: boolean;
   twoFactorEnabled?: boolean;
   requiresConfirmation?: boolean;

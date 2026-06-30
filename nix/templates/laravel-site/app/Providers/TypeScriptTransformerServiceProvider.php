@@ -12,6 +12,7 @@ use Spatie\TypeScriptTransformer\Transformers\AttributedClassTransformer;
 use Spatie\TypeScriptTransformer\Transformers\EnumTransformer;
 use Spatie\TypeScriptTransformer\TypeScriptTransformerConfigFactory;
 use Spatie\TypeScriptTransformer\Writers\ModuleWriter;
+use TS1997\TypeScriptTransformerExtras\Transformers\StripSuffixTransformer;
 
 class TypeScriptTransformerServiceProvider extends BaseTypeScriptTransformerServiceProvider {
     protected function configure(TypeScriptTransformerConfigFactory $config): void {
@@ -29,7 +30,7 @@ class TypeScriptTransformerServiceProvider extends BaseTypeScriptTransformerServ
                 ],
                 absoluteUrlsByDefault: false
             ))
-            ->prependTransformer(new DataClassTransformer(nullableAsOptional: true))
+            ->prependTransformer(new StripSuffixTransformer(new DataClassTransformer(nullableAsOptional: true)))
             ->transformer(AttributedClassTransformer::class)
             ->transformer(EnumTransformer::class)
             ->transformDirectories(app_path())

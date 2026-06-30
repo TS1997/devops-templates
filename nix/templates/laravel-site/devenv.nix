@@ -16,9 +16,5 @@ in
         APP_KEY = "{{APP_KEY}}";
       };
     };
-
-    processes = {
-      ts-transformer.exec = "php artisan typescript:transform --watch";
-    };
   };
 }

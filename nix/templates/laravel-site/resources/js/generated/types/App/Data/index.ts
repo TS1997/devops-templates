@@ -1,18 +1,18 @@
-export type SharedPagePropsData = {
+export type SharedPageProps = {
   name: string;
-  user?: UserData;
+  user?: User;
   sidebarOpen: boolean;
   locale: string;
   defaultLocale: string;
-  supportedLocales: Record<string, SupportedLocaleData>;
+  supportedLocales: Record<string, SupportedLocale>;
 };
-export type SupportedLocaleData = {
+export type SupportedLocale = {
   name: string;
   script: string;
   native: string;
   regional: string;
 };
-export type UserData = {
+export type User = {
   name: string;
   email: string;
   emailVerifiedAt: string;

@@ -8,7 +8,7 @@ import TwoFactorRecoveryCodes from '@/components/two-factor-recovery-codes';
 import TwoFactorSetupModal from '@/components/two-factor-setup-modal';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import type { SecurityPageData } from '@/generated/types/App/Data/Pages/Settings';
+import type { SecurityPage } from '@/generated/types/App/Data/Pages/Settings';
 import { useTwoFactorAuth } from '@/hooks/use-two-factor-auth';
 import { route } from '@/lib/route';
 
@@ -16,7 +16,7 @@ export default function Security({
   canManageTwoFactor = false,
   requiresConfirmation = false,
   twoFactorEnabled = false,
-}: SecurityPageData) {
+}: SecurityPage) {
   const passwordInput = useRef<HTMLInputElement>(null);
   const currentPasswordInput = useRef<HTMLInputElement>(null);
 

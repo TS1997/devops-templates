@@ -4,10 +4,10 @@
 }:
 {
   options = {
-    ts-transformer.enable = lib.mkEnableOption "Enable Laravel TypeScript Transformer watcher";
+    generate-types.enable = lib.mkEnableOption "Enable automatic TypeScript type generation.";
   };
 
   config = {
-    ts-transformer.enable = lib.mkDefault true;
+    generate-types.enable = lib.mkDefault true;
   };
 }

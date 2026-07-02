@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   util,
   ...
 }:
@@ -112,8 +113,9 @@ in
         scheduler.exec = "php artisan schedule:work";
       })
 
-      (lib.mkIf (siteCfg.ts-transformer.enable) {
+      (lib.mkIf (siteCfg.generate-types.enable) {
         ts-transformer.exec = "php artisan typescript:transform --watch";
+        ziggy-types.exec = "${pkgs.watchexec}/bin/watchexec -w routes -w config -e php --on-busy-update=queue -- php artisan ziggy:generate resources/js/types/ziggy.d.ts --types-only";
       })
 
       (lib.mkIf (siteCfg.queue.enable) {

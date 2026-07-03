@@ -1,3 +1,4 @@
+import type { route as ziggyRoute } from 'ziggy-js';
 import type { SharedPageProps } from '@/generated/types/App/Data';
 
 declare module '@inertiajs/core' {
@@ -6,4 +7,8 @@ declare module '@inertiajs/core' {
       [key: string]: unknown;
     };
   }
+}
+
+declare global {
+  var route: typeof ziggyRoute;
 }

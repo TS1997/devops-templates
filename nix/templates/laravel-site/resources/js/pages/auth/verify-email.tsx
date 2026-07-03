@@ -3,7 +3,6 @@ import { Form, Head } from '@inertiajs/react';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { route } from '@/lib/route';
 
 export default function VerifyEmail({ status }: { status?: string }) {
   return (

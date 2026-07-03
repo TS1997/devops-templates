@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import type { SecurityPage } from '@/generated/types/App/Data/Pages/Settings';
 import { useTwoFactorAuth } from '@/hooks/use-two-factor-auth';
-import { route } from '@/lib/route';
 
 export default function Security({
   canManageTwoFactor = false,

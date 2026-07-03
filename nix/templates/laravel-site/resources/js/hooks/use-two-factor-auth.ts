@@ -1,6 +1,5 @@
 import { useHttp } from '@inertiajs/react';
 import { useCallback, useState } from 'react';
-import { route } from '@/lib/route';
 
 export type UseTwoFactorAuthReturn = {
   qrCodeSvg: string | null;

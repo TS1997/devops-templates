@@ -1,5 +1,4 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { route } from '@/lib/route';
 
 export default function Welcome({
   canRegister = true,

@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { ProfilePage } from '@/generated/types/App/Data/Pages/Settings';
-import { route } from '@/lib/route';
 
 export default function Profile({ mustVerifyEmail, status }: ProfilePage) {
   const { user } = usePage().props;

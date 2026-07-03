@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
+use NielsNumbers\LaravelLocalizer\Routing\LocalizerZiggyV2;
 
 class HandleInertiaRequests extends Middleware {
     /**
@@ -40,9 +40,13 @@ class HandleInertiaRequests extends Middleware {
                 'user' => $request->user(),
             ],
             'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'locale' => LaravelLocalization::getCurrentLocale(),
-            'defaultLocale' => LaravelLocalization::getDefaultLocale(),
-            'supportedLocales' => LaravelLocalization::getSupportedLocales(),
+            'locale' => app()->getLocale(),
+            'defaultLocale' => config('app.fallback_locale'),
+            'supportedLocales' => config('localizer.supported_locales'),
+            ...($request->inertia() ? [] : ['ziggy' => fn () => [
+                ...(new LocalizerZiggyV2)->toArray(),
+                'location' => $request->url(),
+            ]]),
         ];
     }
 }

@@ -13,13 +13,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { route } from '@/lib/route';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
   {
     title: 'Dashboard',
     href: route('dashboard'),
+    routeName: 'dashboard',
     icon: LayoutGrid,
   },
 ];

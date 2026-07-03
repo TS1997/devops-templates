@@ -11,7 +11,7 @@ class SharedPagePropsData extends Data {
         public bool $sidebarOpen,
         public string $locale,
         public string $defaultLocale,
-        /** @var array<string, SupportedLocaleData> */
+        /** @var array<int, string> */
         public array $supportedLocales,
     ) {}
 }

@@ -4,8 +4,6 @@ namespace App\Providers;
 
 use Spatie\LaravelTypeScriptTransformer\LaravelData\Transformers\DataClassTransformer;
 use Spatie\LaravelTypeScriptTransformer\LaravelTypeScriptTransformerExtension;
-use Spatie\LaravelTypeScriptTransformer\RouteFilters\NamedRouteFilter;
-use Spatie\LaravelTypeScriptTransformer\TransformedProviders\LaravelRouteTransformedProvider;
 use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerApplicationServiceProvider as BaseTypeScriptTransformerServiceProvider;
 use Spatie\TypeScriptTransformer\Formatters\PrettierFormatter;
 use Spatie\TypeScriptTransformer\Transformers\AttributedClassTransformer;
@@ -18,18 +16,6 @@ class TypeScriptTransformerServiceProvider extends BaseTypeScriptTransformerServ
     protected function configure(TypeScriptTransformerConfigFactory $config): void {
         $config
             ->outputDirectory(resource_path('js/generated'))
-            ->provider(new LaravelRouteTransformedProvider(
-                filters: [
-                    new NamedRouteFilter(
-                        'boost.*',
-                        'storage.*',
-                        'filament.*',
-                        'livewire.*',
-                        'default-livewire.*',
-                    ),
-                ],
-                absoluteUrlsByDefault: false
-            ))
             ->prependTransformer(new StripSuffixTransformer(new DataClassTransformer(nullableAsOptional: true)))
             ->transformer(AttributedClassTransformer::class)
             ->transformer(EnumTransformer::class)

@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { route } from '@/lib/route';
 
 type Props = {
   recoveryCodesList: string[];

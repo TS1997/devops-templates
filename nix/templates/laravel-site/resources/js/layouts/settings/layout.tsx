@@ -6,28 +6,28 @@ import { Separator } from '@/components/ui/separator';
 import { cn, toUrl } from '@/lib/utils';
 import type { NavItem } from '@/types';
 
-const sidebarNavItems: NavItem[] = [
-  {
-    title: 'Profile',
-    href: route('profile.edit'),
-    routeName: 'profile.edit',
-    icon: null,
-  },
-  {
-    title: 'Security',
-    href: route('security.edit'),
-    routeName: 'security.edit',
-    icon: null,
-  },
-  {
-    title: 'Appearance',
-    href: route('appearance.edit'),
-    routeName: 'appearance.edit',
-    icon: null,
-  },
-];
-
 export default function SettingsLayout({ children }: PropsWithChildren) {
+  const sidebarNavItems: NavItem[] = [
+    {
+      title: 'Profile',
+      href: route('profile.edit'),
+      routeName: 'profile.edit',
+      icon: null,
+    },
+    {
+      title: 'Security',
+      href: route('security.edit'),
+      routeName: 'security.edit',
+      icon: null,
+    },
+    {
+      title: 'Appearance',
+      href: route('appearance.edit'),
+      routeName: 'appearance.edit',
+      icon: null,
+    },
+  ];
+
   return (
     <div className="px-4 py-6">
       <Heading

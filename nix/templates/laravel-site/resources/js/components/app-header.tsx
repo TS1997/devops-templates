@@ -37,15 +37,6 @@ type Props = {
   breadcrumbs?: BreadcrumbItem[];
 };
 
-const mainNavItems: NavItem[] = [
-  {
-    title: 'Dashboard',
-    href: route('dashboard'),
-    routeName: 'dashboard',
-    icon: LayoutGrid,
-  },
-];
-
 const rightNavItems: NavItem[] = [
   {
     title: 'Repository',
@@ -66,6 +57,15 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
   const page = usePage();
   const { user } = page.props;
   const getInitials = useInitials();
+
+  const mainNavItems: NavItem[] = [
+    {
+      title: 'Dashboard',
+      href: route('dashboard'),
+      routeName: 'dashboard',
+      icon: LayoutGrid,
+    },
+  ];
 
   return (
     <>

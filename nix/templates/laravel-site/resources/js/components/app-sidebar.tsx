@@ -15,15 +15,6 @@ import {
 } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
-  {
-    title: 'Dashboard',
-    href: route('dashboard'),
-    routeName: 'dashboard',
-    icon: LayoutGrid,
-  },
-];
-
 const footerNavItems: NavItem[] = [
   {
     title: 'Repository',
@@ -38,6 +29,15 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+  const mainNavItems: NavItem[] = [
+    {
+      title: 'Dashboard',
+      href: route('dashboard'),
+      routeName: 'dashboard',
+      icon: LayoutGrid,
+    },
+  ];
+
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>

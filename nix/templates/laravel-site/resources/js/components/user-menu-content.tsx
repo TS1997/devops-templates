@@ -7,9 +7,8 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
+import type { User } from '@/generated/types/App/Data';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
-import { route } from '@/lib/route';
-import type { User } from '@/types';
 
 type Props = {
   user: User;

@@ -18,10 +18,13 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 /auth.json
+/composer.local.json
 /.fleet
 /.idea
 /.nova
 /.zed
+/_ide_helper*
+/.phpstorm.meta.php
 
 # Devenv
 .devenv*

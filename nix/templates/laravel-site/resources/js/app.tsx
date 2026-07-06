@@ -1,3 +1,4 @@
+import './bootstrap';
 import { createInertiaApp } from '@inertiajs/react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -5,11 +6,8 @@ import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import { initRouteLocale } from '@/lib/route';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
-
-initRouteLocale();
 
 createInertiaApp({
   title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -26,7 +24,18 @@ createInertiaApp({
     }
   },
   strictMode: true,
-  withApp(app) {
+  withApp(app, { page }) {
+    const ziggy = page.props.ziggy as
+      | ({ location: string } & Record<string, unknown>)
+      | undefined;
+
+    if (ziggy) {
+      (globalThis as typeof globalThis & { Ziggy?: unknown }).Ziggy = {
+        ...ziggy,
+        location: new URL(ziggy.location),
+      };
+    }
+
     return (
       <TooltipProvider delayDuration={0}>
         {app}

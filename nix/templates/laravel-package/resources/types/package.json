@@ -1,0 +1,9 @@
+{
+    "name": "@{{vendor_slug}}/{{package_slug}}",
+    "version": "0.0.0",
+    "type": "module",
+    "types": "index.d.ts",
+    "files": [
+        "index.d.ts"
+    ]
+}

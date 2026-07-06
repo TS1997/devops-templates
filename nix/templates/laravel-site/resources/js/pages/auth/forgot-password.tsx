@@ -6,7 +6,6 @@ import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { route } from '@/lib/route';
 
 export default function ForgotPassword({ status }: { status?: string }) {
   return (

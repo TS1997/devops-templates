@@ -7,6 +7,8 @@ package_name=${*:-}
 package_vendor=${PACKAGE_VENDOR:-}
 default_package_vendor=Bravomedia
 filament_plugin_wanted=false
+filament_assets_wanted=false
+typescript_types_wanted=false
 
 require_template_dir
 
@@ -46,8 +48,9 @@ read_package_vendor() {
   done
 }
 
-wants_filament_plugin() {
-  local answer=${FILAMENT_PLUGIN:-}
+wants_feature() {
+  local env_name=$1 prompt=$2
+  local answer=${!env_name:-}
 
   case "$(printf '%s' "$answer" | tr '[:upper:]' '[:lower:]')" in
     1|true|yes|y|on)
@@ -59,7 +62,7 @@ wants_filament_plugin() {
     '')
       ;;
     *)
-      fail "FILAMENT_PLUGIN must be one of: yes, no, true, false, 1, 0."
+      fail "$env_name must be one of: yes, no, true, false, 1, 0."
       ;;
   esac
 
@@ -68,7 +71,7 @@ wants_filament_plugin() {
   fi
 
   while true; do
-    read -r -p "Include a Filament plugin scaffold? [y/N] " answer || return 1
+    read -r -p "$prompt [y/N] " answer || return 1
 
     case "$(printf '%s' "$answer" | tr '[:upper:]' '[:lower:]')" in
       y|yes)
@@ -84,25 +87,127 @@ wants_filament_plugin() {
   done
 }
 
+strip_feature_markers() {
+  local file=$1 marker=$2
+
+  [[ -f "$file" ]] || return 0
+
+  sed -i \
+    -e "/# BEGIN $marker$/d" \
+    -e "/# END $marker$/d" \
+    -e "\|// BEGIN $marker$|d" \
+    -e "\|// END $marker$|d" \
+    -e "/<!-- BEGIN $marker -->/d" \
+    -e "/<!-- END $marker -->/d" \
+    "$file"
+}
+
+remove_feature_blocks() {
+  local file=$1 marker=$2
+
+  [[ -f "$file" ]] || return 0
+
+  sed -i \
+    -e "/# BEGIN $marker$/,/# END $marker$/d" \
+    -e "\|// BEGIN $marker$|,\|// END $marker$|d" \
+    -e "/<!-- BEGIN $marker -->/,/<!-- END $marker -->/d" \
+    "$file"
+}
+
 configure_filament_plugin_template() {
   if [[ "$filament_plugin_wanted" == true ]]; then
     sed -i \
       -e '/<!-- BEGIN FILAMENT_PLUGIN -->/d' \
       -e '/<!-- END FILAMENT_PLUGIN -->/d' \
       "$target_dir/README.md"
+  else
+    sed -i \
+      -e '/<!-- BEGIN FILAMENT_PLUGIN -->/,/<!-- END FILAMENT_PLUGIN -->/d' \
+      "$target_dir/README.md"
+
+    rm -rf "$target_dir/src/Filament"
+  fi
+
+  # Filament is also required by the Filament assets setup, so only drop the
+  # dependency when neither Filament feature is wanted.
+  if [[ "$filament_plugin_wanted" == false && "$filament_assets_wanted" == false ]]; then
+    sed -i \
+      -e '/"filament\/filament":/d' \
+      "$target_dir/composer.json"
+  fi
+}
+
+configure_filament_assets_template() {
+  local marker=FILAMENT_ASSETS
+  local file
+  local files=(
+    "$target_dir/src/SkeletonServiceProvider.php"
+    "$target_dir/devenv.nix"
+    "$target_dir/.gitattributes"
+    "$target_dir/README.md"
+    "$target_dir/.vscode/extensions.json"
+    "$target_dir/.vscode/settings.json"
+  )
+
+  if [[ "$filament_assets_wanted" == true ]]; then
+    for file in "${files[@]}"; do
+      strip_feature_markers "$file" "$marker"
+    done
 
     return
   fi
 
-  sed -i \
-    -e '/<!-- BEGIN FILAMENT_PLUGIN -->/,/<!-- END FILAMENT_PLUGIN -->/d' \
+  for file in "${files[@]}"; do
+    remove_feature_blocks "$file" "$marker"
+  done
+
+  rm -f "$target_dir/vite.config.js" "$target_dir/package.json"
+  rm -rf "$target_dir/resources/assets"
+}
+
+configure_typescript_types_template() {
+  local marker=TYPESCRIPT_TYPES
+  local file
+  local files=(
+    "$target_dir/src/SkeletonServiceProvider.php"
+    "$target_dir/devenv.nix"
+    "$target_dir/.gitattributes"
+    "$target_dir/.gitignore"
     "$target_dir/README.md"
+  )
+
+  if [[ "$typescript_types_wanted" == true ]]; then
+    for file in "${files[@]}"; do
+      strip_feature_markers "$file" "$marker"
+    done
+
+    # The types watcher relies on chokidar. When the Filament assets setup is
+    # not included (which ships a full package.json), provide a minimal one
+    # containing just that dependency.
+    if [[ "$filament_assets_wanted" == false ]]; then
+      cat > "$target_dir/package.json" <<'JSON'
+{
+    "devDependencies": {
+        "chokidar": "^5.0.0"
+    }
+}
+JSON
+    fi
+
+    return
+  fi
+
+  for file in "${files[@]}"; do
+    remove_feature_blocks "$file" "$marker"
+  done
 
   sed -i \
-    -e '/"filament\/filament":/d' \
+    -e '/"spatie\/laravel-data":/d' \
+    -e '/"spatie\/laravel-typescript-transformer":/d' \
+    -e '/"ts1997\/laravel-package-types":/d' \
     "$target_dir/composer.json"
 
-  rm -rf "$target_dir/src/Filament"
+  rm -rf "$target_dir/resources/types"
 }
 
 replace_template_placeholders() {
@@ -147,6 +252,8 @@ replace_template_placeholders() {
 
   config_file="$target_dir/config/skeleton.php"
   [[ ! -f "$config_file" ]] || mv "$config_file" "$target_dir/config/$folder_slug.php"
+
+  [[ ! -f "$target_dir/resources/assets/css/skeleton.css" ]] || mv "$target_dir/resources/assets/css/skeleton.css" "$target_dir/resources/assets/css/$folder_slug.css"
 }
 
 if [[ -z "$package_name" ]]; then
@@ -162,8 +269,16 @@ fi
 [[ -n "$package_vendor" ]] || fail "Vendor is required."
 is_valid_vendor "$package_vendor" || fail "Package vendor must start with a letter."
 
-if wants_filament_plugin; then
+if wants_feature FILAMENT_PLUGIN "Include a Filament plugin scaffold?"; then
   filament_plugin_wanted=true
+fi
+
+if wants_feature FILAMENT_ASSETS "Include a Filament assets (CSS) build setup?"; then
+  filament_assets_wanted=true
+fi
+
+if wants_feature TYPESCRIPT_TYPES "Generate TypeScript types?"; then
+  typescript_types_wanted=true
 fi
 
 folder_slug=$(printf '%s' "$package_name" | slugify '-')
@@ -181,6 +296,8 @@ copy_template "$target_dir" || fail "Failed to copy template files into ./$targe
 
 [[ -f "$target_dir/devenv.nix" ]] || fail "Template copy completed, but ./$target_dir/devenv.nix is missing."
 configure_filament_plugin_template || fail "Failed to configure Filament plugin files in ./$target_dir"
+configure_filament_assets_template || fail "Failed to configure Filament assets files in ./$target_dir"
+configure_typescript_types_template || fail "Failed to configure TypeScript types files in ./$target_dir"
 replace_template_placeholders || fail "Failed to configure Laravel package in ./$target_dir"
 git -C "$target_dir" init -b master || fail "Failed to initialize a Git repository in ./$target_dir"
 

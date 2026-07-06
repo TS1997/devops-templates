@@ -1,0 +1,14 @@
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../some-local-package",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "vendor/some-local-package": "1.0.0"
+                }
+            }
+        }
+    ]
+}

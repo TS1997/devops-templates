@@ -3,21 +3,22 @@
 namespace App\Providers;
 
 use Carbon\CarbonImmutable;
-use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use Mcamara\LaravelLocalization\Traits\LoadsTranslatedCachedRoutes;
+use NielsNumbers\LaravelLocalizer\Routing\LocalizerBladeRouteGeneratorV2;
+use Tighten\Ziggy\BladeRouteGenerator;
 
 class AppServiceProvider extends ServiceProvider {
-    use LoadsTranslatedCachedRoutes;
-
     /**
      * Register any application services.
      */
     public function register(): void {
-        //
+        $this->app->bind(
+            BladeRouteGenerator::class,
+            LocalizerBladeRouteGeneratorV2::class,
+        );
     }
 
     /**
@@ -25,7 +26,6 @@ class AppServiceProvider extends ServiceProvider {
      */
     public function boot(): void {
         $this->configureDefaults();
-        $this->configureLocalization();
     }
 
     /**
@@ -46,20 +46,6 @@ class AppServiceProvider extends ServiceProvider {
                 ->symbols()
                 ->uncompromised()
             : null,
-        );
-    }
-
-    /**
-     * Configure localization settings.
-     */
-    protected function configureLocalization(): void {
-        RouteServiceProvider::loadCachedRoutesUsing(fn () => $this->loadCachedRoutes());
-
-        // Override the default route caching to include translated routes
-        $this->optimizes(
-            optimize: 'route:trans:cache',
-            clear: 'route:trans:clear',
-            key: 'routes',
         );
     }
 }

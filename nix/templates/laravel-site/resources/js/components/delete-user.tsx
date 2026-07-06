@@ -4,7 +4,6 @@ import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
-import { route } from '@/lib/route';
 import {
   Dialog,
   DialogClose,

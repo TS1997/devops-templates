@@ -5,8 +5,8 @@ inputs:
   # nixpkgs-old:
   # url: github:NixOS/nixpkgs?rev=99fcf0ee74957231ff0471228e9a59f976a0266b
   templates:
-    url: github:ts1997/devops-templates
+    url: github:TS1997/devops-templates
     # Example of a specific branch
-    # url: git+ssh://git@bitbucket.org/bravomedia/templates?ref=feat/feature-branch
+    # url: github:TS1997/devops-templates?ref=feat/feature-branch
 imports:
   - templates

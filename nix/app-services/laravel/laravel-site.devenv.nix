@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   util,
   ...
 }:
@@ -29,6 +30,7 @@ in
         ../options/app-options.base.nix
         ../options/app-options.devenv.nix
         ./options/laravel-options.base.nix
+        ./options/laravel-options.devenv.nix
       ];
     };
     default = { };
@@ -109,6 +111,11 @@ in
     processes = lib.mkMerge [
       (lib.mkIf (siteCfg.scheduler.enable) {
         scheduler.exec = "php artisan schedule:work";
+      })
+
+      (lib.mkIf (siteCfg.generate-types.enable) {
+        ts-transformer.exec = "php artisan typescript:transform --watch";
+        ziggy-types.exec = "${pkgs.watchexec}/bin/watchexec -w routes -w config -e php --on-busy-update=queue -- php artisan ziggy:generate resources/js/types/ziggy.d.ts --types-only";
       })
 
       (lib.mkIf (siteCfg.queue.enable) {

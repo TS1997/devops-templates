@@ -3,31 +3,30 @@ import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { useCurrentUrl } from '@/hooks/use-current-url';
-import { route } from '@/lib/route';
 import { cn, toUrl } from '@/lib/utils';
 import type { NavItem } from '@/types';
 
-const sidebarNavItems: NavItem[] = [
-  {
-    title: 'Profile',
-    href: route('profile.edit'),
-    icon: null,
-  },
-  {
-    title: 'Security',
-    href: route('security.edit'),
-    icon: null,
-  },
-  {
-    title: 'Appearance',
-    href: route('appearance.edit'),
-    icon: null,
-  },
-];
-
 export default function SettingsLayout({ children }: PropsWithChildren) {
-  const { isCurrentOrParentUrl } = useCurrentUrl();
+  const sidebarNavItems: NavItem[] = [
+    {
+      title: 'Profile',
+      href: route('profile.edit'),
+      routeName: 'profile.edit',
+      icon: null,
+    },
+    {
+      title: 'Security',
+      href: route('security.edit'),
+      routeName: 'security.edit',
+      icon: null,
+    },
+    {
+      title: 'Appearance',
+      href: route('appearance.edit'),
+      routeName: 'appearance.edit',
+      icon: null,
+    },
+  ];
 
   return (
     <div className="px-4 py-6">
@@ -49,7 +48,9 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                 variant="ghost"
                 asChild
                 className={cn('w-full justify-start', {
-                  'bg-muted': isCurrentOrParentUrl(item.href),
+                  'bg-muted': item.routeName
+                    ? route().current(item.routeName)
+                    : false,
                 })}
               >
                 <Link href={item.href}>

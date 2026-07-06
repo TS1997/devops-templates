@@ -1,0 +1,165 @@
+name: Laravel Publish Types
+
+on:
+    workflow_call:
+        inputs:
+            php_version:
+                required: false
+                default: "8.4"
+                type: string
+            node_version:
+                required: false
+                default: "24"
+                type: string
+            generation_command:
+                required: false
+                default: "php vendor/bin/testbench package-types:generate --ansi"
+                type: string
+                description: "Command that generates the npm package contents."
+            package_directory:
+                required: false
+                default: "resources/types"
+                type: string
+                description: "Directory containing the generated npm package."
+            registry_url:
+                required: false
+                default: "https://registry.npmjs.org/"
+                type: string
+                description: "npm registry URL used for publishing."
+            npm_scope:
+                required: true
+                type: string
+                description: "npm scope used by actions/setup-node, for example @bravomedia."
+            environment:
+                required: false
+                default: "production"
+                type: string
+                description: "Environment to run workflow in."
+
+        secrets:
+            AUTH_JSON:
+                required: false
+            NPM_USER:
+                required: true
+            NPM_PASSWORD:
+                required: true
+permissions:
+    contents: read
+
+jobs:
+    publish-types:
+        runs-on: ubuntu-latest
+        environment: ${{ inputs.environment }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ inputs.php_version }}
+                  coverage: none
+                  tools: composer:v2
+
+            - name: Install Composer dependencies
+              uses: "ramsey/composer-install@4.0.0"
+              env:
+                  COMPOSER_AUTH: ${{ secrets.AUTH_JSON }}
+              with:
+                  composer-options: "--no-interaction --prefer-dist --no-progress"
+
+            - name: Generate types package
+              run: ${{ inputs.generation_command }}
+
+            - name: Check generated package changes
+              id: package
+              shell: bash
+              env:
+                  PACKAGE_DIRECTORY: ${{ inputs.package_directory }}
+              run: |
+                  if [ ! -d "$PACKAGE_DIRECTORY" ]; then
+                    echo "Package directory does not exist: $PACKAGE_DIRECTORY" >&2
+                    exit 1
+                  fi
+
+                  if [ ! -f "$PACKAGE_DIRECTORY/package.json" ]; then
+                    echo "Generated package is missing package.json: $PACKAGE_DIRECTORY/package.json" >&2
+                    exit 1
+                  fi
+
+                  current_commit="$(git rev-list -n 1 "$GITHUB_REF_NAME")"
+                  previous_tag="$(git describe --tags --abbrev=0 "${current_commit}^" 2>/dev/null || true)"
+
+                  if [ -z "$previous_tag" ]; then
+                    echo "changed=true" >> "$GITHUB_OUTPUT"
+                    echo "No previous tag found; publishing generated package."
+                  elif git diff --quiet "$previous_tag" -- "$PACKAGE_DIRECTORY"; then
+                    echo "changed=false" >> "$GITHUB_OUTPUT"
+                    echo "Generated package did not change since $previous_tag; skipping publish."
+                  else
+                    echo "changed=true" >> "$GITHUB_OUTPUT"
+                    echo "Generated package changed since $previous_tag; publishing package."
+                  fi
+
+            - name: Resolve package version
+              if: steps.package.outputs.changed == 'true'
+              id: version
+              shell: bash
+              run: |
+                  if [ "$GITHUB_REF_TYPE" != "tag" ]; then
+                    echo "This workflow must run for a tag so the npm package version can be resolved." >&2
+                    exit 1
+                  fi
+
+                  version="${GITHUB_REF_NAME#v}"
+                  echo "version=$version" >> "$GITHUB_OUTPUT"
+
+            - name: Setup Node.js
+              if: steps.package.outputs.changed == 'true'
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ inputs.node_version }}
+
+            - name: Configure npm credentials
+              if: steps.package.outputs.changed == 'true'
+              shell: bash
+              env:
+                  REGISTRY_URL: ${{ inputs.registry_url }}
+                  NPM_SCOPE: ${{ inputs.npm_scope }}
+                  NPM_USERNAME: ${{ secrets.NPM_USER }}
+                  NPM_PASSWORD: ${{ secrets.NPM_PASSWORD }}
+              run: |
+                  registry_host="${REGISTRY_URL#https://}"
+                  registry_host="${registry_host#http://}"
+                  registry_host="${registry_host%/}"
+                  encoded_password="$(echo -n "${NPM_PASSWORD}" | base64 -w0)"
+
+                  {
+                    echo "${NPM_SCOPE}:registry=${REGISTRY_URL}"
+                    echo "//${registry_host}/:username=${NPM_USERNAME}"
+                    echo "//${registry_host}/:_password=${encoded_password}"
+                    echo "//${registry_host}/:always-auth=true"
+                  } > ~/.npmrc
+
+            - name: Set package version
+              if: steps.package.outputs.changed == 'true'
+              working-directory: ${{ inputs.package_directory }}
+              run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --allow-same-version
+
+            - name: Publish types package
+              if: steps.package.outputs.changed == 'true'
+              working-directory: ${{ inputs.package_directory }}
+              run: npm publish
+
+            - name: Publish summary
+              if: always()
+              run: |
+                  if [ "${{ steps.package.outputs.changed }}" != "true" ]; then
+                    echo "Generated types package was unchanged; publish skipped."
+                  elif [ "${{ job.status }}" = "success" ]; then
+                    echo "Published types package version ${{ steps.version.outputs.version }} to ${{ inputs.registry_url }}"
+                  else
+                    echo "Failed to publish generated types package."
+                  fi

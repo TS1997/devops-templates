@@ -10,7 +10,6 @@ import {
   InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
-import { route } from '@/lib/route';
 
 export default function TwoFactorChallenge() {
   const [showRecoveryInput, setShowRecoveryInput] = useState<boolean>(false);

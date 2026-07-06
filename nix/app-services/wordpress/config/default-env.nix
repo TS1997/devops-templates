@@ -13,7 +13,7 @@ in
   WP_ENV = siteCfg.appEnv;
   WP_HOME = siteCfg.appUrl;
   WP_SITEURL = "${siteCfg.appUrl}/wp";
-  WP_DEBUG_LOG = config.languages.php.fpm.settings.error_log;
+  WP_DEBUG_LOG = config.languages.php.fpm.settings.error_log or "/var/log/php-fpm/${name}-error.log";
 
   DB_NAME = "${siteCfg.database.name}";
   DB_USER = "${siteCfg.database.user}";

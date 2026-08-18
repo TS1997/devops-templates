@@ -4,9 +4,6 @@
   pkgs,
   ...
 }:
-let
-  system = pkgs.stdenv.system;
-in
 {
   imports = [
     (import ./nix/utils/util.nix {
@@ -20,12 +17,13 @@ in
       redisSocket = config.env.REDIS_UNIX_SOCKET;
     })
     ./nix/utils/app-urls.devenv.nix
+    ./nix/utils/util-scripts.devenv.nix
     ./nix/services/devenv.nix
     ./nix/app-services/devenv.nix
   ];
 
   config = {
-    packages = if system != "aarch64-darwin" then (with pkgs; [ wl-clipboard ]) else [ ];
+    packages = if pkgs.stdenv.hostPlatform.system != "aarch64-darwin" then (with pkgs; [ wl-clipboard ]) else [ ];
 
     processes = {
       env-config.exec = "devenv info";

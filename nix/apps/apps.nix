@@ -11,5 +11,6 @@ flake-utils.lib.eachDefaultSystemMap (
   {
     laravel-package = import ./laravel/package.nix { inherit pkgs self flake-utils; };
     laravel-site = import ./laravel/site.nix { inherit pkgs self flake-utils; };
+    fix-composer-chsum = import ./wordpress/default.nix { inherit pkgs flake-utils; };
   }
 )

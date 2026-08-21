@@ -28,7 +28,5 @@
     processes = {
       env-config.exec = "devenv info";
     };
-
-    dotenv.enable = lib.mkDefault true;
   };
 }

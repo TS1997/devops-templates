@@ -1,7 +1,7 @@
 { config, ... }:
 let
-    # Unwraps env to empty string if not exists
-    unwrapEnv = envAttributeSet: envToUnwrap: envAttributeSet."${envToUnwrap}" or "";
+  # Unwraps env to empty string if not exists
+  unwrapEnv = envAttributeSet: envToUnwrap: envAttributeSet."${envToUnwrap}" or "";
 in
 {
   # Legacy functionality for creating config in old wordpress projects
@@ -62,5 +62,64 @@ in
     EOF
 
     echo "✓ Generated $CONFIG_FILE"
+  '';
+
+  scripts.plugin-tool.exec = ''
+    PLUGIN_NAME=""
+    PLUGINS_FOLDER="packages/plugins"
+    COMMAND=""
+    INSTALL_COMMAND=""
+
+    print_usage() {
+      echo "Usage: plugin-tool -p plugin_name [-t plugins_folder] [-c command] [-i install_command] [-h]"
+      echo
+      echo "Options:"
+      echo "  -p Specify the plugin name"
+      echo "  -t Specify the target plugins folder (default: packages/plugins)"
+      echo "  -c Specify the command to run (default: 'none')"
+      echo "  -i Run install command for plugin"
+      echo "  -h Show this help message"
+    }
+
+    while getopts "p:t:c:i:h" opt; do
+      case "$opt" in
+        p)
+          PLUGIN_NAME="$OPTARG"
+          ;;
+        t)
+          PLUGINS_FOLDER="$OPTARG"
+          ;;
+        c)
+          COMMAND="$OPTARG"
+          ;;
+        i)
+          INSTALL_COMMAND="$OPTARG"
+          ;;
+        h)
+          print_usage
+          exit 0
+          ;;
+        *)
+          print_usage
+          exit 1
+          ;;
+      esac
+    done
+
+    if [[ -z "$PLUGIN_NAME" ]]; then
+      echo "Provide a plugin name!"
+      exit 1
+    fi
+
+    echo "Plugin Name: $PLUGIN_NAME"
+    echo "Plugins Folder: $PLUGINS_FOLDER"
+    echo "Command: $COMMAND"
+
+    cd "$PLUGINS_FOLDER"/"$PLUGIN_NAME"
+    if [[ ! -z "$INSTALL_COMMAND" ]]; then
+      echo "Install Command: $INSTALL_COMMAND"
+      $INSTALL_COMMAND
+    fi
+    $COMMAND
   '';
 }

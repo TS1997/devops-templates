@@ -7,8 +7,23 @@
 }:
 let
   nginxPackage = config.services.ts1997.nginx.fullPackage;
-  hasFallbacks = builtins.length siteCfg.assetFallbackUrls > 0;
-  fallbackNames = map (f: f.name) siteCfg.assetFallbackUrls;
+  fallbacks = siteCfg.assetFallbackUrls;
+  hasFallbacks = builtins.length fallbacks > 0;
+  # nginx's `try_files` only ever honours the FIRST `@name` token it reaches;
+  # it does not fall through multiple named locations if an earlier one
+  # doesn't 404. So when there's more than one fallback (e.g. one server
+  # block serving several domains via `extraDomains`, each wanting to
+  # proxy to a different upstream), we must dispatch to the right one
+  # ourselves based on $host, behind a single named location.
+  singleFallback = builtins.length fallbacks == 1;
+  fallbackLocationName = if singleFallback then (builtins.head fallbacks).name else "@assetFallback";
+
+  defaultFallback = lib.findFirst (fallback: (fallback.hosts or [ ]) == [ ]) (builtins.head fallbacks) fallbacks;
+  hostFallbacks = builtins.filter (fallback: (fallback.hosts or [ ]) != [ ]) fallbacks;
+
+  hostDispatchConfig = lib.concatMapStringsSep "\n" (
+    fallback: lib.concatMapStringsSep "\n" (host: ''if ($host = "${host}") { set $assetFallbackUrl "${fallback.url}"; }'') fallback.hosts
+  ) hostFallbacks;
 in
 {
   "/" = {
@@ -49,22 +64,35 @@ in
           add_header Access-Control-Allow-Origin *;
           add_header X-Frame-Options SAMEORIGIN;
           add_header X-Content-Type-Options nosniff;
-          try_files $uri ${lib.concatStringsSep " " fallbackNames};
+          try_files $uri ${fallbackLocationName};
         '';
       };
     }
-    // builtins.listToAttrs (
-      map (fallback: {
-        name = fallback.name;
-        value = {
-          extraConfig = ''
-            resolver 8.8.8.8;
-            proxy_ssl_server_name on;
-            proxy_pass ${fallback.url};
-            proxy_redirect http:// https://;
-          '';
-        };
-      }) siteCfg.assetFallbackUrls
+    // (
+      if singleFallback then
+        {
+          "${fallbackLocationName}" = {
+            extraConfig = ''
+              resolver 8.8.8.8;
+              proxy_ssl_server_name on;
+              proxy_pass ${(builtins.head fallbacks).url};
+              proxy_redirect http:// https://;
+            '';
+          };
+        }
+      else
+        {
+          "${fallbackLocationName}" = {
+            extraConfig = ''
+              resolver 8.8.8.8;
+              proxy_ssl_server_name on;
+              set $assetFallbackUrl "${defaultFallback.url}";
+              ${hostDispatchConfig}
+              proxy_pass $assetFallbackUrl$request_uri;
+              proxy_redirect http:// https://;
+            '';
+          };
+        }
     )
   else
     { }

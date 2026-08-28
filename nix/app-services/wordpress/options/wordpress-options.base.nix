@@ -42,6 +42,20 @@
               description = "URL to fallback to when assets are not found locally";
               example = "https://www.example.com";
             };
+            hosts = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = ''
+                Restrict this fallback to specific request hosts (matched against
+                the `Host` header, e.g. the site's `domain`/`extraDomains`).
+                Only needed when a single virtual host serves multiple domains
+                (via `extraDomains`) and each domain should fall back to a
+                different upstream. Leave empty to use this entry as the
+                default fallback for any host that doesn't match a more
+                specific entry.
+              '';
+              example = [ "7hkraft.bravomedia.se" ];
+            };
           };
         }
       );

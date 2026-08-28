@@ -47,6 +47,8 @@ in
           expires 1y;
           access_log off;
           add_header Access-Control-Allow-Origin *;
+          add_header X-Frame-Options SAMEORIGIN;
+          add_header X-Content-Type-Options nosniff;
           try_files $uri ${lib.concatStringsSep " " fallbackNames};
         '';
       };

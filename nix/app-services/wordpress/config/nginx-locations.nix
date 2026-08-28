@@ -9,12 +9,8 @@ let
   nginxPackage = config.services.ts1997.nginx.fullPackage;
   fallbacks = siteCfg.assetFallbackUrls;
   hasFallbacks = builtins.length fallbacks > 0;
-  # nginx's `try_files` only ever honours the FIRST `@name` token it reaches;
-  # it does not fall through multiple named locations if an earlier one
-  # doesn't 404. So when there's more than one fallback (e.g. one server
-  # block serving several domains via `extraDomains`, each wanting to
-  # proxy to a different upstream), we must dispatch to the right one
-  # ourselves based on $host, behind a single named location.
+  
+  # Use this logic to match a fallback with a host.
   singleFallback = builtins.length fallbacks == 1;
   fallbackLocationName = if singleFallback then (builtins.head fallbacks).name else "@assetFallback";
 

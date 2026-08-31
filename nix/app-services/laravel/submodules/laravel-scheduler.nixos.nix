@@ -49,7 +49,8 @@ in
         serviceConfig = {
           Type = "oneshot";
           User = siteCfg.user;
-          WorkingDirectory = siteCfg.workingDir;
+          WorkingDirectory = if siteCfg.package != null then siteCfg.package else siteCfg.workingDir;
+          EnvironmentFile = lib.mkIf (siteCfg.package != null) "-${siteCfg.workingDir}/env";
           ExecStart = "${siteCfg.phpPool.fullPackage}/bin/php artisan schedule:run";
         };
       }

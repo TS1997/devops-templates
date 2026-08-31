@@ -1,10 +1,30 @@
 {
+  config,
   lib,
   pkgs,
   ...
 }:
 {
   options = {
+    package = lib.mkOption {
+      type = lib.types.nullOr lib.types.package;
+      default = null;
+      description = ''
+        Pre-built Laravel application derivation to serve (e.g. the output of
+        a site's own package.nix built with php.buildComposerProject).
+
+        When set, the site is deployed as an immutable, read-only package
+        instead of a mutable rsync'd checkout: webRoot is derived from this
+        package, and workingDir is used purely as the site's mutable data
+        directory (storage, bootstrap cache, generated env file) rather than
+        holding the application code.
+
+        The derivation is EXPECTED to symlink its own storage/ and
+        bootstrap/cache directories out to workingDir (passed to it as its
+        dataDir). This is done via derivation passThru.
+      '';
+    };
+
     scheduler.packages = lib.mkOption {
       type = lib.types.listOf lib.types.package;
       default = [ ];
@@ -48,5 +68,11 @@
         };
       };
     };
+  };
+
+  config = {
+    webRoot = lib.mkDefault (
+      if config.package != null then "${config.package}/public" else "${config.workingDir}/public"
+    );
   };
 }

@@ -63,17 +63,34 @@ in
 
   config = lib.mkIf (sites != { }) {
     system.activationScripts = lib.mkMerge (
-      (lib.mapAttrsToList (name: siteCfg: {
-        "setup-laravel-dirs-${name}" = lib.stringAfter [ "users" "groups" ] ''
-          mkdir -p ${siteCfg.workingDir}/storage
-          chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}/storage
-          chmod -R 0770 ${siteCfg.workingDir}/storage
+      (lib.mapAttrsToList (
+        name: siteCfg:
+        {
+          "setup-laravel-dirs-${name}" = lib.stringAfter [ "users" "groups" ] (
+            if siteCfg.package != null then
+              ''
+                install -d -m 0770 -o ${siteCfg.user} -g ${siteCfg.user} \
+                  ${siteCfg.workingDir}/storage/app/public \
+                  ${siteCfg.workingDir}/storage/framework/cache/data \
+                  ${siteCfg.workingDir}/storage/framework/sessions \
+                  ${siteCfg.workingDir}/storage/framework/testing \
+                  ${siteCfg.workingDir}/storage/framework/views \
+                  ${siteCfg.workingDir}/storage/logs \
+                  ${siteCfg.workingDir}/bootstrap-cache
+              ''
+            else
+              ''
+                mkdir -p ${siteCfg.workingDir}/storage
+                chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}/storage
+                chmod -R 0770 ${siteCfg.workingDir}/storage
 
-          mkdir -p ${siteCfg.workingDir}/bootstrap
-          chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}/bootstrap
-          chmod -R 0770 ${siteCfg.workingDir}/bootstrap/cache
-        '';
-      }) sites)
+                mkdir -p ${siteCfg.workingDir}/bootstrap
+                chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}/bootstrap
+                chmod -R 0770 ${siteCfg.workingDir}/bootstrap/cache
+              ''
+          );
+        }
+      ) sites)
       ++ (lib.mapAttrsToList (
         name: siteCfg:
         lib.mkIf (siteCfg.generateEnv) {
@@ -104,6 +121,19 @@ in
       enable = true;
       pools = lib.mapAttrs (name: siteCfg: builtins.removeAttrs siteCfg.phpPool [ "fullPackage" ]) sites;
     };
+
+    # php-fpm workers inherit env vars from the pool's systemd unit when
+    # clear_env = "no" (the default), so package-deployed sites - which have
+    # no .env for Laravel to auto-load - get their config this way instead.
+    systemd.services = lib.mkMerge (
+      lib.mapAttrsToList (
+        name: siteCfg:
+        lib.mkIf (siteCfg.package != null) {
+          "phpfpm-${name}".serviceConfig.EnvironmentFile = "-${siteCfg.workingDir}/env";
+        }
+      ) sites
+    );
+
 
     services.ts1997.mysql = lib.mkIf (mysqlSites != { }) {
       enable = true;

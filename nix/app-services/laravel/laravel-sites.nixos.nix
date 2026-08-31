@@ -44,6 +44,7 @@ in
     ./submodules/laravel-scheduler.nixos.nix
     ./submodules/laravel-queue-worker.nixos.nix
     ./submodules/laravel-inertia-ssr.nixos.nix
+    ./submodules/laravel-migrate.nixos.nix
   ];
 
   options.services.ts1997.laravelSites = lib.mkOption {

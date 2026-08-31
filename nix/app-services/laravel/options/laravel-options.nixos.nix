@@ -25,6 +25,18 @@
       '';
     };
 
+    migrate.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Whether to run "php artisan migrate --force" as a oneshot systemd
+        service whenever the site's package derivation changes (i.e. on
+        every deploy that ships new code). Only applies when package is set
+        - rsync-deployed sites already run migrations from the CI deploy
+        workflow instead.
+      '';
+    };
+
     scheduler.packages = lib.mkOption {
       type = lib.types.listOf lib.types.package;
       default = [ ];

@@ -67,6 +67,7 @@ in
         name: siteCfg:
         {
           "setup-laravel-dirs-${name}" = lib.stringAfter [ "users" "groups" ] (
+            # If this laravel instance is a nix derivation
             if siteCfg.package != null then
               ''
                 install -d -m 0770 -o ${siteCfg.user} -g ${siteCfg.user} \

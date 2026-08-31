@@ -31,7 +31,7 @@ in
   APP_URL = "${siteCfg.appUrl}";
 
   APP_LOCALE = "${siteCfg.locale}";
-  APP_FALLBACK_LOCALE = "${siteCfg.locale}";
+  APP_FALLBACK_LOCALE = "en";
   APP_FAKER_LOCALE = "en_US";
 
   APP_MAINTENANCE_DRIVER = "file";

@@ -9,10 +9,8 @@ let
   nginxPackage = config.services.ts1997.nginx.fullPackage;
   fallbacks = siteCfg.assetFallbackUrls;
   hasFallbacks = builtins.length fallbacks > 0;
-  
-  # Use this logic to match a fallback with a host.
-  singleFallback = builtins.length fallbacks == 1;
-  fallbackLocationName = if singleFallback then (builtins.head fallbacks).name else "@assetFallback";
+
+  fallbackLocationName = "@assetFallback";
 
   defaultFallback = lib.findFirst (fallback: (fallback.hosts or [ ]) == [ ]) (builtins.head fallbacks) fallbacks;
   hostFallbacks = builtins.filter (fallback: (fallback.hosts or [ ]) != [ ]) fallbacks;
@@ -64,32 +62,18 @@ in
         '';
       };
     }
-    // (
-      if singleFallback then
-        {
-          "${fallbackLocationName}" = {
-            extraConfig = ''
-              resolver 8.8.8.8;
-              proxy_ssl_server_name on;
-              proxy_pass ${(builtins.head fallbacks).url};
-              proxy_redirect http:// https://;
-            '';
-          };
-        }
-      else
-        {
-          "${fallbackLocationName}" = {
-            extraConfig = ''
-              resolver 8.8.8.8;
-              proxy_ssl_server_name on;
-              set $assetFallbackUrl "${defaultFallback.url}";
-              ${hostDispatchConfig}
-              proxy_pass $assetFallbackUrl$request_uri;
-              proxy_redirect http:// https://;
-            '';
-          };
-        }
-    )
+    // {
+      "${fallbackLocationName}" = {
+        extraConfig = ''
+          resolver 8.8.8.8;
+          proxy_ssl_server_name on;
+          set $assetFallbackUrl "${defaultFallback.url}";
+          ${hostDispatchConfig}
+          proxy_pass $assetFallbackUrl$request_uri;
+          proxy_redirect http:// https://;
+        '';
+      };
+    }
   else
     { }
 )

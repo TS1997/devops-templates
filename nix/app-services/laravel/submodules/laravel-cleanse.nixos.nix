@@ -10,7 +10,7 @@ let
   # "artisan optimize" from the CI deploy workflow instead.
   sitesToCleanse = lib.filterAttrs (_: siteCfg: siteCfg.package != null) sites;
 
-  dbUnit = siteCfg: if siteCfg.database.driver == "pgsql" then "postgresql.service" else "mysql.service";
+  getSiteDatabaseServiceUnit = siteCfg: if siteCfg.database.driver == "pgsql" then "postgresql.service" else "mysql.service";
 in
 {
   config = lib.mkIf (sitesToCleanse != { }) {
@@ -18,8 +18,8 @@ in
       (lib.mapAttrsToList (name: siteCfg: {
         "laravel-cleanse-${name}" = {
           description = "Cleanse cache and config for ${siteCfg.appName}";
-          after = lib.optional siteCfg.database.enable (dbUnit siteCfg);
-          wants = lib.optional siteCfg.database.enable (dbUnit siteCfg);
+          after = lib.optional siteCfg.database.enable (getSiteDatabaseServiceUnit siteCfg);
+          wants = lib.optional siteCfg.database.enable (getSiteDatabaseServiceUnit siteCfg);
           before = [ "phpfpm-${name}.service" ];
           wantedBy = [ "multi-user.target" ];
           # Re-run on every deploy that ships new code, even though the unit

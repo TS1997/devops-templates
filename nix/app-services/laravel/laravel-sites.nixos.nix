@@ -46,6 +46,7 @@ in
     ./submodules/laravel-inertia-ssr.nixos.nix
     ./submodules/laravel-migrate.nixos.nix
     ./submodules/laravel-cleanse.nixos.nix
+    ./submodules/laravel-artisan.nixos.nix
   ];
 
   options.services.ts1997.laravelSites = lib.mkOption {

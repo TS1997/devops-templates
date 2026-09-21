@@ -121,12 +121,15 @@ in
       (lib.mkIf (siteCfg.queue.enable) {
         queue = {
           exec = ''
-            php artisan queue:work ${siteCfg.queue.connection} \
-              --timeout=${toString siteCfg.queue.timeout} \
-              --sleep=${toString siteCfg.queue.sleep} \
-              --tries=${toString siteCfg.queue.tries} \
-              --max-jobs=${toString siteCfg.queue.maxJobs} \
-              --max-time=${toString siteCfg.queue.maxTime}
+            while true; do
+              php artisan queue:work ${siteCfg.queue.connection} \
+                --timeout=${toString siteCfg.queue.timeout} \
+                --sleep=${toString siteCfg.queue.sleep} \
+                --tries=${toString siteCfg.queue.tries} \
+                --max-jobs=${toString siteCfg.queue.maxJobs} \
+                --max-time=${toString siteCfg.queue.maxTime}
+              echo "Queue worker exited — restarting…"
+            done
           '';
           process-compose = {
             availability = {

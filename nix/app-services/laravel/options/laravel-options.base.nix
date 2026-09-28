@@ -49,14 +49,14 @@
 
           maxJobs = lib.mkOption {
             type = lib.types.int;
-            default = 1000;
-            description = "Maximum number of jobs to process before restarting";
+            default = 0;
+            description = "Maximum number of jobs to process before restarting (0 = unlimited)";
           };
 
           maxTime = lib.mkOption {
             type = lib.types.int;
-            default = 3600;
-            description = "Maximum number of seconds a worker may live";
+            default = 0;
+            description = "Maximum number of seconds a worker may live (0 = unlimited)";
           };
         };
       };

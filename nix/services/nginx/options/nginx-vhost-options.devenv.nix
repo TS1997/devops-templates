@@ -17,13 +17,13 @@ in
     port = lib.mkOption {
       type = lib.types.int;
       default = 8080;
-      description = "The port that nginx will listen on.";
+      description = "The preferred port for nginx. devenv picks the next free port if it is taken.";
     };
 
     sslPort = lib.mkOption {
       type = lib.types.int;
       default = 5443;
-      description = "The port that nginx will listen on for SSL.";
+      description = "The preferred SSL port for nginx. devenv picks the next free port if it is taken.";
     };
 
     enableSsl = lib.mkOption {

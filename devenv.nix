@@ -22,10 +22,15 @@
   ];
 
   config = {
-    packages = if pkgs.stdenv.hostPlatform.system != "aarch64-darwin" then (with pkgs; [ wl-clipboard ]) else [ ];
+    packages =
+      if pkgs.stdenv.hostPlatform.system != "aarch64-darwin" then (with pkgs; [ wl-clipboard ]) else [ ];
 
     processes = {
-      env-config.exec = "devenv info";
+      env-config.exec = ''
+        for name in ${lib.concatStringsSep " " (lib.attrNames config.env)}; do
+          echo "$name=''${!name-}"
+        done
+      '';
     };
   };
 }

@@ -2,6 +2,7 @@
   config,
   lib,
   util,
+  nginxPorts,
   ...
 }:
 let
@@ -90,16 +91,16 @@ in
   config = {
     appUrl =
       if (config.enableSsl) then
-        "https://${config.domain}:${toString config.sslPort}"
+        "https://${config.domain}:${toString nginxPorts.https}"
       else
-        "http://${config.domain}:${toString config.port}";
+        "http://${config.domain}:${toString nginxPorts.http}";
 
     extraAppUrls = map (
       domain:
       if (config.enableSsl) then
-        "https://${domain}:${toString config.sslPort}"
+        "https://${domain}:${toString nginxPorts.https}"
       else
-        "http://${domain}:${toString config.port}"
+        "http://${domain}:${toString nginxPorts.http}"
     ) config.extraDomains;
 
     appEnv = lib.mkDefault "local";

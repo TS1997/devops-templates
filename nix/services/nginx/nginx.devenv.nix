@@ -6,6 +6,8 @@
 }:
 let
   cfg = config.services.ts1997.nginx;
+  httpPort = vhostName: toString config.processes.nginx.ports."${vhostName}-http".value;
+  httpsPort = vhostName: toString config.processes.nginx.ports."${vhostName}-https".value;
 in
 {
   options.services.ts1997.nginx = lib.mkOption {
@@ -46,9 +48,9 @@ in
       httpConfig = lib.concatStringsSep "\n\n" (
         lib.mapAttrsToList (vhostName: vhostCfg: ''
           server {
-            listen ${toString vhostCfg.port};
+            listen ${httpPort vhostName};
             ${lib.optionalString (vhostCfg.enableSsl) ''
-              listen ${toString vhostCfg.sslPort} ssl;
+              listen ${httpsPort vhostName} ssl;
               ssl_certificate ${vhostCfg.sslCert};
               ssl_certificate_key ${vhostCfg.sslKey};
             ''}
@@ -94,10 +96,18 @@ in
     };
 
     processes.nginx = {
+      ports = lib.concatMapAttrs (
+        vhostName: vhostCfg:
+        {
+          "${vhostName}-http".allocate = vhostCfg.port;
+        }
+        // lib.optionalAttrs vhostCfg.enableSsl { "${vhostName}-https".allocate = vhostCfg.sslPort; }
+      ) cfg.virtualHosts;
+
       ready = {
         http.get = {
           host = (lib.head (lib.attrValues cfg.virtualHosts)).serverName;
-          port = (lib.head (lib.attrValues cfg.virtualHosts)).port;
+          port = config.processes.nginx.ports."${lib.head (lib.attrNames cfg.virtualHosts)}-http".value;
           path = "/healthcheck";
         };
         initial_delay = 1;
@@ -111,10 +121,14 @@ in
     scripts.browse.exec = lib.concatStringsSep " & " (
       lib.mapAttrsToList (
         vhostName: vhostCfg:
-        if (vhostCfg.enableSsl) then
-          "xdg-open https://${vhostCfg.serverName}:${toString vhostCfg.sslPort}/ || open https://${vhostCfg.serverName}:${toString vhostCfg.sslPort}/"
-        else
-          "xdg-open http://${vhostCfg.serverName}:${toString vhostCfg.port}/ || open http://${vhostCfg.serverName}:${toString vhostCfg.port}/"
+        let
+          url =
+            if (vhostCfg.enableSsl) then
+              "https://${vhostCfg.serverName}:${httpsPort vhostName}/"
+            else
+              "http://${vhostCfg.serverName}:${httpPort vhostName}/";
+        in
+        "xdg-open ${url} || open ${url}"
       ) cfg.virtualHosts
     );
   };

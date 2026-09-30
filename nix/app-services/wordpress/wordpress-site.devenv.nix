@@ -7,6 +7,7 @@
 let
   name = "web";
   siteCfg = config.services.ts1997.wordpressSite;
+  nginxPorts = config.processes.nginx.ports;
 
   defaultEnv = import ./config/default-env.nix {
     inherit
@@ -31,6 +32,12 @@ in
         ../options/app-options.base.nix
         ../options/app-options.devenv.nix
         ./options/wordpress-options.base.nix
+        {
+          _module.args.nginxPorts = {
+            http = nginxPorts."${name}-http".value;
+            https = nginxPorts."${name}-https".value;
+          };
+        }
       ];
     };
     default = { };

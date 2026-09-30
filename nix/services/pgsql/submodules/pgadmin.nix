@@ -9,13 +9,14 @@ let
   pgsqlCfg = config.services.ts1997.pgsql;
   cfg = pgsqlCfg.pgAdmin;
   dbCfg = lib.head pgsqlCfg.databases;
+  port = toString config.processes.pgadmin.ports.main.value;
 
   stateDir = "${util.values.devenvState}/pgadmin";
 
   configDistro = pkgs.writeText "pgadmin_config_distro.py" ''
     DATA_DIR = r"${stateDir}"
     DEFAULT_SERVER = "${cfg.host}"
-    DEFAULT_SERVER_PORT = ${toString cfg.port}
+    DEFAULT_SERVER_PORT = ${port}
     MASTER_PASSWORD_REQUIRED = False
   '';
 
@@ -43,9 +44,10 @@ let
 in
 {
   config = lib.mkIf (cfg.enable) {
-    scripts.pgadmin.exec = "xdg-open http://${cfg.host}:${toString cfg.port}/ || open http://${cfg.host}:${toString cfg.port}/";
+    scripts.pgadmin.exec = "xdg-open http://${cfg.host}:${port}/ || open http://${cfg.host}:${port}/";
 
     processes.pgadmin = {
+      ports.main.allocate = cfg.port;
       exec = ''
         install -dm700 "${stateDir}"
 
@@ -60,7 +62,7 @@ in
       ready = {
         http.get = {
           host = cfg.host;
-          port = cfg.port;
+          port = config.processes.pgadmin.ports.main.value;
           path = "/";
         };
         initial_delay = 2;

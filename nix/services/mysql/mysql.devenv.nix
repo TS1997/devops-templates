@@ -8,6 +8,7 @@
 let
   cfg = config.services.ts1997.mysql;
   phpMyAdminCfg = cfg.phpMyAdmin;
+  phpMyAdminPort = toString config.processes.phpmyadmin.ports.main.value;
 
   # Only because devenv has problems with the task system. This is not necessary otherwise.
   initSql = pkgs.writeText "mysql-init.sql" (
@@ -73,13 +74,14 @@ in
 
     processes = {
       phpmyadmin = lib.mkIf (phpMyAdminCfg.enable) {
+        ports.main.allocate = phpMyAdminCfg.port;
         exec = ''
-          php -S ${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port} -t ${phpmyadmin}
+          php -S ${phpMyAdminCfg.host}:${phpMyAdminPort} -t ${phpmyadmin}
         '';
         ready = {
           http.get = {
             host = phpMyAdminCfg.host;
-            port = phpMyAdminCfg.port;
+            port = config.processes.phpmyadmin.ports.main.value;
             path = "/";
           };
           initial_delay = 2;
@@ -92,7 +94,7 @@ in
     };
 
     scripts = {
-      phpmyadmin.exec = "xdg-open http://${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port}/ || open http://${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port}/";
+      phpmyadmin.exec = "xdg-open http://${phpMyAdminCfg.host}:${phpMyAdminPort}/ || open http://${phpMyAdminCfg.host}:${phpMyAdminPort}/";
 
       # Only added because task system is fucked as of 2026-05-20. Remove asap.
       init-database.exec = ''

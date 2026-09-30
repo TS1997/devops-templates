@@ -1,6 +1,7 @@
 { config, lib, ... }:
 let
   nginxCfg = config.services.ts1997.nginx;
+  nginxPorts = config.processes.nginx.ports;
   phpMyAdminCfg = config.services.ts1997.mysql.phpMyAdmin;
   pgAdminCfg = config.services.ts1997.pgsql.pgAdmin;
   mailpitCfg = config.services.ts1997.mailpit;
@@ -43,9 +44,9 @@ let
     lib.mapAttrsToList (vhostName: vhostCfg: ''
       echo -e "  ${vhost.header vhostName}"
       ${lib.optionalString (vhostCfg.enableSsl) ''
-        echo -e "  ${vhost.ssl "https://${vhostCfg.serverName}:${toString vhostCfg.sslPort}/"}"
+        echo -e "  ${vhost.ssl "https://${vhostCfg.serverName}:${toString nginxPorts."${vhostName}-https".value}/"}"
       ''}
-      echo -e "  ${vhost.http "http://${vhostCfg.serverName}:${toString vhostCfg.port}/"}"
+      echo -e "  ${vhost.http "http://${vhostCfg.serverName}:${toString nginxPorts."${vhostName}-http".value}/"}"
       echo -e "  ${vhost.footer}"
     '') nginxCfg.virtualHosts
   );
@@ -53,12 +54,12 @@ let
   dbManagementUrls = lib.concatStringsSep "\n" (
     lib.optionals (phpMyAdminCfg.enable) [
       ''echo -e "  ${vhost.header "phpMyAdmin"}"''
-      ''echo -e "  ${vhost.http "http://${phpMyAdminCfg.host}:${toString phpMyAdminCfg.port}/"}"''
+      ''echo -e "  ${vhost.http "http://${phpMyAdminCfg.host}:${toString config.processes.phpmyadmin.ports.main.value}/"}"''
       ''echo -e "  ${vhost.footer}"''
     ]
     ++ lib.optionals (pgAdminCfg.enable) [
       ''echo -e "  ${vhost.header "pgAdmin"}"''
-      ''echo -e "  ${vhost.http "http://${pgAdminCfg.host}:${toString pgAdminCfg.port}/"}"''
+      ''echo -e "  ${vhost.http "http://${pgAdminCfg.host}:${toString config.processes.pgadmin.ports.main.value}/"}"''
       ''echo -e "  ${vhost.footer}"''
     ]
   );
@@ -81,7 +82,7 @@ in
           ${lib.optionalString (mailpitCfg.enable) (
             section "Mailpit URLs" ''
               echo -e "  ${vhost.header "Mailpit UI"}"
-              echo -e "  ${vhost.http "http://${mailpitCfg.ui.host}:${toString mailpitCfg.ui.port}/"}"
+              echo -e "  ${vhost.http "http://${mailpitCfg.ui.host}:${toString config.processes.mailpit.ports.ui.value}/"}"
               echo -e "  ${vhost.footer}"
               echo -e ""
             ''

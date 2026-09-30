@@ -49,7 +49,8 @@ in
   # Laravel requires PostgreSQL socket as db_host rather than db_socket compared to MySQL
   DB_CONNECTION = "${siteCfg.database.driver}";
   DB_HOST = if siteCfg.database.driver == "pgsql" then "${dbCfg.socket}" else "${dbCfg.host}";
-  DB_PORT = dbCfg.port;
+  DB_PORT =
+    if siteCfg.database.driver == "pgsql" then dbCfg.port else config.processes.mysql.ports.main.value;
   DB_SOCKET = if siteCfg.database.driver == "pgsql" then null else "${dbCfg.socket}";
   DB_DATABASE = "${siteCfg.database.name}";
   DB_USERNAME = "${siteCfg.database.user}";
@@ -79,7 +80,11 @@ in
   REDIS_CLIENT = "phpredis";
   REDIS_HOST = if (redisCfg != null && redisCfg.enable) then redisCfg.socket else null;
   REDIS_PASSWORD = null;
-  REDIS_PORT = if (redisCfg != null && redisCfg.enable) then redisCfg.port else null;
+  REDIS_PORT =
+    if (redisCfg != null && redisCfg.enable) then
+      (if redisCfg.port == 0 then 0 else config.processes.redis.ports.main.value)
+    else
+      null;
 
   MAIL_MAILER = if (mailpitCfg != null && mailpitCfg.enable) then "smtp" else "log";
   MAIL_SCHEME = null;

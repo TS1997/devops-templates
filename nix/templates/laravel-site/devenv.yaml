@@ -1,6 +1,6 @@
 inputs:
   nixpkgs:
-    url: github:NixOS/nixpkgs
+    url: github:cachix/devenv-nixpkgs/rolling
   # Example of a specific revision
   # nixpkgs-old:
   # url: github:NixOS/nixpkgs?rev=99fcf0ee74957231ff0471228e9a59f976a0266b

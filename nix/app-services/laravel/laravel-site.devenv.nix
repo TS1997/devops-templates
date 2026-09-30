@@ -8,6 +8,7 @@
 let
   name = "web";
   siteCfg = config.services.ts1997.laravelSite;
+  nginxPorts = config.processes.nginx.ports;
 
   defaultEnv = import ./config/default-env.nix {
     inherit
@@ -22,6 +23,14 @@ let
     inherit config siteCfg;
     phpSocket = config.languages.php.fpm.pools.${name}.socket;
   };
+
+  dbProcessDeps = lib.optionals siteCfg.database.enable [
+    (
+      if siteCfg.database.driver == "mysql" then "devenv:processes:mysql" else "devenv:processes:postgres"
+    )
+  ];
+
+  migrateDeps = lib.optionals siteCfg.database.enable [ "laravel:migrate" ];
 in
 {
   options.services.ts1997.laravelSite = lib.mkOption {
@@ -31,6 +40,12 @@ in
         ../options/app-options.devenv.nix
         ./options/laravel-options.base.nix
         ./options/laravel-options.devenv.nix
+        {
+          _module.args.nginxPorts = {
+            http = nginxPorts."${name}-http".value;
+            https = nginxPorts."${name}-https".value;
+          };
+        }
       ];
     };
     default = { };
@@ -108,13 +123,21 @@ in
       ui.host = siteCfg.domain;
     };
 
+    tasks."laravel:migrate" = lib.mkIf siteCfg.database.enable {
+      exec = "php artisan migrate";
+      after = dbProcessDeps;
+    };
+
     processes = lib.mkMerge [
       (lib.mkIf (siteCfg.nodejs.enable && siteCfg.nodejs.script != null) {
         nodejs.exec = siteCfg.nodejs.script;
       })
 
       (lib.mkIf (siteCfg.scheduler.enable) {
-        scheduler.exec = "php artisan schedule:work";
+        scheduler = {
+          exec = "php artisan schedule:work";
+          after = migrateDeps;
+        };
       })
 
       (lib.mkIf (siteCfg.generate-types.enable) {
@@ -136,17 +159,7 @@ in
             done
           '';
           restart.on = "always";
-          after = lib.flatten [
-            (lib.optionals (siteCfg.database.enable && siteCfg.database.driver == "mysql") [
-              "devenv:processes:mysql"
-            ])
-            (lib.optionals (siteCfg.database.enable && siteCfg.database.driver == "pgsql") [
-              "devenv:processes:postgres"
-            ])
-            (lib.optionals siteCfg.redis.enable [
-              "devenv:processes:redis"
-            ])
-          ];
+          after = migrateDeps ++ lib.optionals siteCfg.redis.enable [ "devenv:processes:redis" ];
         };
       })
     ];

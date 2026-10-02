@@ -1,6 +1,6 @@
 {
   description = "DevOps Templates";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/release-25.11";
+  inputs.nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   outputs =

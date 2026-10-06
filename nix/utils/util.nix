@@ -11,7 +11,7 @@ let
 
     openUrl =
       url:
-      if pkgs.stdenv.isDarwin then
+      if pkgs.stdenv.hostPlatform.isDarwin then
         "open '${url}'"
       else
         "${pkgs.util-linux}/bin/setsid -f xdg-open '${url}' >/dev/null 2>&1 </dev/null";

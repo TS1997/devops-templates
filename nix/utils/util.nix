@@ -9,6 +9,13 @@ let
   util = {
     inherit values;
 
+    openUrl =
+      url:
+      if pkgs.stdenv.isDarwin then
+        "open '${url}'"
+      else
+        "${pkgs.util-linux}/bin/setsid -f xdg-open '${url}' >/dev/null 2>&1 </dev/null";
+
     submodule =
       module:
       lib.types.submodule (

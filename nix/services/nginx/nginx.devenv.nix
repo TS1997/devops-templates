@@ -118,7 +118,7 @@ in
       };
     };
 
-    scripts.browse.exec = lib.concatStringsSep " & " (
+    scripts.browse.exec = lib.concatStringsSep "\n" (
       lib.mapAttrsToList (
         vhostName: vhostCfg:
         let
@@ -128,7 +128,7 @@ in
             else
               "http://${vhostCfg.serverName}:${httpPort vhostName}/";
         in
-        "xdg-open ${url} || open ${url}"
+        util.openUrl url
       ) cfg.virtualHosts
     );
   };

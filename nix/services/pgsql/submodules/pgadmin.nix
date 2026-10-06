@@ -44,7 +44,7 @@ let
 in
 {
   config = lib.mkIf (cfg.enable) {
-    scripts.pgadmin.exec = "xdg-open http://${cfg.host}:${port}/ || open http://${cfg.host}:${port}/";
+    scripts.pgadmin.exec = util.openUrl "http://${cfg.host}:${port}/";
 
     processes.pgadmin = {
       ports.main.allocate = cfg.port;

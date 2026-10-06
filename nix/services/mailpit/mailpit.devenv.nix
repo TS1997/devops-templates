@@ -43,6 +43,6 @@ in
       };
     };
 
-    scripts.mail.exec = "xdg-open http://${cfg.ui.host}:${toString uiPort}/ || open http://${cfg.ui.host}:${toString uiPort}/";
+    scripts.mail.exec = util.openUrl "http://${cfg.ui.host}:${toString uiPort}/";
   };
 }

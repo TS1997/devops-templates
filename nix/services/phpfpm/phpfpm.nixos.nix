@@ -26,6 +26,13 @@ in
       }) cfg.pools
     );
 
+    systemd.tmpfiles.rules = [
+      "d /var/log/php-fpm 0755 root root -"
+    ]
+    ++ lib.mapAttrsToList (
+      poolName: poolCfg: "f /var/log/php-fpm/${poolName}-error.log 0640 ${poolCfg.user} - -"
+    ) cfg.pools;
+
     services.phpfpm = {
       phpPackage = cfg.fullPackage;
       extraConfig = cfg.extraConfig;

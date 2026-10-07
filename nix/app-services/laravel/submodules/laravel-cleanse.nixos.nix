@@ -18,8 +18,14 @@ in
       (lib.mapAttrsToList (name: siteCfg: {
         "laravel-cleanse-${name}" = {
           description = "Cleanse cache and config for ${siteCfg.appName}";
-          after = lib.optional siteCfg.database.enable (getSiteDatabaseServiceUnit siteCfg);
-          wants = lib.optional siteCfg.database.enable (getSiteDatabaseServiceUnit siteCfg);
+          # "artisan optimize" touches the cache store (e.g. the database
+          # "cache" table), so it must run after migrations have created it.
+          after =
+            lib.optional siteCfg.database.enable (getSiteDatabaseServiceUnit siteCfg)
+            ++ lib.optional siteCfg.migrate.enable "laravel-migrate-${name}.service";
+          wants =
+            lib.optional siteCfg.database.enable (getSiteDatabaseServiceUnit siteCfg)
+            ++ lib.optional siteCfg.migrate.enable "laravel-migrate-${name}.service";
           before = [ "phpfpm-${name}.service" ];
           wantedBy = [ "multi-user.target" ];
           # Re-run on every deploy that ships new code, even though the unit

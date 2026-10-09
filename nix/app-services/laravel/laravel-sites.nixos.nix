@@ -65,6 +65,11 @@ in
   };
 
   config = lib.mkIf (sites != { }) {
+    assertions = lib.mapAttrsToList (name: siteCfg: {
+      assertion = !(siteCfg.zeroDowntime.enable && siteCfg.package != null);
+      message = "services.ts1997.laravelSites.${name}: zeroDowntime.enable cannot be combined with package.";
+    }) sites;
+
     system.activationScripts = lib.mkMerge (
       (lib.mapAttrsToList (
         name: siteCfg:
@@ -81,6 +86,19 @@ in
                   ${siteCfg.workingDir}/storage/framework/views \
                   ${siteCfg.workingDir}/storage/logs \
                   ${siteCfg.workingDir}/bootstrap-cache
+              ''
+            # Releases live in workingDir/releases/<sha>, workingDir/current
+            # is managed by the deploy workflow. storage/ is shared.
+            else if siteCfg.zeroDowntime.enable then
+              ''
+                install -d -m 0770 -o ${siteCfg.user} -g ${siteCfg.user} \
+                  ${siteCfg.workingDir}/releases \
+                  ${siteCfg.workingDir}/storage/app/public \
+                  ${siteCfg.workingDir}/storage/framework/cache/data \
+                  ${siteCfg.workingDir}/storage/framework/sessions \
+                  ${siteCfg.workingDir}/storage/framework/testing \
+                  ${siteCfg.workingDir}/storage/framework/views \
+                  ${siteCfg.workingDir}/storage/logs
               ''
             else
               ''

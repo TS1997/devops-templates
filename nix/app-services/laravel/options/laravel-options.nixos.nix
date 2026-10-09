@@ -25,6 +25,21 @@
       '';
     };
 
+    zeroDowntime.enable = lib.mkEnableOption ''
+      zero-downtime (atomic symlink) deployments. The CI workflow uploads each
+      release to workingDir/releases/<commit-sha> and atomically points
+      workingDir/current at it once it passes a health check. storage/ and
+      .env stay in workingDir and are shared between releases.
+      Only applies to rsync-deployed sites (package = null)
+    '';
+
+    appDir = lib.mkOption {
+      type = lib.types.str;
+      readOnly = true;
+      internal = true;
+      description = "Directory containing the application code that services run from.";
+    };
+
     migrate.enable = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -83,8 +98,14 @@
   };
 
   config = {
-    webRoot = lib.mkDefault (
-      if config.package != null then "${config.package}/public" else "${config.workingDir}/public"
-    );
+    appDir =
+      if config.package != null then
+        "${config.package}"
+      else if config.zeroDowntime.enable then
+        "${config.workingDir}/current"
+      else
+        config.workingDir;
+
+    webRoot = lib.mkDefault "${config.appDir}/public";
   };
 }

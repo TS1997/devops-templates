@@ -58,7 +58,7 @@ in
                 Type = "simple";
                 User = siteCfg.user;
                 Group = siteCfg.user;
-                WorkingDirectory = if siteCfg.package != null then siteCfg.package else siteCfg.workingDir;
+                WorkingDirectory = siteCfg.appDir;
                 EnvironmentFile = lib.mkIf (siteCfg.package != null) "-${siteCfg.workingDir}/env";
                 Restart = "always";
                 RestartSec = 10;

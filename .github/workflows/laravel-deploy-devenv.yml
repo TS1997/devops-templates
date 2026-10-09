@@ -1,0 +1,325 @@
+name: Laravel Deploy (devenv, zero downtime)
+
+on:
+  workflow_call:
+    inputs:
+      domain:
+        required: true
+        type: string
+      working_dir:
+        required: false
+        default: ""
+        type: string
+        description:
+          "Absolute path of the site's directory on the server (the
+          laravelSites.<name>.workingDir)."
+      additional_commands:
+        required: false
+        default: ""
+        type: string
+        description:
+          "Additional deployment commands to run in the new release before the
+          health check and switch."
+      post_deploy_commands:
+        required: false
+        default: ""
+        type: string
+        description:
+          "Additional deployment commands to run in the current release after
+          the switch."
+      additional_excludes:
+        required: false
+        default: ""
+        type: string
+        description: "Additional patterns to exclude from deployment (space-separated)."
+      environment:
+        required: false
+        default: "production"
+        type: string
+        description: "Environment to run workflow in."
+      keep_releases:
+        required: false
+        default: 5
+        type: number
+        description: "Number of releases (including current) to keep on the server."
+
+    secrets:
+      HOST:
+        required: true
+      USER:
+        required: true
+      SSH_KEY:
+        required: true
+
+      AUTH_JSON:
+        required: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    # Every `run` step executes inside the project's devenv shell, so php,
+    # composer and node are exactly the versions used locally.
+    defaults:
+      run:
+        shell: devenv shell -- bash -e {0}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - uses: cachix/install-nix-action@v31
+
+      - uses: cachix/cachix-action@v16
+        with:
+          name: devenv
+
+      - name: Install devenv.sh
+        shell: bash
+        run: nix profile add nixpkgs#devenv
+
+      - name: Setup SSH
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.HOST }}
+          DEPLOY_USER: ${{ secrets.USER }}
+          DEPLOY_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          cat >> ~/.ssh/config <<EOF
+          Host deploy
+            HostName $DEPLOY_HOST
+            User $DEPLOY_USER
+            IdentityFile ~/.ssh/id_deploy
+            IdentitiesOnly yes
+            ServerAliveInterval 30
+          EOF
+
+      - name: Build devenv shell
+        id: devenv
+        run: |
+          php -v
+          node -v
+          composer --version
+          echo "composer_cache=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer packages
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.devenv.outputs.composer_cache }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        env:
+          COMPOSER_AUTH: ${{ secrets.AUTH_JSON }}
+        run: composer install --no-dev --no-interaction --prefer-dist --no-progress --optimize-autoloader
+
+      - name: Cache npm packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Compile assets
+        run: |
+          npm ci --prefer-offline
+          NODE_OPTIONS="--max-old-space-size=4096" npm run build
+
+      - name: Prepare release directory
+        id: prepare
+        run: |
+          ssh deploy bash -se <<'EOF' >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          # Site directory on the server; defaults to the SSH user's home
+          WORKING_DIR="${{ inputs.working_dir }}"
+          WORKING_DIR="${WORKING_DIR:-$HOME}"
+          cd "$WORKING_DIR"
+          mkdir -p releases
+
+          release="${{ github.sha }}"
+          # Redeploying the commit that is already live: use a unique dir so
+          # the live release is never touched.
+          if [ "$(readlink current 2>/dev/null || true)" = "releases/$release" ]; then
+            release="$release-${{ github.run_id }}-${{ github.run_attempt }}"
+          fi
+          rm -rf "releases/$release"
+
+          echo "release=$release"
+          echo "has_current=$([ -e current ] && echo true || echo false)"
+          echo "working_dir=$WORKING_DIR"
+          EOF
+
+      - name: Upload release
+        env:
+          WORKING_DIR: ${{ steps.prepare.outputs.working_dir }}
+          RELEASE: ${{ steps.prepare.outputs.release }}
+          HAS_CURRENT: ${{ steps.prepare.outputs.has_current }}
+        run: |
+          # --link-dest + --checksum hard-links files unchanged since the
+          # current release, so only changed files are transferred and stored.
+          link_dest=()
+          if [ "$HAS_CURRENT" = "true" ]; then
+            link_dest=("--link-dest=$WORKING_DIR/current/")
+          fi
+
+          rsync -rlpz --checksum --delete "${link_dest[@]}" \
+            --exclude='.zsh_history' --exclude='.git*' \
+            --exclude='node_modules' --exclude='tests' \
+            --exclude='/bootstrap/cache/*' --exclude='/storage' \
+            --exclude='/public/storage' --exclude='.env*' \
+            --exclude='phpunit.xml' --exclude='README.md' \
+            --exclude='.editorconfig' --exclude='.eslintrc.json' \
+            --exclude='.prettierrc' --exclude='.devenv*' --exclude='.direnv' \
+            ${{ inputs.additional_excludes }} \
+            ./ "deploy:$WORKING_DIR/releases/$RELEASE/"
+
+      - name: Build release on server
+        run: |
+          ssh deploy bash -se <<'EOF'
+          set -euo pipefail
+          WORKING_DIR="${{ steps.prepare.outputs.working_dir }}"
+          cd "$WORKING_DIR/releases/${{ steps.prepare.outputs.release }}"
+
+          # Shared between releases
+          ln -sfn "$WORKING_DIR/storage" storage
+          ln -sfn "$WORKING_DIR/.env" .env
+
+          mkdir -p bootstrap/cache
+          cat > bootstrap/cache/release-info.json <<INFO
+          {
+            "released_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "git_sha": "${{ github.sha }}",
+            "deployed_by": "${{ github.actor }}",
+            "build_number": "${{ github.run_number }}"
+          }
+          INFO
+
+          php artisan optimize
+          php artisan migrate --force
+          ${{ inputs.additional_commands }}
+          EOF
+
+      - name: Health check new release
+        run: |
+          ssh deploy bash -se <<'EOF'
+          set -euo pipefail
+          WORKING_DIR="${{ steps.prepare.outputs.working_dir }}"
+          cd "$WORKING_DIR/releases/${{ steps.prepare.outputs.release }}"
+
+          host="${{ inputs.domain }}"
+          host="${host#*://}"
+          host="${host%%/*}"
+
+          # Serve the new release on a free localhost port, outside nginx
+          # (same as `php artisan serve`: cwd = public/, Laravel's router script).
+          port=$(php -r '$s = stream_socket_server("tcp://127.0.0.1:0"); echo explode(":", stream_socket_get_name($s, false))[1];')
+          log=$(mktemp)
+          (cd public && exec php -S "127.0.0.1:$port" \
+            ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php) > "$log" 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid 2>/dev/null || true; rm -f "$log"' EXIT
+
+          for attempt in $(seq 1 10); do
+            code=$(php -d display_errors=stderr -r '
+              $ctx = stream_context_create(["http" => [
+                "header" => "Host: {$argv[2]}\r\nX-Forwarded-Proto: https",
+                "ignore_errors" => true,
+                "follow_location" => 0,
+                "timeout" => 10,
+              ]]);
+              @file_get_contents("http://127.0.0.1:{$argv[1]}/up", false, $ctx);
+              echo isset($http_response_header[0]) ? explode(" ", $http_response_header[0])[1] : "000";
+            ' "$port" "$host")
+
+            if [ "$code" = "200" ]; then
+              echo "✅ New release is healthy (attempt $attempt)"
+              exit 0
+            fi
+
+            echo "⚠️  Attempt $attempt: /up responded with $code"
+            sleep 3
+          done
+
+          echo "❌ New release failed health check. Server output:"
+          cat "$log"
+          exit 1
+          EOF
+
+      - name: Switch current release
+        run: |
+          ssh deploy bash -se <<'EOF'
+          set -euo pipefail
+          WORKING_DIR="${{ steps.prepare.outputs.working_dir }}"
+          cd "$WORKING_DIR"
+
+          # Atomic switch: rename(2) replaces the symlink in one step.
+          ln -sfn "releases/${{ steps.prepare.outputs.release }}" current.tmp
+          mv -Tf current.tmp current
+
+          cd current
+          # Long-running workers keep their old working directory; make them
+          # exit so systemd restarts them inside the new release.
+          php artisan queue:restart
+          php artisan inertia:stop-ssr || true
+          ${{ inputs.post_deploy_commands }}
+          EOF
+
+      - name: Remove old releases
+        run: |
+          ssh deploy bash -se <<'EOF'
+          set -euo pipefail
+          WORKING_DIR="${{ steps.prepare.outputs.working_dir }}"
+          cd "$WORKING_DIR/releases"
+          live=$(basename "$(readlink "$WORKING_DIR/current")")
+          ls -1t | { grep -vxF "$live" || true; } | tail -n +${{ inputs.keep_releases }} | xargs -r rm -rf --
+          echo "Releases on server:"
+          ls -1t
+          EOF
+
+      - name: Remove failed release
+        if: failure() && steps.prepare.outputs.release != ''
+        run: |
+          ssh deploy bash -se <<'EOF'
+          WORKING_DIR="${{ steps.prepare.outputs.working_dir }}"
+          cd "$WORKING_DIR" || exit 1
+          release="releases/${{ steps.prepare.outputs.release }}"
+          if [ "$(readlink current 2>/dev/null || true)" != "$release" ]; then
+            rm -rf "$release"
+            echo "Removed failed release $release"
+          fi
+          EOF
+
+      - name: Health check live site
+        run: |
+          for attempt in 1 2 3 4 5; do
+            response=$(curl -L -s -o /dev/null -w "%{http_code}" "${{ inputs.domain }}/up" || echo "000")
+            if [ "$response" = "200" ]; then
+              echo "✅ Live site responded with 200"
+              exit 0
+            fi
+            echo "⚠️  Attempt $attempt: live site responded with $response"
+            sleep 10
+          done
+          echo "❌ Live health check failed"
+          exit 1
+
+      - name: Notify deployment
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment successful to ${{ inputs.domain }}"
+            echo "📦 Deployed commit: ${{ github.sha }}"
+            echo "🕐 Deployment time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          else
+            echo "❌ Deployment failed!"
+            echo "💥 Failed commit: ${{ github.sha }}"
+            echo "🕐 Failure time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          fi

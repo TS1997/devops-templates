@@ -13,7 +13,8 @@ let
   initComposerScript = pkgs.writeShellScript "init-composer.sh" ''
     LOCK_HASH_FILE=${util.values.devenvDotfile}/composer.lockhash
 
-    if [ -f composer.lock ]; then
+    # CI pipelines run their own (e.g. --no-dev) composer install.
+    if [ -z "''${CI:-}" ] && [ -f composer.lock ]; then
       CURRENT_HASH=$(sha256sum composer.lock | cut -d' ' -f1)
       STORED_HASH=$(cat "$LOCK_HASH_FILE" 2>/dev/null || true)
 

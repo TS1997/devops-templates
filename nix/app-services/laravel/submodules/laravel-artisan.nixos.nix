@@ -10,7 +10,7 @@ let
   mkArtisanForSite =
     name: siteCfg:
     let
-      workingDir = if siteCfg.package != null then siteCfg.package else siteCfg.workingDir;
+      workingDir = siteCfg.appDir;
       envFile = "${siteCfg.workingDir}/env";
     in
     pkgs.writeShellScriptBin "artisan-${name}" ''

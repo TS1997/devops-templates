@@ -18,6 +18,12 @@
 #                               key into ssh-agent.
 # and have the variable DEPLOY_MANAGER_APP_ID (repo, org or environment level).
 #
+# Runs on the same branch are queued (up to 100) and check out the branch tip
+# when they start, so every deploy builds on the flake.lock pushed by the
+# previous one. Callers should not set their own `concurrency`: the default
+# queue drops waiting runs, and reusing the group `flake-deploy-<ref>`
+# deadlocks.
+#
 # /nix/store is kept in the Actions cache (`nix_cache`). Store paths containing
 # a file named in `nix_cache_exclude` (the pulled OpenTofu state by default) are
 # deleted before the cache is saved.
@@ -79,6 +85,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    # Two concurrent deploys would each build from a flake.lock missing the
+    # other's update, rolling back the other app on shared hosts.
+    concurrency:
+      group: flake-deploy-${{ github.ref }}
+      queue: max
     steps:
       - name: Validate inputs
         env:
@@ -94,9 +105,12 @@ jobs:
             exit 1
           fi
 
+      # The branch tip, not the commit the run was dispatched at: a run that
+      # waited for the previous deploy must see the flake.lock it pushed.
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Create GitHub App token for private flake inputs

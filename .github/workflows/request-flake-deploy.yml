@@ -1,0 +1,94 @@
+# Asks a deploy repo (e.g. bravomedia/terraflake) to update one of its flake
+# inputs to a commit and deploy every host that uses it. Fire-and-forget: the
+# deploy itself runs in the deploy repo (see flake-deploy.yml).
+#
+# Callers must pass `secrets: inherit`. Required in the calling repo (repo, org
+# or `environment` level):
+#   DEPLOY_TRIGGER_APP_ID       variable (or secret): GitHub App with
+#                               Actions: write, installed on the deploy repo
+#   DEPLOY_TRIGGER_PRIVATE_KEY  secret: private key of that App
+
+name: Request flake deploy
+
+on:
+  workflow_call:
+    inputs:
+      deploy_repository:
+        description: "Repo that runs the deploy, as owner/name, e.g. bravomedia/terraflake"
+        required: true
+        type: string
+      flake_input:
+        description: "Name of the flake input in the deploy repo, e.g. lead-flow-engine"
+        required: true
+        type: string
+      rev:
+        description: "Commit to deploy. Defaults to the triggering commit."
+        required: false
+        type: string
+        default: ""
+      environment:
+        description: "GitHub environment holding the DEPLOY_TRIGGER_* credentials"
+        required: false
+        type: string
+        default: "production"
+      deploy_ref:
+        description: "Branch of the deploy repo to run on"
+        required: false
+        type: string
+        default: "master"
+      deploy_workflow:
+        description: "Workflow file in the deploy repo (workflow_dispatch with flake_input and rev)"
+        required: false
+        type: string
+        default: "deploy.yml"
+
+permissions: {}
+
+jobs:
+  request-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Parse deploy repository
+        id: target
+        env:
+          DEPLOY_REPOSITORY: ${{ inputs.deploy_repository }}
+        run: |
+          if [[ ! "$DEPLOY_REPOSITORY" =~ ^([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)$ ]]; then
+            echo "::error::deploy_repository must be owner/name, got: $DEPLOY_REPOSITORY"
+            exit 1
+          fi
+          {
+            echo "owner=${BASH_REMATCH[1]}"
+            echo "name=${BASH_REMATCH[2]}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.DEPLOY_TRIGGER_APP_ID || secrets.DEPLOY_TRIGGER_APP_ID }}
+          private-key: ${{ secrets.DEPLOY_TRIGGER_PRIVATE_KEY }}
+          owner: ${{ steps.target.outputs.owner }}
+          repositories: ${{ steps.target.outputs.name }}
+          permission-actions: write
+
+      - name: Dispatch deploy
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          DEPLOY_REPOSITORY: ${{ inputs.deploy_repository }}
+          DEPLOY_REF: ${{ inputs.deploy_ref }}
+          DEPLOY_WORKFLOW: ${{ inputs.deploy_workflow }}
+          FLAKE_INPUT: ${{ inputs.flake_input }}
+          REV: ${{ inputs.rev || github.sha }}
+        run: |
+          gh workflow run "$DEPLOY_WORKFLOW" \
+            --repo "$DEPLOY_REPOSITORY" \
+            --ref "$DEPLOY_REF" \
+            -f flake_input="$FLAKE_INPUT" \
+            -f rev="$REV"
+
+          {
+            echo "### Deploy requested"
+            echo "\`$FLAKE_INPUT\` @ \`$REV\` → [$DEPLOY_REPOSITORY deploy runs](https://github.com/$DEPLOY_REPOSITORY/actions/workflows/$DEPLOY_WORKFLOW)"
+          } >> "$GITHUB_STEP_SUMMARY"

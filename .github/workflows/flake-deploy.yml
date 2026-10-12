@@ -1,0 +1,164 @@
+# Runs inside a deploy repo (e.g. terraflake): updates one flake input
+# (optionally pinned to a rev), deploys every host whose system changed, then
+# commits and pushes flake.lock. Usually dispatched by request-flake-deploy.yml.
+#
+# The deploy repo's flake must expose these packages:
+#   deploy-input        `deploy-input INPUT [REV] [DEPLOY-ARGS...]`
+#   <secrets_package>   reads $CI_AGE_KEY_FILE, writes .tokens.sh and loads
+#                       the deploy SSH key into the running ssh-agent
+#
+# Callers must pass `secrets: inherit` and grant `contents: write`. Required in
+# the deploy repo (repo, org or `environment` level):
+#   DEPLOY_MANAGER_APP_ID       variable (or secret): GitHub App with
+#                               Contents: read on the private flake inputs
+#   DEPLOY_MANAGER_PRIVATE_KEY  secret: private key of that App
+#   CI_AGE_KEY                  secret: age identity that the tokens and deploy
+#                               SSH key are rekeyed to. Used by the
+#                               `secrets_package` flake app, which writes
+#                               .tokens.sh and loads the key into ssh-agent.
+
+name: Flake deploy
+
+on:
+  workflow_call:
+    inputs:
+      flake_input:
+        description: "Name of the flake input to update, e.g. lead-flow-engine"
+        required: true
+        type: string
+      rev:
+        description: "Commit to pin the input to (github inputs only). Empty = latest."
+        required: false
+        type: string
+        default: ""
+      environment:
+        description: "GitHub environment holding the deploy credentials"
+        required: false
+        type: string
+        default: "deploy"
+      deploy_args:
+        description: "Extra deploy-rs arguments. Checks are skipped since deploy-input already evaluates every host."
+        required: false
+        type: string
+        default: "--skip-checks"
+      host_keys_glob:
+        description: "Glob of host public keys used to build known_hosts"
+        required: false
+        type: string
+        default: "nixos/servers/*/ssh-host-key.pub"
+      secrets_package:
+        description: "Flake package that decrypts the secrets with $CI_AGE_KEY_FILE"
+        required: false
+        type: string
+        default: "ci-secrets"
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Validate inputs
+        env:
+          FLAKE_INPUT: ${{ inputs.flake_input }}
+          REV: ${{ inputs.rev }}
+        run: |
+          if [[ ! "$FLAKE_INPUT" =~ ^[A-Za-z0-9_-]+$ ]]; then
+            echo "::error::Invalid flake_input: $FLAKE_INPUT"
+            exit 1
+          fi
+          if [[ -n "$REV" && ! "$REV" =~ ^[0-9a-f]{7,40}$ ]]; then
+            echo "::error::Invalid rev: $REV"
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Create GitHub App token for private flake inputs
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.DEPLOY_MANAGER_APP_ID || secrets.DEPLOY_MANAGER_APP_ID }}
+          private-key: ${{ secrets.DEPLOY_MANAGER_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-contents: read
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          github_access_token: ${{ steps.app-token.outputs.token }}
+          # Some packages (e.g. Laravel apps) build with __noChroot to download
+          # composer/npm dependencies, which requires a relaxed sandbox.
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            sandbox = relaxed
+
+      - name: Load secrets and SSH key
+        env:
+          CI_AGE_KEY: ${{ secrets.CI_AGE_KEY }}
+          HOST_KEYS_GLOB: ${{ inputs.host_keys_glob }}
+          SECRETS_PACKAGE: ${{ inputs.secrets_package }}
+        run: |
+          if [[ -z "$CI_AGE_KEY" ]]; then
+            echo "::error::Secret CI_AGE_KEY is not set"
+            exit 1
+          fi
+
+          install -d -m 700 ~/.ssh
+
+          # Trust only our own host keys, for any address.
+          shopt -s nullglob
+          for key in $HOST_KEYS_GLOB; do
+            printf '* %s\n' "$(cut -d' ' -f1,2 "$key")"
+          done > ~/.ssh/known_hosts
+          if [[ ! -s ~/.ssh/known_hosts ]]; then
+            echo "::error::No host keys matched $HOST_KEYS_GLOB"
+            exit 1
+          fi
+
+          eval "$(ssh-agent -s)" > /dev/null
+          {
+            echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"
+            echo "SSH_AGENT_PID=$SSH_AGENT_PID"
+          } >> "$GITHUB_ENV"
+
+          key_file="$RUNNER_TEMP/ci-age-key"
+          trap 'rm -f "$key_file"' EXIT
+          (umask 077 && printf '%s\n' "$CI_AGE_KEY" > "$key_file")
+          CI_AGE_KEY_FILE="$key_file" nix run ".#$SECRETS_PACKAGE"
+
+      - name: Update input and deploy
+        env:
+          FLAKE_INPUT: ${{ inputs.flake_input }}
+          REV: ${{ inputs.rev }}
+          DEPLOY_ARGS: ${{ inputs.deploy_args }}
+        run: |
+          read -ra deploy_args <<< "$DEPLOY_ARGS"
+          nix run .#deploy-input -- "$FLAKE_INPUT" ${REV:+"$REV"} "${deploy_args[@]}"
+
+      - name: Commit and push flake.lock
+        env:
+          FLAKE_INPUT: ${{ inputs.flake_input }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          if git diff --quiet -- flake.lock; then
+            echo "flake.lock unchanged; nothing to commit."
+            exit 0
+          fi
+
+          locked_rev="$(jq -r --arg input "$FLAKE_INPUT" \
+            '.nodes as $nodes | $nodes[$nodes.root.inputs[$input]].locked.rev // "unknown" | .[0:7]' flake.lock)"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add flake.lock
+          git commit -m "deploy($FLAKE_INPUT): $locked_rev"
+          git pull --rebase origin "$BRANCH"
+          git push origin "HEAD:$BRANCH"
+
+          echo "Deployed \`$FLAKE_INPUT\` @ \`$locked_rev\`" >> "$GITHUB_STEP_SUMMARY"

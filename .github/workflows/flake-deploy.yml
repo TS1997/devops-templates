@@ -17,6 +17,10 @@
 #                               flake app, which writes .tokens.sh and loads the
 #                               key into ssh-agent.
 # and have the variable DEPLOY_MANAGER_APP_ID (repo, org or environment level).
+#
+# /nix/store is kept in the Actions cache (`nix_cache`). Store paths containing
+# a file named in `nix_cache_exclude` (the pulled OpenTofu state by default) are
+# deleted before the cache is saved.
 
 name: Flake deploy
 
@@ -52,6 +56,16 @@ on:
         required: false
         type: string
         default: "ci-secrets"
+      nix_cache:
+        description: "Keep /nix/store in the GitHub Actions cache between runs"
+        required: false
+        type: boolean
+        default: true
+      nix_cache_exclude:
+        description: "Space-separated file names. Store paths containing one of them (e.g. flake sources with pulled state) and everything referring to them are deleted before caching."
+        required: false
+        type: string
+        default: "terraform.tfstate"
     secrets:
       DEPLOY_MANAGER_PRIVATE_KEY:
         required: true
@@ -103,6 +117,16 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
             sandbox = relaxed
+
+      # Restores the newest store saved by a previous run and saves a new one
+      # after a successful run (GitHub evicts the oldest past 10 GB per repo).
+      - name: Restore Nix store
+        if: inputs.nix_cache
+        uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7.0.2
+        with:
+          primary-key: flake-deploy-${{ runner.os }}-${{ hashFiles('flake.lock') }}
+          restore-prefixes-first-match: flake-deploy-${{ runner.os }}-
+          gc-max-store-size-linux: 6G
 
       - name: Load secrets and SSH key
         env:
@@ -168,3 +192,36 @@ jobs:
           git push origin "HEAD:$BRANCH"
 
           echo "Deployed \`$FLAKE_INPUT\` @ \`$locked_rev\`" >> "$GITHUB_STEP_SUMMARY"
+
+      # The Nix store is saved after this step. Flake sources include the pulled
+      # OpenTofu state, which must not end up in the cache: any branch can
+      # restore caches from the default branch.
+      - name: Remove excluded files from Nix store
+        if: inputs.nix_cache
+        env:
+          EXCLUDE: ${{ inputs.nix_cache_exclude }}
+        run: |
+          read -ra names <<< "$EXCLUDE"
+          shopt -s nullglob
+          paths=()
+          for name in "${names[@]}"; do
+            for file in /nix/store/*/"$name"; do
+              paths+=("${file%/"$name"}")
+            done
+          done
+          if (( ${#paths[@]} == 0 )); then
+            echo "Nothing to remove."
+            exit 0
+          fi
+
+          mapfile -t doomed < <(nix-store --query --referrers-closure "${paths[@]}")
+          echo "Removing ${#doomed[@]} store paths."
+          nix-store --delete --ignore-liveness "${doomed[@]}" > /dev/null
+
+          for name in "${names[@]}"; do
+            leftover=(/nix/store/*/"$name")
+            if (( ${#leftover[@]} )); then
+              echo "::error::Still in the Nix store: ${leftover[*]}"
+              exit 1
+            fi
+          done

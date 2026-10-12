@@ -7,15 +7,16 @@
 #   <secrets_package>   reads $CI_AGE_KEY_FILE, writes .tokens.sh and loads
 #                       the deploy SSH key into the running ssh-agent
 #
-# Callers must pass `secrets: inherit` and grant `contents: write`. Required in
-# the deploy repo (repo, org or `environment` level):
-#   DEPLOY_MANAGER_APP_ID       variable (or secret): GitHub App with
-#                               Contents: read on the private flake inputs
-#   DEPLOY_MANAGER_PRIVATE_KEY  secret: private key of that App
-#   CI_AGE_KEY                  secret: age identity that the tokens and deploy
-#                               SSH key are rekeyed to. Used by the
-#                               `secrets_package` flake app, which writes
-#                               .tokens.sh and loads the key into ssh-agent.
+# Callers must grant `contents: write` and pass these secrets explicitly
+# (`secrets: inherit` only works within the same organization; environment
+# secrets must be passed by name too):
+#   DEPLOY_MANAGER_PRIVATE_KEY  private key of the DeployManager App
+#                               (Contents: read on the private flake inputs)
+#   CI_AGE_KEY                  age identity that the tokens and deploy SSH key
+#                               are rekeyed to. Used by the `secrets_package`
+#                               flake app, which writes .tokens.sh and loads the
+#                               key into ssh-agent.
+# and have the variable DEPLOY_MANAGER_APP_ID (repo, org or environment level).
 
 name: Flake deploy
 
@@ -51,6 +52,11 @@ on:
         required: false
         type: string
         default: "ci-secrets"
+    secrets:
+      DEPLOY_MANAGER_PRIVATE_KEY:
+        required: true
+      CI_AGE_KEY:
+        required: true
 
 permissions:
   contents: write
@@ -83,7 +89,7 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          app-id: ${{ vars.DEPLOY_MANAGER_APP_ID || secrets.DEPLOY_MANAGER_APP_ID }}
+          app-id: ${{ vars.DEPLOY_MANAGER_APP_ID }}
           private-key: ${{ secrets.DEPLOY_MANAGER_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           permission-contents: read

@@ -2,11 +2,11 @@
 # inputs to a commit and deploy every host that uses it. Fire-and-forget: the
 # deploy itself runs in the deploy repo (see flake-deploy.yml).
 #
-# Callers must pass `secrets: inherit`. Required in the calling repo (repo, org
-# or `environment` level):
-#   DEPLOY_TRIGGER_APP_ID       variable (or secret): GitHub App with
-#                               Actions: write, installed on the deploy repo
-#   DEPLOY_TRIGGER_PRIVATE_KEY  secret: private key of that App
+# Callers must pass the secret explicitly (`secrets: inherit` only works within
+# the same organization):
+#   DEPLOY_TRIGGER_PRIVATE_KEY  secret: private key of the DeployTrigger App
+#                               (Actions: write, installed on the deploy repo)
+# and have the variable DEPLOY_TRIGGER_APP_ID (repo, org or environment level).
 
 name: Request flake deploy
 
@@ -41,6 +41,9 @@ on:
         required: false
         type: string
         default: "deploy.yml"
+    secrets:
+      DEPLOY_TRIGGER_PRIVATE_KEY:
+        required: true
 
 permissions: {}
 
@@ -67,7 +70,7 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          app-id: ${{ vars.DEPLOY_TRIGGER_APP_ID || secrets.DEPLOY_TRIGGER_APP_ID }}
+          app-id: ${{ vars.DEPLOY_TRIGGER_APP_ID }}
           private-key: ${{ secrets.DEPLOY_TRIGGER_PRIVATE_KEY }}
           owner: ${{ steps.target.outputs.owner }}
           repositories: ${{ steps.target.outputs.name }}

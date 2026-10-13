@@ -40,7 +40,7 @@ on:
         description: "Workflow file in the deploy repo (workflow_dispatch with flake_input and rev)"
         required: false
         type: string
-        default: "deploy.yml"
+        default: "deploy-input.yml"
     secrets:
       DEPLOY_TRIGGER_PRIVATE_KEY:
         required: true

@@ -125,6 +125,8 @@ in
 
     tasks."laravel:migrate" = lib.mkIf siteCfg.database.enable {
       exec = "php artisan migrate";
+      # Skip when the migrations table already exists (migrate:status exits non-zero otherwise)
+      status = "php artisan migrate:status > /dev/null 2>&1";
       after = dbProcessDeps;
     };
 

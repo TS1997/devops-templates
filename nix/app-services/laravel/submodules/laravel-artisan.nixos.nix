@@ -5,15 +5,15 @@
   ...
 }:
 let
-  sites = config.services.ts1997.laravelSites;
+  sites = lib.filterAttrs (_: siteCfg: siteCfg.enable) config.services.ts1997.laravelSites;
 
   mkArtisanForSite =
-    siteCfg:
+    name: siteCfg:
     let
       workingDir = if siteCfg.package != null then siteCfg.package else siteCfg.workingDir;
       envFile = "${siteCfg.workingDir}/env";
     in
-    pkgs.writeShellScriptBin "artisan" ''
+    pkgs.writeShellScriptBin "artisan-${name}" ''
       set -euo pipefail
 
       cd "${workingDir}"
@@ -30,8 +30,8 @@ in
 {
   config = lib.mkIf (sites != { }) {
     users.users = lib.mkMerge (
-      lib.mapAttrsToList (_: siteCfg: {
-        ${siteCfg.user}.packages = [ (mkArtisanForSite siteCfg) ];
+      lib.mapAttrsToList (name: siteCfg: {
+        ${siteCfg.user}.packages = [ (mkArtisanForSite name siteCfg) ];
       }) sites
     );
   };

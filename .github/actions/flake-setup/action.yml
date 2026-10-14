@@ -1,0 +1,157 @@
+# Setup for the jobs of a deploy repo (flake-deploy.yml, and e.g. terraflake's
+# OpenTofu plan/apply/deploy): Nix with access to the private flake
+# inputs, an optional /nix/store cache, an optional OpenTofu provider cache and
+# the CI secrets (.tokens.sh, masked; optionally the deploy SSH key in an
+# ssh-agent). Run it after actions/checkout:
+#
+#   - uses: TS1997/devops-templates/.github/actions/flake-setup@master
+#
+# The deploy repo's flake must expose <secrets-package>, which reads
+# $CI_AGE_KEY_FILE, writes .tokens.sh and loads the deploy SSH key into the
+# running ssh-agent when SSH_AUTH_SOCK is set.
+
+name: Flake setup
+description: Install Nix and load the CI secrets of a flake deploy repo
+
+inputs:
+  app-id:
+    description: DeployManager App ID (Contents read on the private flake inputs)
+    required: true
+  app-private-key:
+    description: DeployManager App private key
+    required: true
+  ci-age-key:
+    description: age identity the tokens and deploy SSH key are rekeyed to
+    required: true
+  secrets-package:
+    description: Flake package that decrypts the secrets with $CI_AGE_KEY_FILE
+    required: false
+    default: ci-secrets
+  ssh:
+    description: Start an ssh-agent with the deploy key and trust our host keys
+    required: false
+    default: "false"
+  host-keys-glob:
+    description: Glob of host public keys used to build known_hosts (with ssh)
+    required: false
+    default: nixos/servers/*/ssh-host-key.pub
+  nix-cache:
+    description: >
+      Restore /nix/store from the Actions cache; it is saved after a successful
+      job. The job must remove store paths containing terraform.tfstate first.
+    required: false
+    default: "false"
+  tofu-lock-file:
+    description: >
+      OpenTofu dependency lock file, e.g. opentofu/.terraform.lock.hcl. When
+      set, providers are cached in TF_PLUGIN_CACHE_DIR, keyed on this file.
+    required: false
+    default: ""
+  free-disk-space:
+    description: >
+      Remove preinstalled toolchains (.NET, Android, GHC, CodeQL) before
+      installing Nix, for jobs that build or download large closures.
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    # GitHub runners have only ~14 GB free on /, which holds /nix/store. A
+    # deploy that built a few host closures ran out of space. This frees
+    # ~20-30 GB, but it only buys headroom: to cache more than a few GB of
+    # builds between runs we need a real binary cache (Attic, Cachix, S3); the
+    # Actions cache is capped at 10 GB per repo.
+    - name: Free disk space
+      if: inputs.free-disk-space == 'true'
+      shell: bash
+      run: |
+        df -h /
+        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+        df -h /
+
+    - name: Create GitHub App token for private flake inputs
+      id: app-token
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+      with:
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.app-private-key }}
+        owner: ${{ github.repository_owner }}
+        permission-contents: read
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      with:
+        github_access_token: ${{ steps.app-token.outputs.token }}
+        # Some packages (e.g. Laravel apps) build with __noChroot to download
+        # composer/npm dependencies, which requires a relaxed sandbox.
+        extra_nix_config: |
+          experimental-features = nix-command flakes
+          sandbox = relaxed
+
+    # Restores the newest store saved by a previous run and saves a new one
+    # after a successful job (GitHub evicts the oldest past 10 GB per repo).
+    # Every caller shares the flake-deploy-* keys.
+    - name: Restore Nix store
+      if: inputs.nix-cache == 'true'
+      uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7.0.2
+      with:
+        primary-key: flake-deploy-${{ runner.os }}-${{ hashFiles('flake.lock') }}
+        restore-prefixes-first-match: flake-deploy-${{ runner.os }}-
+        gc-max-store-size-linux: 6G
+
+    # Every job runs tofu init on a fresh runner; without this cache each one
+    # downloads all providers from GitHub releases again.
+    - name: Prepare OpenTofu provider cache
+      if: inputs.tofu-lock-file != ''
+      shell: bash
+      run: |
+        dir="$RUNNER_TEMP/tofu-plugin-cache"
+        mkdir -p "$dir"
+        echo "TF_PLUGIN_CACHE_DIR=$dir" >> "$GITHUB_ENV"
+
+    - name: Restore OpenTofu providers
+      if: inputs.tofu-lock-file != ''
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ runner.temp }}/tofu-plugin-cache
+        key: tofu-providers-${{ runner.os }}-${{ hashFiles(inputs.tofu-lock-file) }}
+
+    - name: Load secrets
+      shell: bash
+      env:
+        CI_AGE_KEY: ${{ inputs.ci-age-key }}
+        SECRETS_PACKAGE: ${{ inputs.secrets-package }}
+        SSH: ${{ inputs.ssh }}
+        HOST_KEYS_GLOB: ${{ inputs.host-keys-glob }}
+      run: |
+        if [[ -z "$CI_AGE_KEY" ]]; then
+          echo "::error::Secret CI_AGE_KEY is not set"
+          exit 1
+        fi
+
+        if [[ "$SSH" == "true" ]]; then
+          install -d -m 700 ~/.ssh
+
+          # Trust only our own host keys, for any address.
+          shopt -s nullglob
+          for key in $HOST_KEYS_GLOB; do
+            printf '* %s\n' "$(cut -d' ' -f1,2 "$key")"
+          done > ~/.ssh/known_hosts
+          if [[ ! -s ~/.ssh/known_hosts ]]; then
+            echo "::error::No host keys matched $HOST_KEYS_GLOB"
+            exit 1
+          fi
+
+          # The secrets package adds the deploy key when SSH_AUTH_SOCK is set.
+          eval "$(ssh-agent -s)" > /dev/null
+          {
+            echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"
+            echo "SSH_AGENT_PID=$SSH_AGENT_PID"
+          } >> "$GITHUB_ENV"
+        fi
+
+        key_file="$RUNNER_TEMP/ci-age-key"
+        trap 'rm -f "$key_file"' EXIT
+        (umask 077 && printf '%s\n' "$CI_AGE_KEY" > "$key_file")
+        CI_AGE_KEY_FILE="$key_file" nix run ".#$SECRETS_PACKAGE"

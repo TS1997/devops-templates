@@ -120,11 +120,15 @@ configure_filament_plugin_template() {
       -e '/<!-- BEGIN FILAMENT_PLUGIN -->/d' \
       -e '/<!-- END FILAMENT_PLUGIN -->/d' \
       "$target_dir/README.md"
+
+    strip_feature_markers "$target_dir/tests/TestCase.php" FILAMENT_PLUGIN
   else
     sed -i \
       -e '/<!-- BEGIN FILAMENT_PLUGIN -->/,/<!-- END FILAMENT_PLUGIN -->/d' \
       "$target_dir/README.md"
 
+    remove_feature_blocks "$target_dir/tests/TestCase.php" FILAMENT_PLUGIN
+    rm -f "$target_dir/tests/TestPanelProvider.php"
     rm -rf "$target_dir/src/Filament"
   fi
 

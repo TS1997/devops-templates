@@ -4,9 +4,11 @@ namespace PackageVendor\Skeleton\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use PackageVendor\Skeleton\SkeletonServiceProvider;
 
 class TestCase extends Orchestra {
+    /** Registers the providers of every installed package. */
+    protected $enablesPackageDiscoveries = true;
+
     protected function setUp(): void {
         parent::setUp();
 
@@ -15,12 +17,14 @@ class TestCase extends Orchestra {
         );
     }
 
+    // BEGIN FILAMENT_PLUGIN
     protected function getPackageProviders($app) {
         return [
-            SkeletonServiceProvider::class,
+            TestPanelProvider::class,
         ];
     }
 
+    // END FILAMENT_PLUGIN
     public function getEnvironmentSetUp($app) {
         config()->set('database.default', 'testing');
 

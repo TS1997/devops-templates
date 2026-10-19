@@ -1,12 +1,12 @@
 {
-    "name": "{{vendor_slug}}/{{composer_package_slug}}",
+    "name": "{{vendor_slug}}/{{repository_slug}}",
     "description": "{{package_description}}",
     "keywords": [
         "{{vendor_slug}}",
         "laravel",
         "{{package_slug}}"
     ],
-    "homepage": "https://github.com/{{vendor_slug}}/{{package_slug}}",
+    "homepage": "https://github.com/{{vendor_slug}}/{{repository_slug}}",
     "license": "MIT",
     "require": {
         "php": "^8.4",

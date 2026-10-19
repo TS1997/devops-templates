@@ -1,5 +1,5 @@
 {
-    "name": "@{{vendor_slug}}/{{package_slug}}",
+    "name": "@{{vendor_slug}}/{{repository_slug}}",
     "version": "0.0.0",
     "type": "module",
     "types": "index.d.ts",

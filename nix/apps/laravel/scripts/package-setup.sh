@@ -216,7 +216,7 @@ JSON
 
 replace_template_placeholders() {
   local class_name vendor_namespace vendor_slug
-  local class_name_replacement vendor_name_replacement vendor_namespace_replacement vendor_slug_replacement package_slug_replacement package_name_replacement description_replacement
+  local class_name_replacement vendor_name_replacement vendor_namespace_replacement vendor_slug_replacement package_slug_replacement composer_package_slug_replacement package_name_replacement description_replacement
   local config_file
 
   class_name=$(title_case "$package_name")
@@ -228,6 +228,7 @@ replace_template_placeholders() {
   vendor_namespace_replacement=$(escape_sed_replacement "$vendor_namespace")
   vendor_slug_replacement=$(escape_sed_replacement "$vendor_slug")
   package_slug_replacement=$(escape_sed_replacement "$folder_slug")
+  composer_package_slug_replacement=$(escape_sed_replacement "laravel-${folder_slug#laravel-}")
   package_name_replacement=$(escape_sed_replacement "$package_name")
   description_replacement=$(escape_sed_replacement "${PACKAGE_DESCRIPTION:-$package_name}")
 
@@ -239,6 +240,7 @@ replace_template_placeholders() {
       -e "s|PackageVendor|$vendor_namespace_replacement|g" \
       -e "s|{{package_name}}|$package_name_replacement|g" \
       -e "s|{{package_slug}}|$package_slug_replacement|g" \
+      -e "s|{{composer_package_slug}}|$composer_package_slug_replacement|g" \
       -e "s|{{package_description}}|$description_replacement|g" \
       -e "s|{{class_name}}|$class_name_replacement|g" \
       -e "s|Skeleton|$class_name_replacement|g" \

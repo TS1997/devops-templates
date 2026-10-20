@@ -17,5 +17,4 @@ if (! file_exists($testbenchPath)) {
 $_SERVER['argv'] = $argv = [$testbenchPath, ...array_slice($argv, 1)];
 $_SERVER['argc'] = $argc = count($argv);
 
-// Run in-process: proxying through passthru() buffers stdout in 4 KB blocks and stalls MCP responses.
 require $testbenchPath;

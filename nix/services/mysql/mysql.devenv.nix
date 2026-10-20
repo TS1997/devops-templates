@@ -94,7 +94,9 @@ in
     };
 
     scripts = {
-      phpmyadmin.exec = util.openUrl "http://${phpMyAdminCfg.host}:${phpMyAdminPort}/";
+      phpmyadmin = lib.mkIf (phpMyAdminCfg.enable) {
+        exec = util.openUrl "http://${phpMyAdminCfg.host}:${phpMyAdminPort}/";
+      };
 
       # Only added because task system is fucked as of 2026-05-20. Remove asap.
       init-database.exec = ''

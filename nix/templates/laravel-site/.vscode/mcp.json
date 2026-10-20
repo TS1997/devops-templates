@@ -1,10 +1,10 @@
 {
-  "servers": {
-    "laravel-boost": {
-      "type": "stdio",
-      "command": "php",
-      "args": ["artisan", "boost:mcp"],
-      "cwd": "${workspaceFolder}"
+    "servers": {
+        "laravel-boost": {
+            "type": "stdio",
+            "command": "direnv",
+            "args": ["exec", ".", "php", "artisan", "boost:mcp"],
+            "cwd": "${workspaceFolder}"
+        }
     }
-  }
 }

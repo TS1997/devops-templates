@@ -6,7 +6,7 @@ putenv('CACHE_STORE=array');
 $_ENV['CACHE_STORE'] = 'array';
 $_SERVER['CACHE_STORE'] = 'array';
 
-$testbenchPath = __DIR__ . '/vendor/bin/testbench';
+$testbenchPath = getcwd() . '/vendor/bin/testbench';
 
 if (! file_exists($testbenchPath)) {
     fwrite(STDERR, "Error: vendor/bin/testbench not found. Run 'composer install' first.\n");
@@ -14,13 +14,8 @@ if (! file_exists($testbenchPath)) {
     exit(1);
 }
 
-$args = array_slice($argv, 1);
-$command = escapeshellarg($testbenchPath);
+$_SERVER['argv'] = $argv = [$testbenchPath, ...array_slice($argv, 1)];
+$_SERVER['argc'] = $argc = count($argv);
 
-if ($args !== []) {
-    $command .= ' ' . implode(' ', array_map('escapeshellarg', $args));
-}
-
-passthru($command, $exitCode);
-
-exit($exitCode);
+// Run in-process: proxying through passthru() buffers stdout in 4 KB blocks and stalls MCP responses.
+require $testbenchPath;

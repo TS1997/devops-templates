@@ -28,6 +28,35 @@ let
       inherit config lib siteCfg;
       phpSocket = config.services.phpfpm.pools.${name}.socket;
     };
+
+  # Directories below `base` down to and including `path`, so intermediate
+  # directories (e.g. public/ and public/content/) get explicit tmpfiles rules
+  # instead of being created as root.
+  dirsBelow =
+    base: path:
+    if path == base || !(lib.hasPrefix "${base}/" path) then
+      [ ]
+    else
+      dirsBelow base (dirOf path) ++ [ path ];
+
+  mkTmpfilesRules =
+    siteCfg:
+    let
+      owner = "${siteCfg.user} ${siteCfg.user}";
+      inWorkingDir = lib.hasPrefix "${siteCfg.workingDir}/" siteCfg.uploadsDir;
+      dirs = lib.unique (
+        dirsBelow siteCfg.workingDir siteCfg.webRoot
+        ++ dirsBelow siteCfg.workingDir (dirOf siteCfg.uploadsDir)
+      );
+    in
+    [ "d ${siteCfg.workingDir} 0750 ${owner} -" ]
+    ++ map (dir: "d ${dir} 0750 ${owner} -") dirs
+    # Persistent uploads directory - path must match the site's .env
+    ++ [ "d ${siteCfg.uploadsDir} 0755 ${owner} -" ]
+    # Re-own everything on boot and on every switch (sysinit-reactivation),
+    # leaving file modes untouched.
+    ++ [ "Z ${siteCfg.workingDir} - ${owner} -" ]
+    ++ lib.optional (!inWorkingDir) "Z ${siteCfg.uploadsDir} - ${owner} -";
 in
 {
   imports = [
@@ -52,20 +81,10 @@ in
   };
 
   config = lib.mkIf (sites != { }) {
-    system.activationScripts = lib.mkMerge (
-      (lib.mapAttrsToList (name: siteCfg: {
-        "setup-wordpress-dirs-${name}" = lib.stringAfter [ "users" "groups" ] ''
-          mkdir -p ${siteCfg.workingDir}
-          chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}
-          chmod -R 0750 ${siteCfg.workingDir}
+    systemd.tmpfiles.rules = lib.concatMap mkTmpfilesRules (lib.attrValues sites);
 
-          # Persistent uploads directory - path must match the site's .env
-          mkdir -p ${siteCfg.uploadsDir}
-          chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.uploadsDir}
-          chmod -R 0755 ${siteCfg.uploadsDir}
-        '';
-      }) sites)
-      ++ (lib.mapAttrsToList (
+    system.activationScripts = lib.mkMerge (
+      lib.mapAttrsToList (
         name: siteCfg:
         lib.mkIf (siteCfg.generateEnv) {
           "generate-env-${name}" = (
@@ -75,7 +94,7 @@ in
             }
           );
         }
-      ) sites)
+      ) sites
     );
 
     services.ts1997.nginx = {

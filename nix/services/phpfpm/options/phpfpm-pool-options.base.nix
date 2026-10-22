@@ -21,6 +21,12 @@
       description = "The maximum execution time for PHP scripts in seconds.";
     };
 
+    memoryLimit = lib.mkOption {
+      type = lib.types.str;
+      default = "512M";
+      description = "PHP memory_limit for the PHP-FPM pool.";
+    };
+
     phpOptions = lib.mkOption {
       type = lib.types.lines;
       default = ''
@@ -29,7 +35,7 @@
         log_errors_max_len = 0
         upload_max_filesize = 50M
         post_max_size = 64M
-        memory_limit = 512M
+        memory_limit = ${config.memoryLimit}
         max_execution_time = ${toString config.maxExecutionTime}
       '';
       description = "PHP options for the PHP-FPM pool.";
@@ -53,7 +59,7 @@
         "request_terminate_timeout" = config.maxExecutionTime + 60;
         "php_flag[display_errors]" = true;
         "php_admin_flag[log_errors]" = true;
-        "php_value[memory_limit]" = "512M";
+        "php_value[memory_limit]" = config.memoryLimit;
         "catch_workers_output" = true;
         "php_value[upload_max_filesize]" = "64M";
         "php_value[post_max_size]" = "64M";

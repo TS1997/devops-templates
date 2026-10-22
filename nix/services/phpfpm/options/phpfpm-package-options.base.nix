@@ -19,10 +19,17 @@
       example = lib.literalExpression "extensions: [ extensions.redis ]";
     };
 
+    ini = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      description = "php.ini directives baked into the package (also applies to the PHP CLI).";
+    };
+
     fullPackage = lib.mkOption {
       type = lib.types.package;
       default = config.basePackage.buildEnv {
         extensions = { all, enabled }: enabled ++ (config.extensions all);
+        extraConfig = config.ini;
       };
       readOnly = true;
       description = "The PHP-FPM package combined with the selected extensions.";

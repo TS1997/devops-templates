@@ -98,6 +98,10 @@ in
       ui.host = siteCfg.domain;
     };
 
+    services.ts1997.opensearch = lib.mkIf siteCfg.opensearch.enable {
+      enable = true;
+    };
+
     processes = lib.mkIf (siteCfg.nodejs.enable && siteCfg.nodejs.script != null) {
       nodejs.exec = siteCfg.nodejs.script;
     };

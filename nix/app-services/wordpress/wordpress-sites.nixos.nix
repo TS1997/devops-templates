@@ -10,6 +10,7 @@ let
 
   mysqlSites = lib.filterAttrs (name: siteCfg: siteCfg.database.enable) sites;
   redisSites = lib.filterAttrs (name: siteCfg: siteCfg.redis.enable) sites;
+  opensearchSites = lib.filterAttrs (name: siteCfg: siteCfg.opensearch.enable) sites;
 
   mkDefaultEnv =
     name: siteCfg:
@@ -63,6 +64,7 @@ in
     (import ../../modules/users.nixos.nix {
       inherit sites;
     })
+    ./submodules/wordpress-elasticpress-sync.nixos.nix
   ];
 
   options.services.ts1997.wordpressSites = lib.mkOption {
@@ -129,6 +131,10 @@ in
         enable = siteCfg.redis.enable;
         user = name;
       }) redisSites;
+    };
+
+    services.ts1997.opensearch = lib.mkIf (opensearchSites != { }) {
+      enable = true;
     };
   };
 }

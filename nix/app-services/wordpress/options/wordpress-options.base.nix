@@ -68,6 +68,8 @@
         }
       ];
     };
+
+    opensearch.enable = lib.mkEnableOption "OpenSearch for ElasticPress (sets EP_HOST and EP_INDEX_PREFIX)";
   };
 
   config = {

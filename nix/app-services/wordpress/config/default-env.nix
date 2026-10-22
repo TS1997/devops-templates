@@ -8,6 +8,7 @@ let
   mailpitCfg = config.services.ts1997.mailpit or null;
   mailpitPorts = config.processes.mailpit.ports or null;
   dbCfg = config.services.ts1997.mysql;
+  opensearchCfg = config.services.ts1997.opensearch;
 in
 {
   WP_ENV = siteCfg.appEnv;
@@ -24,5 +25,9 @@ in
 
   SMTP_HOST = if (mailpitCfg != null && mailpitCfg.enable) then mailpitCfg.smtp.host else "127.0.0.1";
   SMTP_PORT = if (mailpitCfg != null && mailpitCfg.enable) then mailpitPorts.smtp.value else 1025;
-
+}
+// lib.optionalAttrs siteCfg.opensearch.enable {
+  EP_HOST = opensearchCfg.url;
+  # The OpenSearch node is shared by all sites on a host, so indices must be namespaced per site.
+  EP_INDEX_PREFIX = siteCfg.appName;
 }

@@ -5,6 +5,7 @@
     ./mysql/mysql.devenv.nix
     ./pgsql/pgsql.devenv.nix
     ./redis/redis.devenv.nix
+    ./opensearch/opensearch.devenv.nix
     ./mailpit/mailpit.devenv.nix
     ./gunicorn/gunicorn.devenv.nix
     ./nodejs/nodejs.devenv.nix

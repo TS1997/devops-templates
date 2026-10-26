@@ -14,4 +14,8 @@
       description = "systemd OnCalendar expression for a full ElasticPress sync. Missing indices are always created shortly after boot/deploy; set to null to skip the scheduled sync.";
     };
   };
+
+  config = {
+    backup.paths = lib.mkDefault [ config.uploadsDir ];
+  };
 }

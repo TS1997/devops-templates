@@ -7,5 +7,6 @@
     ./redis/redis.nixos.nix
     ./opensearch/opensearch.nixos.nix
     ./gunicorn/gunicorn.nixos.nix
+    ./restic/restic.nixos.nix
   ];
 }

@@ -83,6 +83,8 @@
   };
 
   config = {
+    backup.paths = lib.mkDefault [ "${config.workingDir}/storage/app" ];
+
     webRoot = lib.mkDefault (
       if config.package != null then "${config.package}/public" else "${config.workingDir}/public"
     );

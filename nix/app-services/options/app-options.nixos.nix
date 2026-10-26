@@ -43,6 +43,35 @@
       };
     };
 
+    backup = lib.mkOption {
+      # Use lib.types.submodule here instead of util.submodule to avoid circular dependency
+      type = lib.types.submodule {
+        options = {
+          enable = lib.mkEnableOption "restic backups of this site (see services.ts1997.restic)";
+
+          paths = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Paths to back up. Each app type sets sensible defaults.";
+          };
+
+          exclude = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Restic exclude patterns.";
+          };
+
+          database = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = "Whether to dump and back up the site's database (when database.enable is set). Disable for sites sharing another site's database.";
+          };
+        };
+      };
+      default = { };
+      description = "Backup configuration for the site.";
+    };
+
     basicAuthFile = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
       default = null;

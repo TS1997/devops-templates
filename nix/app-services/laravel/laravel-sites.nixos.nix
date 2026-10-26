@@ -18,6 +18,8 @@ let
 
   redisSites = lib.filterAttrs (name: siteCfg: siteCfg.redis.enable) sites;
 
+  backupSites = lib.filterAttrs (name: siteCfg: siteCfg.backup.enable) sites;
+
   mkDefaultEnv =
     name: siteCfg:
     import ./config/default-env.nix {
@@ -164,5 +166,11 @@ in
       }) redisSites;
     };
 
+    services.ts1997.restic.jobs = lib.mapAttrs (name: siteCfg: {
+      inherit (siteCfg.backup) paths exclude;
+      databases = lib.optional (siteCfg.database.enable && siteCfg.backup.database) {
+        inherit (siteCfg.database) driver name;
+      };
+    }) backupSites;
   };
 }

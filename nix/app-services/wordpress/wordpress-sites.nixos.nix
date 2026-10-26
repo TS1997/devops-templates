@@ -11,6 +11,7 @@ let
   mysqlSites = lib.filterAttrs (name: siteCfg: siteCfg.database.enable) sites;
   redisSites = lib.filterAttrs (name: siteCfg: siteCfg.redis.enable) sites;
   opensearchSites = lib.filterAttrs (name: siteCfg: siteCfg.opensearch.enable) sites;
+  backupSites = lib.filterAttrs (name: siteCfg: siteCfg.backup.enable) sites;
 
   mkDefaultEnv =
     name: siteCfg:
@@ -136,5 +137,12 @@ in
     services.ts1997.opensearch = lib.mkIf (opensearchSites != { }) {
       enable = true;
     };
+
+    services.ts1997.restic.jobs = lib.mapAttrs (name: siteCfg: {
+      inherit (siteCfg.backup) paths exclude;
+      databases = lib.optional (siteCfg.database.enable && siteCfg.backup.database) {
+        inherit (siteCfg.database) driver name;
+      };
+    }) backupSites;
   };
 }

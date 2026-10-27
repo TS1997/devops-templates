@@ -72,7 +72,7 @@ in
           chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}/storage
           chmod -R 0770 ${siteCfg.workingDir}/storage
 
-          mkdir -p ${siteCfg.workingDir}/bootstrap
+          mkdir -p ${siteCfg.workingDir}/bootstrap/cache
           chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}/bootstrap
           chmod -R 0770 ${siteCfg.workingDir}/bootstrap/cache
         '';

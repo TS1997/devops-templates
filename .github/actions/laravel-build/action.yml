@@ -1,0 +1,72 @@
+# Laravel build for laravel-deploy.yml: installs production Composer
+# dependencies and builds the Vite assets in the devenv shell, so artisan calls
+# from Composer scripts and Vite plugins run with the project's PHP. Run it
+# after devenv-setup:
+#
+#   - uses: TS1997/devops-templates/.github/actions/devenv-setup@master
+#   - uses: TS1997/devops-templates/.github/actions/laravel-build@master
+
+name: Laravel build
+description: Install Composer and npm dependencies and build the assets of a Laravel site in the devenv shell
+
+inputs:
+  composer-auth:
+    description: COMPOSER_AUTH JSON for private Composer registries
+    required: false
+    default: ""
+  composer-args:
+    description: Arguments for composer install
+    required: false
+    default: --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-progress
+  npm-build-script:
+    description: npm script that builds the assets (vite build, including SSR)
+    required: false
+    default: build
+  node-options:
+    description: NODE_OPTIONS for the asset build
+    required: false
+    default: --max-old-space-size=4096
+
+runs:
+  using: composite
+  steps:
+    - name: Locate dependency caches
+      id: cache-dirs
+      shell: devenv-run {0}
+      run: |
+        echo "composer=$(composer config cache-dir)" >> "$GITHUB_OUTPUT"
+        echo "npm=$(npm config get cache)" >> "$GITHUB_OUTPUT"
+
+    - name: Restore Composer cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.cache-dirs.outputs.composer }}
+        key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+        restore-keys: composer-${{ runner.os }}-
+
+    - name: Install Composer dependencies
+      shell: devenv-run {0}
+      env:
+        COMPOSER_AUTH: ${{ inputs.composer-auth }}
+        COMPOSER_ARGS: ${{ inputs.composer-args }}
+      run: |
+        read -ra args <<< "$COMPOSER_ARGS"
+        composer install "${args[@]}"
+
+    - name: Restore npm cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.cache-dirs.outputs.npm }}
+        key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+        restore-keys: npm-${{ runner.os }}-
+
+    - name: Install npm dependencies
+      shell: devenv-run {0}
+      run: npm ci --prefer-offline --no-audit --no-fund
+
+    - name: Build assets
+      shell: devenv-run {0}
+      env:
+        NODE_OPTIONS: ${{ inputs.node-options }}
+        NPM_BUILD_SCRIPT: ${{ inputs.npm-build-script }}
+      run: npm run "$NPM_BUILD_SCRIPT"

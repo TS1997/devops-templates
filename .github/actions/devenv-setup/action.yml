@@ -1,0 +1,87 @@
+# Shared setup for deploy builds of a devenv project (laravel-deploy.yml,
+# wordpress-deploy.yml): installs Nix and devenv and builds the project's devenv
+# shell, so CI uses the same PHP, extensions and Node.js as local development.
+# Run it after actions/checkout:
+#
+#   - uses: TS1997/devops-templates/.github/actions/devenv-setup@master
+#
+# Later steps (e.g. laravel-build, wordpress-build) run in the devenv shell with
+# `shell: devenv-run {0}`.
+
+name: Devenv setup
+description: Install Nix and devenv and build the project's devenv shell
+
+inputs:
+  devenv-version:
+    description: devenv release to install (a tag of github:cachix/devenv)
+    required: false
+    default: v2.4.0
+  devenv-options:
+    description: >
+      devenv option overrides applied to every devenv-run step, one
+      "<attribute>:<type> <value>" per line (see devenv --option). The default
+      turns off the Composer and npm installs the dev shell runs on entry, since
+      the build actions install production dependencies themselves.
+    required: false
+    default: |
+      services.ts1997.phpfpm.composer.install.enable:bool false
+      languages.javascript.npm.install.enable:bool false
+  nix-cache:
+    description: >
+      Restore /nix/store from the Actions cache, keyed on the devenv files; it
+      is saved after a successful job.
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Install Nix
+      uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      with:
+        github_access_token: ${{ github.token }}
+
+    - name: Use the devenv binary cache
+      uses: cachix/cachix-action@3ba601ff5bbb07c7220846facfa2cd81eeee15a1 # v16
+      with:
+        name: devenv
+
+    - name: Restore Nix store
+      if: inputs.nix-cache == 'true'
+      uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7.0.2
+      with:
+        primary-key: devenv-${{ runner.os }}-${{ hashFiles('devenv.yaml', 'devenv.lock', 'devenv.nix') }}
+        restore-prefixes-first-match: devenv-${{ runner.os }}-
+        gc-max-store-size-linux: 6G
+
+    - name: Install devenv
+      shell: bash
+      env:
+        DEVENV_VERSION: ${{ inputs.devenv-version }}
+        DEVENV_OPTIONS: ${{ inputs.devenv-options }}
+      run: |
+        nix profile add "github:cachix/devenv/$DEVENV_VERSION"
+
+        args=()
+        while read -r option value; do
+          [[ -n "$option" ]] && args+=(--option "$option" "$value")
+        done <<< "$DEVENV_OPTIONS"
+
+        # Every step shell enters the devenv shell with the same options.
+        bin="$RUNNER_TEMP/devenv-bin"
+        mkdir -p "$bin"
+        {
+          echo '#!/usr/bin/env bash'
+          printf 'exec devenv'
+          if (( ${#args[@]} )); then printf ' %q' "${args[@]}"; fi
+          printf ' shell -- bash -euo pipefail "$@"\n'
+        } > "$bin/devenv-run"
+        chmod +x "$bin/devenv-run"
+        echo "$bin" >> "$GITHUB_PATH"
+
+    - name: Build devenv shell
+      shell: devenv-run {0}
+      run: |
+        php --version
+        composer --version
+        echo "node $(node --version), npm $(npm --version)"

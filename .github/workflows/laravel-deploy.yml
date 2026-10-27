@@ -3,14 +3,6 @@ name: Laravel Deploy
 on:
   workflow_call:
     inputs:
-      php_version:
-        required: false
-        default: "8.4"
-        type: string
-      node_version:
-        required: false
-        default: "24"
-        type: string
       domain:
         required: true
         type: string
@@ -58,41 +50,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ inputs.php_version }}
-          extensions:
-            dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite,
-            bcmath, soap, intl, gd, exif, iconv
-          coverage: none
-          tools: composer:v2
+      - name: Setup devenv
+        uses: TS1997/devops-templates/.github/actions/devenv-setup@master
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Build
+        uses: TS1997/devops-templates/.github/actions/laravel-build@master
         with:
-          node-version: ${{ inputs.node_version }}
-
-      - name: Install Composer dependencies
-        uses: "ramsey/composer-install@4.0.0"
-        env:
-          COMPOSER_AUTH: ${{ secrets.AUTH_JSON }}
-        with:
-          composer-options: "--no-dev --no-interaction --prefer-dist --optimize-autoloader"
-
-      - name: Cache Node modules
-        uses: actions/cache@v5
-        id: cache-npm
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Compile assets
-        run: |
-          npm ci --prefer-offline
-          NODE_OPTIONS="--max-old-space-size=4096" npm run build
+          composer-auth: ${{ secrets.AUTH_JSON }}
 
       - name: Activate maintenance mode
         uses: appleboy/ssh-action@v1

@@ -1,0 +1,145 @@
+name: WordPress Deploy
+
+on:
+    workflow_call:
+        inputs:
+            domain:
+                required: true
+                type: string
+            health_check_path:
+                required: false
+                default: "/"
+                type: string
+                description: "Path on the domain that must respond with 200 after the deploy."
+            pre_deploy_commands:
+                required: false
+                default: ""
+                type: string
+                description: "Commands to run on the server before the files are synced."
+            post_deploy_commands:
+                required: false
+                default: ""
+                type: string
+                description: "Commands to run on the server after the files are synced."
+            additional_excludes:
+                required: false
+                default: ""
+                type: string
+                description:
+                    "Additional rsync switches, e.g. --exclude='/config/bankid'
+                    (space-separated). Excluded paths are also kept on the server."
+            environment:
+                required: false
+                default: "production"
+                type: string
+                description: "Environment to run workflow in."
+
+        secrets:
+            HOST:
+                required: true
+            USER:
+                required: true
+            SSH_KEY:
+                required: true
+
+            AUTH_JSON:
+                required: false
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        environment: ${{ inputs.environment }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+
+            - name: Setup devenv
+              uses: TS1997/devops-templates/.github/actions/devenv-setup@master
+
+            - name: Build
+              uses: TS1997/devops-templates/.github/actions/wordpress-build@master
+              with:
+                  composer-auth: ${{ secrets.AUTH_JSON }}
+
+            - name: Execute pre-deploy commands
+              if: inputs.pre_deploy_commands != ''
+              uses: appleboy/ssh-action@v1
+              with:
+                  host: ${{ secrets.HOST }}
+                  username: ${{ secrets.USER }}
+                  key: ${{ secrets.SSH_KEY }}
+                  script: ${{ inputs.pre_deploy_commands }}
+
+            # Uploads, caches and the server-generated .env live on the server only;
+            # excluded paths are neither overwritten nor deleted.
+            - name: Deploy to server via rsync
+              uses: burnett01/rsync-deployments@v8
+              with:
+                  switches: >-
+                      -avzr --delete --exclude='.zsh_history' --exclude='.git*'
+                      --exclude='node_modules' --exclude='.devenv*' --exclude='.direnv'
+                      --exclude='.envrc' --exclude='.env*' --exclude='.vscode'
+                      --exclude='.editorconfig' --exclude='.prettierrc'
+                      --exclude='README.md' --exclude='readme.md' --exclude='*.sql'
+                      --exclude='wp-cli.local.yml'
+                      --exclude='/public/content/uploads' --exclude='/public/content/cache'
+                      --exclude='/public/content/upgrade' ${{ inputs.additional_excludes }}
+
+                  path: ./
+                  remote_path: ./
+                  remote_host: ${{ secrets.HOST }}
+                  remote_user: ${{ secrets.USER }}
+                  remote_key: ${{ secrets.SSH_KEY }}
+
+            - name: Execute post-deploy commands
+              if: inputs.post_deploy_commands != ''
+              uses: appleboy/ssh-action@v1
+              with:
+                  host: ${{ secrets.HOST }}
+                  username: ${{ secrets.USER }}
+                  key: ${{ secrets.SSH_KEY }}
+                  script: ${{ inputs.post_deploy_commands }}
+
+            - name: Health check
+              env:
+                  URL: ${{ inputs.domain }}${{ inputs.health_check_path }}
+              run: |
+                  echo "🔍 Starting health check of $URL..."
+                  max_attempts=5
+
+                  for attempt in $(seq 1 $max_attempts); do
+                    echo "Attempt $attempt of $max_attempts"
+
+                    response=$(curl -L -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+
+                    if [ "$response" = "200" ]; then
+                      echo "✅ Health check passed! Server responded with 200"
+                      exit 0
+                    fi
+
+                    echo "⚠️  Server responded with status code: $response"
+
+                    if [ "$attempt" -lt "$max_attempts" ]; then
+                      echo "Waiting 10 seconds before retry..."
+                      sleep 10
+                    fi
+                  done
+
+                  echo "❌ Health check failed after $max_attempts attempts"
+                  exit 1
+
+            - name: Notify deployment
+              if: always()
+              env:
+                  DOMAIN: ${{ inputs.domain }}
+                  STATUS: ${{ job.status }}
+              run: |
+                  if [ "$STATUS" == "success" ]; then
+                    echo "✅ Deployment successful to $DOMAIN"
+                    echo "📦 Deployed commit: $GITHUB_SHA"
+                    echo "🕐 Deployment time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+                  else
+                    echo "❌ Deployment failed!"
+                    echo "💥 Failed commit: $GITHUB_SHA"
+                    echo "🕐 Failure time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+                  fi

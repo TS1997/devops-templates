@@ -1,0 +1,77 @@
+# WordPress build for wordpress-deploy.yml: installs production Composer
+# dependencies (WordPress core, plugins, themes and translations) and builds the
+# theme/plugin assets in the devenv shell. Run it after devenv-setup:
+#
+#   - uses: TS1997/devops-templates/.github/actions/devenv-setup@master
+#   - uses: TS1997/devops-templates/.github/actions/wordpress-build@master
+#
+# Local themes and plugins under packages/ are installed as symlinks by
+# Composer path repositories, so assets built there end up in public/content.
+
+name: WordPress build
+description: Install Composer and npm dependencies and build the assets of a WordPress site in the devenv shell
+
+inputs:
+  composer-auth:
+    description: COMPOSER_AUTH JSON for private Composer registries
+    required: false
+    default: ""
+  composer-args:
+    description: Arguments for composer install
+    required: false
+    default: --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-progress
+  npm-build-script:
+    description: >
+      npm script that builds the theme and plugin assets. It may install and
+      build nested packages (e.g. npm --prefix packages/themes/x ...).
+    required: false
+    default: build
+  node-options:
+    description: NODE_OPTIONS for the asset build
+    required: false
+    default: --max-old-space-size=4096
+
+runs:
+  using: composite
+  steps:
+    - name: Locate dependency caches
+      id: cache-dirs
+      shell: devenv-run {0}
+      run: |
+        echo "composer=$(composer config cache-dir)" >> "$GITHUB_OUTPUT"
+        echo "npm=$(npm config get cache)" >> "$GITHUB_OUTPUT"
+
+    - name: Restore Composer cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.cache-dirs.outputs.composer }}
+        key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+        restore-keys: composer-${{ runner.os }}-
+
+    - name: Install Composer dependencies
+      shell: devenv-run {0}
+      env:
+        COMPOSER_AUTH: ${{ inputs.composer-auth }}
+        COMPOSER_ARGS: ${{ inputs.composer-args }}
+      run: |
+        read -ra args <<< "$COMPOSER_ARGS"
+        composer install "${args[@]}"
+
+    # Keyed on every lock file, since the build installs nested packages too.
+    - name: Restore npm cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.cache-dirs.outputs.npm }}
+        key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
+        restore-keys: npm-${{ runner.os }}-
+
+    - name: Install npm dependencies
+      shell: devenv-run {0}
+      run: npm ci --prefer-offline --no-audit --no-fund
+
+    - name: Build assets
+      shell: devenv-run {0}
+      env:
+        NODE_OPTIONS: ${{ inputs.node-options }}
+        NPM_BUILD_SCRIPT: ${{ inputs.npm-build-script }}
+      run: npm run "$NPM_BUILD_SCRIPT"

@@ -11,10 +11,6 @@ on:
       - master
   workflow_dispatch:
 
-concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   deploy:
     uses: TS1997/devops-templates/.github/workflows/laravel-deploy.yml@master

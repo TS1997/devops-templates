@@ -49,6 +49,14 @@ jobs:
     deploy:
         runs-on: ubuntu-latest
         environment: ${{ inputs.environment }}
+        permissions:
+            contents: read
+        # One deploy per environment at a time. A newer run waits, replacing
+        # any run that is still pending; a running deploy is never cancelled.
+        # Callers must not use the same group name.
+        concurrency:
+            group: deploy-${{ inputs.environment }}
+            cancel-in-progress: false
         steps:
             - name: Checkout code
               uses: actions/checkout@v6

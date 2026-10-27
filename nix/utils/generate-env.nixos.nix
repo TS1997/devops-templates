@@ -15,16 +15,7 @@ let
     else
       toString value;
 
-  # Sites deployed from a read-only package (siteCfg.package != null) can't
-  # have their .env read from base_path(), since that now resolves inside
-  # the Nix store. Write a plain "env" file in workingDir instead, meant to
-  # be wired up as a systemd/phpfpm EnvironmentFile, rather than a
-  # Dotenv-loaded .env.
-  envFile =
-    if (siteCfg.package or null) != null then
-      "${siteCfg.workingDir}/env"
-    else
-      "${siteCfg.workingDir}/.env";
+  envFile = "${siteCfg.workingDir}/.env";
 in
 lib.stringAfter [ "agenix" ] ''
   # Start with regular env vars

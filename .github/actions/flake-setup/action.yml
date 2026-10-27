@@ -1,4 +1,4 @@
-# Setup for the jobs of a deploy repo (flake-deploy.yml, and e.g. terraflake's
+# Setup for the jobs of a deploy repo (e.g. terraflake's
 # OpenTofu plan/apply/deploy): Nix with access to the private flake
 # inputs, an optional /nix/store cache, an optional OpenTofu provider cache and
 # the CI secrets (.tokens.sh, masked; optionally the deploy SSH key in an

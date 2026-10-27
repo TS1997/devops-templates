@@ -39,6 +39,13 @@ in
       );
     };
 
+    # nginx runs as a non-root user and is only reloaded (SIGHUP) on switch, so
+    # its supplementary groups are frozen at start. Restart it when they change,
+    # otherwise it can't read new sites' 0750 dirs (permission denied on assets).
+    systemd.services.nginx.restartTriggers = [
+      (lib.concatStringsSep "," config.users.users.${config.services.nginx.user}.extraGroups)
+    ];
+
     networking.firewall = {
       enable = true;
       allowedTCPPorts = [

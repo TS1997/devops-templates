@@ -46,6 +46,8 @@ in
 
         path = mkPackages siteCfg;
 
+        unitConfig.ConditionPathExists = "${siteCfg.workingDir}/artisan";
+
         serviceConfig = {
           Type = "oneshot";
           User = siteCfg.user;

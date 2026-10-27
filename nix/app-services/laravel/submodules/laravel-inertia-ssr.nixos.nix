@@ -44,6 +44,12 @@ in
 
         path = mkPackages siteCfg;
 
+        unitConfig.ConditionPathExists = [
+          "${siteCfg.workingDir}/artisan"
+          "|${siteCfg.workingDir}/bootstrap/ssr/ssr.mjs"
+          "|${siteCfg.workingDir}/bootstrap/ssr/ssr.js"
+        ];
+
         serviceConfig = {
           Type = "simple";
           User = siteCfg.user;

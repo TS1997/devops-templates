@@ -50,4 +50,9 @@ A project exports values from it when entering the devenv shell (decrypted with 
 services.ts1997.tokens.variables = [ "composer_auth:COMPOSER_AUTH" ];
 ```
 
+The file is also encrypted to the CI key (`ciPubkey`, GitHub secret `CI_AGE_KEY`):
+
+- `laravel-deploy.yml` / `wordpress-deploy.yml`: pass `CI_AGE_KEY` (e.g. `secrets: inherit`). `devenv-setup` then exports the same variables in CI and masks them.
+- terraflake: `mkTokenScripts { extraTokensJsonAgeFilePaths = [ devops-templates.lib.sharedTokensFile ]; ... }` merges it into `.tokens.sh` locally and in CI, so `tokenVariablePairs` can use its keys.
+
 After changing `nix/lib/master-identity.nix`, run `agenix update-masterkeys`, push, and run `nix flake update devops-templates` followed by `tofuage update-masterkeys && tofuage rekey -a` in terraflake.

@@ -18,6 +18,11 @@ let
   # Never remove it, otherwise the next re-encryption drops the backup.
   masterPubkey = "age1d7x5yu2cw6rx7pcmv5u4v37lcs0dpzztshyczlfuc6z38j6a3dks3mlar6";
 
+  # CI identity, private key in the GitHub secret CI_AGE_KEY (also terraflake
+  # secrets/ci-identity.pub). Only a recipient of the common secrets in this
+  # repo (nix/lib/agenix-rekey.nix), not of everything using extraEncryptionPubkeys.
+  ciPubkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHSqG/pBcz9g+KrQZwVVWPiwqAONQOCcE3lmm1FogjPk";
+
   people = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICGavKgHzlln0r9APH/vyVQ5uGB+BXR6ybHoiAdLS+DY" # linus
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDObN2rJY9jwRZcOJniUtokZ4XMNN7A8MY5OaeIbhsyx" # Timmy
@@ -26,7 +31,7 @@ let
   ];
 in
 {
-  inherit people masterPubkey;
+  inherit people masterPubkey ciPubkey;
 
   # A single decryption identity: whatever key $AGE_IDENTITY points to
   # (see select-age-identity).

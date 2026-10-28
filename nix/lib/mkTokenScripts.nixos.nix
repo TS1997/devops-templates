@@ -5,6 +5,9 @@
   # Encrypted JSON object. A Nix path (copied to the store, still encrypted) or a
   # shell expression such as "$ROOT_DIR/secrets/tokens.json.age".
   tokensJsonAgeFilePath,
+  # More encrypted JSON objects merged in before tokensJsonAgeFilePath (which
+  # wins on conflicts), e.g. [ devops-templates.lib.sharedTokensFile ].
+  extraTokensJsonAgeFilePaths ? [ ],
   sshKeyAgeFilePath ? null,
   # Format: "json_key:ENV_VAR_NAME". The json key may be a dotted path
   # (a.b.c). Non-string values (objects, numbers) are exported as compact JSON.
@@ -21,13 +24,19 @@ let
     set -euo pipefail
     ROOT_DIR="''${ROOT_DIR:-$(pwd)}"
     tokens_file=${tokensFile}
-    source_file="${tokensJsonAgeFilePath}"
+    source_files=(${
+      lib.concatMapStringsSep " " (path: ''"${path}"'') (
+        extraTokensJsonAgeFilePaths ++ [ tokensJsonAgeFilePath ]
+      )
+    })
     variable_pairs_to_export=(${pairsStr})
 
-    # Changes when the encrypted file or the requested variables change
+    # Changes when the encrypted files or the requested variables change
     fingerprint="$(
       {
-        ${pkgs.coreutils}/bin/sha256sum < "$source_file"
+        for source_file in "''${source_files[@]}"; do
+          ${pkgs.coreutils}/bin/sha256sum < "$source_file"
+        done
         printf '%s\n' "''${variable_pairs_to_export[@]}"
       } | ${pkgs.coreutils}/bin/sha256sum | ${pkgs.coreutils}/bin/cut -d' ' -f1
     )"
@@ -38,10 +47,16 @@ let
       exit
     fi
 
-    if ! tokens_json="$(${pkgs.age}/bin/age -d -i ${ageKey} "$source_file")"; then
-      echo "tokens: could not decrypt $source_file" >&2
-      exit 1
-    fi
+    tokens_json='{}'
+    for source_file in "''${source_files[@]}"; do
+      if ! file_json="$(${pkgs.age}/bin/age -d -i ${ageKey} "$source_file")"; then
+        echo "tokens: could not decrypt $source_file" >&2
+        exit 1
+      fi
+      # Deep merge via stdin, so no secret ends up in a process argument
+      tokens_json="$(printf '%s\n%s\n' "$tokens_json" "$file_json" | ${pkgs.jq}/bin/jq -s '.[0] * .[1]')"
+    done
+    unset file_json
 
     # The file holds plaintext secrets: owner-only, written atomically
     umask 077

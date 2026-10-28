@@ -44,6 +44,9 @@ on:
 
             AUTH_JSON:
                 required: false
+            # Decrypts the common secrets (services.ts1997.tokens.variables)
+            CI_AGE_KEY:
+                required: false
 
 jobs:
     deploy:
@@ -63,6 +66,8 @@ jobs:
 
             - name: Setup devenv
               uses: TS1997/devops-templates/.github/actions/devenv-setup@master
+              with:
+                  age-key: ${{ secrets.CI_AGE_KEY }}
 
             - name: Build
               uses: TS1997/devops-templates/.github/actions/wordpress-build@master

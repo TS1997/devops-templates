@@ -41,12 +41,17 @@
       description = "Node.js development tooling configuration for the package.";
     };
 
-    composer.install.enable = lib.mkEnableOption "Enable automatic Composer installation in development shell.";
+    composer = {
+      install.enable = lib.mkEnableOption "Enable automatic Composer installation in development shell.";
+      auth.enable = lib.mkEnableOption "Export the shared Composer auth (composer_auth in devops-templates secrets) as COMPOSER_AUTH.";
+    };
 
     generate-types.enable = lib.mkEnableOption "Enable automatic TypeScript type generation.";
   };
 
   config = {
     composer.install.enable = lib.mkDefault true;
+    composer.auth.enable = lib.mkDefault true;
+    nodejs.auth.enable = lib.mkDefault true;
   };
 }

@@ -1,5 +1,5 @@
 # Everyone listed here can decrypt every secret encrypted to the master identity:
-# terraflake/deploy repo sources, devops-templates secrets/dev/* and anything
+# terraflake/deploy repo sources, devops-templates secrets/build-pipeline/* and anything
 # else using lib.masterIdentity.
 #
 #   age.rekey = {

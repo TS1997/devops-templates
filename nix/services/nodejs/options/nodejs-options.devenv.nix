@@ -5,6 +5,8 @@
 
     install.enable = lib.mkEnableOption "Enable automatic installation of Node.js dependencies.";
 
+    auth.enable = lib.mkEnableOption "Export the shared npm registry token (bravo_npm_token in devops-templates secrets) as BRAVO_NPM_TOKEN, for use in .npmrc.";
+
     package = lib.mkOption {
       type = lib.types.package;
       default = pkgs.nodejs_24;

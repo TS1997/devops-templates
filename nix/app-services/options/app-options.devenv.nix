@@ -28,7 +28,10 @@ in
       description = "Whether to enable SSL for the application.";
     };
 
-    composer.install.enable = mkEnableOption "Enable automatic Composer installation in development shell.";
+    composer = {
+      install.enable = mkEnableOption "Enable automatic Composer installation in development shell.";
+      auth.enable = mkEnableOption "Export the shared Composer auth (composer_auth in devops-templates secrets) as COMPOSER_AUTH.";
+    };
 
     nodejs = mkOption {
       type = util.submodule {

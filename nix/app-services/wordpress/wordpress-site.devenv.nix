@@ -49,6 +49,10 @@ in
 
     services.ts1997.nodejs = siteCfg.nodejs;
 
+    services.ts1997.tokens.variables = lib.mkIf siteCfg.composer.auth.enable [
+      "composer_auth:COMPOSER_AUTH"
+    ];
+
     services.ts1997.nginx = {
       enable = true;
       virtualHosts.${name} = {

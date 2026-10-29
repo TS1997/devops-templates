@@ -58,6 +58,10 @@ in
         script = null;
       };
 
+    services.ts1997.tokens.variables = lib.mkIf packageCfg.composer.auth.enable [
+      "composer_auth:COMPOSER_AUTH"
+    ];
+
     enterShell = lib.optionalString packageCfg.composer.install.enable ''
       source ${initComposerScript}
     '';

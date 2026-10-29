@@ -26,6 +26,10 @@ in
       };
     };
 
+    services.ts1997.tokens.variables = lib.mkIf cfg.auth.enable [
+      "bravo_npm_token:BRAVO_NPM_TOKEN"
+    ];
+
     processes = lib.mkIf (cfg.script != null) {
       nodejs.exec = cfg.script;
     };

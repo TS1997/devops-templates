@@ -61,7 +61,7 @@ e.g. `services.ts1997.laravelSite.nodejs.auth.enable = false;`. The npm token is
 
 ```ini
 @bravomedia:registry=https://npmregistry.bravomedia.se/
-//npmregistry.bravomedia.se/:_authToken=${BRAVO_NPM_TOKEN?}
+//npmregistry.bravomedia.se/:_authToken=${BRAVO_NPM_TOKEN}
 ```
 
 ### Project secrets

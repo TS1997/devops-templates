@@ -25,7 +25,7 @@ applyTo: "secrets/**,nix/lib/**,nix/pkgs/**,nix/utils/tokens.devenv.nix,.github/
 ## Consumers
 
 - **Project (devenv)**: set `services.ts1997.tokens.variables = [ "composer_auth:COMPOSER_AUTH" ];`. Use top-level JSON keys only, because a dotted path would split `packages.bravomedia.se`.
-  - App options wrap this: `composer.auth.enable` (app-options, laravelPackage) → `COMPOSER_AUTH`, `nodejs.auth.enable` (nodejs options) → `bravo_npm_token:BRAVO_NPM_TOKEN`, read by the committed template `.npmrc` as `${BRAVO_NPM_TOKEN?}`. Both default on for Laravel site/package, off for WordPress.
+  - App options wrap this: `composer.auth.enable` (app-options, laravelPackage) → `COMPOSER_AUTH`, `nodejs.auth.enable` (nodejs options) → `bravo_npm_token:BRAVO_NPM_TOKEN`, read by the committed template `.npmrc` as `${BRAVO_NPM_TOKEN}` (npm 10 doesn't support the `${VAR?}` form). Both default on for Laravel site/package, off for WordPress.
   - Project-only secrets: `services.ts1997.tokens.projectFile = "secrets/tokens.json.age"` (relative to `$DEVENV_ROOT`, read from the working tree, merged over the shared file so it wins). `tokens-edit` creates/edits it and encrypts to the same recipients as the shared file (people + master + CI); re-run and save to pick up recipient changes. Used by weland-configurators for `fontawesome_package_token`.
   - `devenv.yaml` must point at `github:ts1997/devops-templates`, not a local path, before committing. Then `devenv update templates`.
   - If devops-templates is private, the project's `.envrc` needs the GitHub token block (`gh auth token` → `NIX_CONFIG extra-access-tokens`) before `use devenv`, as in terraflake. It can't live here, because the token is needed to fetch this repo.

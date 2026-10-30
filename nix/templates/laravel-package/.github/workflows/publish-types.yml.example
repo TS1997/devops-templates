@@ -1,10 +1,8 @@
 # Example generated types publishing workflow.
 # To enable it, rename this file to publish-types.yml.
-# Before enabling, add the NPM_TOKEN secret to the production environment in
-# GitHub. Add the AUTH_JSON secret too if the package needs Composer auth.
-# Replace {{NPM_REGISTRY_URL}} with your npm registry URL, or remove registry_url
-# to publish to the public npm registry.
-# The npm scope should match the vendor part of the generated package name.
+# The workflow runs in the devenv shell. It needs the CI_AGE_KEY secret, which
+# decrypts the shared tokens into COMPOSER_AUTH and BRAVO_NPM_TOKEN (read by
+# resources/types/.npmrc).
 
 name: Publish Types
 
@@ -23,8 +21,5 @@ jobs:
     uses: TS1997/devops-templates/.github/workflows/laravel-publish-types.yml@master
     with:
       environment: "production"
-      registry_url: "{{NPM_REGISTRY_URL}}"
-      npm_scope: "@{{vendor_slug}}"
     secrets:
-      AUTH_JSON: ${{ secrets.AUTH_JSON }}
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      CI_AGE_KEY: ${{ secrets.CI_AGE_KEY }}

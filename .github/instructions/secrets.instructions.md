@@ -31,7 +31,8 @@ applyTo: "secrets/**,nix/lib/**,nix/pkgs/**,nix/utils/tokens.devenv.nix,.github/
   - If devops-templates is private, the project's `.envrc` needs the GitHub token block (`gh auth token` → `NIX_CONFIG extra-access-tokens`) before `use devenv`, as in terraflake. It can't live here, because the token is needed to fetch this repo.
 - **terraflake**: `extraTokensJsonAgeFilePaths = [ devops-templates.lib.sharedTokensFile ]` (devshell.nix and secrets/ci.nix). Its `flake.lock` must point at a devops-templates rev that has this option (≥ b775eb9), so after pushing here run `nix flake update devops-templates` there.
 - **CI**: `.github/actions/devenv-setup` takes input `age-key`. It writes `$RUNNER_TEMP/ci-age-key`, sets `AGE_IDENTITY`, and masks every line of the exported token values.
-  - The workflows `laravel-deploy.yml` and `wordpress-deploy.yml` take optional secret `CI_AGE_KEY`. Callers pass `secrets: inherit`.
+  - The workflows `laravel-deploy.yml`, `wordpress-deploy.yml` and `laravel-publish-types.yml` require secret `CI_AGE_KEY`. Callers pass `secrets: inherit`. There is no `AUTH_JSON` secret: `COMPOSER_AUTH` comes from the shared `composer_auth` (`wordpress-deploy.yml` turns on `wordpressSite.composer.auth.enable` through `devenv-options`). A host missing from it goes in the project's `projectFile` under `composer_auth`.
+  - `laravel-publish-types.yml` publishes with `BRAVO_NPM_TOKEN` through the committed `resources/types/.npmrc`. npm only reads the `.npmrc` of the package it runs in, not the root one.
   - Composite actions can't read `secrets`, so the key must be passed in from the workflow.
   - `devenv-setup` uses `github.token` for Nix, which can't fetch a private devops-templates from another repo.
   - Projects whose own workflows don't use devenv (e.g. falkopingsmejeri-api `tests.yml`) don't get the secrets.

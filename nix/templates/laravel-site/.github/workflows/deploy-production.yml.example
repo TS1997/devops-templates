@@ -2,6 +2,7 @@
 # To enable it, rename this file to deploy-production.yml.
 # Before enabling, replace {{DOMAIN}} with the production domain and add the
 # HOST, USER, and SSH_KEY secrets to the production environment in GitHub.
+# CI_AGE_KEY (shared tokens, e.g. COMPOSER_AUTH) must be available too.
 
 name: Deploy Production
 
@@ -21,3 +22,4 @@ jobs:
       HOST: ${{ secrets.HOST }}
       USER: ${{ secrets.USER }}
       SSH_KEY: ${{ secrets.SSH_KEY }}
+      CI_AGE_KEY: ${{ secrets.CI_AGE_KEY }}

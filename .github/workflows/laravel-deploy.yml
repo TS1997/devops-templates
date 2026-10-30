@@ -39,11 +39,10 @@ on:
       SSH_KEY:
         required: true
 
-      AUTH_JSON:
-        required: false
-      # Decrypts the common secrets (services.ts1997.tokens.variables)
+      # Decrypts the common secrets (services.ts1997.tokens.variables),
+      # e.g. COMPOSER_AUTH and BRAVO_NPM_TOKEN
       CI_AGE_KEY:
-        required: false
+        required: true
 
 jobs:
   deploy:
@@ -68,8 +67,6 @@ jobs:
 
       - name: Build
         uses: TS1997/devops-templates/.github/actions/laravel-build@master
-        with:
-          composer-auth: ${{ secrets.AUTH_JSON }}
 
       - name: Activate maintenance mode
         uses: appleboy/ssh-action@v1

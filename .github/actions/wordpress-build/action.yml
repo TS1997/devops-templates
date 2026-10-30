@@ -12,10 +12,6 @@ name: WordPress build
 description: Install Composer and npm dependencies and build the assets of a WordPress site in the devenv shell
 
 inputs:
-  composer-auth:
-    description: COMPOSER_AUTH JSON for private Composer registries
-    required: false
-    default: ""
   composer-args:
     description: Arguments for composer install
     required: false
@@ -51,7 +47,6 @@ runs:
     - name: Install Composer dependencies
       shell: devenv-run {0}
       env:
-        COMPOSER_AUTH: ${{ inputs.composer-auth }}
         COMPOSER_ARGS: ${{ inputs.composer-args }}
       run: |
         read -ra args <<< "$COMPOSER_ARGS"

@@ -42,11 +42,10 @@ on:
             SSH_KEY:
                 required: true
 
-            AUTH_JSON:
-                required: false
-            # Decrypts the common secrets (services.ts1997.tokens.variables)
+            # Decrypts the common secrets (services.ts1997.tokens.variables),
+            # e.g. COMPOSER_AUTH
             CI_AGE_KEY:
-                required: false
+                required: true
 
 jobs:
     deploy:
@@ -68,11 +67,15 @@ jobs:
               uses: TS1997/devops-templates/.github/actions/devenv-setup@master
               with:
                   age-key: ${{ secrets.CI_AGE_KEY }}
+                  # Composer auth is off by default for WordPress, so turn it
+                  # on here to get COMPOSER_AUTH from the common secrets
+                  devenv-options: |
+                      services.ts1997.phpfpm.composer.install.enable:bool false
+                      languages.javascript.npm.install.enable:bool false
+                      services.ts1997.wordpressSite.composer.auth.enable:bool true
 
             - name: Build
               uses: TS1997/devops-templates/.github/actions/wordpress-build@master
-              with:
-                  composer-auth: ${{ secrets.AUTH_JSON }}
 
             - name: Execute pre-deploy commands
               if: inputs.pre_deploy_commands != ''

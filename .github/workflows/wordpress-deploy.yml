@@ -34,11 +34,9 @@ on:
                 type: string
                 description: "Environment to run workflow in."
 
+        # The server (host, user) comes from wordpressSite.hosts.<environment>
+        # in the project's devenv.nix.
         secrets:
-            HOST:
-                required: true
-            USER:
-                required: true
             SSH_KEY:
                 required: true
 
@@ -74,6 +72,16 @@ jobs:
                       languages.javascript.npm.install.enable:bool false
                       services.ts1997.wordpressSite.composer.auth.enable:bool true
 
+            - name: Resolve deploy target
+              id: target
+              env:
+                  HOSTS: services.ts1997.wordpressSite.hosts.${{ inputs.environment }}
+              run: |
+                  host="$(devenv eval "$HOSTS.host" | jq -r '.[]')"
+                  user="$(devenv eval "$HOSTS.user" | jq -r '.[]')"
+                  echo "host=$host" >> "$GITHUB_OUTPUT"
+                  echo "user=$user" >> "$GITHUB_OUTPUT"
+
             - name: Build
               uses: TS1997/devops-templates/.github/actions/wordpress-build@master
 
@@ -81,8 +89,8 @@ jobs:
               if: inputs.pre_deploy_commands != ''
               uses: appleboy/ssh-action@v1
               with:
-                  host: ${{ secrets.HOST }}
-                  username: ${{ secrets.USER }}
+                  host: ${{ steps.target.outputs.host }}
+                  username: ${{ steps.target.outputs.user }}
                   key: ${{ secrets.SSH_KEY }}
                   script: ${{ inputs.pre_deploy_commands }}
 
@@ -103,16 +111,16 @@ jobs:
 
                   path: ./
                   remote_path: ./
-                  remote_host: ${{ secrets.HOST }}
-                  remote_user: ${{ secrets.USER }}
+                  remote_host: ${{ steps.target.outputs.host }}
+                  remote_user: ${{ steps.target.outputs.user }}
                   remote_key: ${{ secrets.SSH_KEY }}
 
             - name: Execute post-deploy commands
               if: inputs.post_deploy_commands != ''
               uses: appleboy/ssh-action@v1
               with:
-                  host: ${{ secrets.HOST }}
-                  username: ${{ secrets.USER }}
+                  host: ${{ steps.target.outputs.host }}
+                  username: ${{ steps.target.outputs.user }}
                   key: ${{ secrets.SSH_KEY }}
                   script: ${{ inputs.post_deploy_commands }}
 

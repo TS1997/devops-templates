@@ -89,6 +89,45 @@ in
     };
 
     mailpit.enable = mkEnableOption "Enable Mailpit service for email testing.";
+
+    hosts = mkOption {
+      type = types.attrsOf (
+        types.submodule {
+          options = {
+            host = mkOption {
+              type = types.str;
+              description = "DNS name or IP of the server.";
+            };
+            user = mkOption {
+              type = types.str;
+              description = "SSH user the deploy workflows deploy as.";
+            };
+            siteName = mkOption {
+              type = types.str;
+              description = "Name of the site on the server; backups are pulled with its `restic-<siteName>` command.";
+            };
+          };
+        }
+      );
+      default = { };
+      example = {
+        production = {
+          host = "example.com";
+          user = "example";
+          siteName = "example";
+        };
+        staging = {
+          host = "stage.example.com";
+          user = "example_stage";
+          siteName = "example_stage";
+        };
+      };
+      description = ''
+        Remote environments, keyed like the deploy workflows' `environment`
+        input (production, staging). Read with `devenv eval` by the deploy
+        workflows and `pull-backup`.
+      '';
+    };
   };
 
   config = {

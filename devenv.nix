@@ -18,6 +18,7 @@
     })
     ./nix/utils/app-urls.devenv.nix
     ./nix/utils/tokens.devenv.nix
+    ./nix/utils/backup-manager.devenv.nix
     ./nix/services/devenv.nix
     ./nix/app-services/devenv.nix
   ];

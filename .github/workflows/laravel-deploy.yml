@@ -31,11 +31,9 @@ on:
         type: string
         description: "Environment to run workflow in."
 
+    # The server (host, user) comes from laravelSite.hosts.<environment> in
+    # the project's devenv.nix.
     secrets:
-      HOST:
-        required: true
-      USER:
-        required: true
       SSH_KEY:
         required: true
 
@@ -65,14 +63,24 @@ jobs:
         with:
           age-key: ${{ secrets.CI_AGE_KEY }}
 
+      - name: Resolve deploy target
+        id: target
+        env:
+          HOSTS: services.ts1997.laravelSite.hosts.${{ inputs.environment }}
+        run: |
+          host="$(devenv eval "$HOSTS.host" | jq -r '.[]')"
+          user="$(devenv eval "$HOSTS.user" | jq -r '.[]')"
+          echo "host=$host" >> "$GITHUB_OUTPUT"
+          echo "user=$user" >> "$GITHUB_OUTPUT"
+
       - name: Build
         uses: TS1997/devops-templates/.github/actions/laravel-build@master
 
       - name: Activate maintenance mode
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
+          host: ${{ steps.target.outputs.host }}
+          username: ${{ steps.target.outputs.user }}
           key: ${{ secrets.SSH_KEY }}
           script: |
             if [ -f artisan ]; then
@@ -97,15 +105,15 @@ jobs:
 
           path: ./
           remote_path: ./
-          remote_host: ${{ secrets.HOST }}
-          remote_user: ${{ secrets.USER }}
+          remote_host: ${{ steps.target.outputs.host }}
+          remote_user: ${{ steps.target.outputs.user }}
           remote_key: ${{ secrets.SSH_KEY }}
 
       - name: Execute deployment commands
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
+          host: ${{ steps.target.outputs.host }}
+          username: ${{ steps.target.outputs.user }}
           key: ${{ secrets.SSH_KEY }}
           script: |
             mkdir -p storage/app/public storage/framework/cache storage/framework/sessions storage/framework/testing storage/framework/views storage/logs bootstrap/cache

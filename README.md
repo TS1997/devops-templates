@@ -115,7 +115,6 @@ infraScripts = devops-templates.lib.mkInfraScripts { inherit pkgs lib; } {
 Both run `tofu` in `tofuDir`, which must be initialized (`cd opentofu && tofu init`). The backend and provider credentials come from the environment (the dev shell or CI exports them, see `mkTokenScripts`). Run OpenTofu itself directly in `tofuDir`.
 
 - `infra-sync`: runs `tofu plan` on the working tree and writes the output **as it will be after the apply** to `file`. Commit it together with the OpenTofu change; nobody has to apply first. If part of the output is only known after apply (in practice a new or replaced server's IP), it leaves the file alone and lists those values. Then push the OpenTofu change alone, let CI apply it, and run `infra-sync` again.
-- `infra-check --plan FILE`: fails with a diff when the committed file differs from the output in a saved plan. Run it in CI's plan job, so a forgotten `infra-sync` stops the run before the apply. Only warns when the plan has values that are known after apply.
 - `infra-check`: fails with a diff when the committed file differs from the applied output. Run it in CI after the apply, before deploying.
 - `ssh-host --host=HOST [--user=USER] [-- SSH-ARGS...]`: `ssh USER@IP` (default `root`) with `nodes.HOST.ip` from the committed file, e.g. `ssh-host --host=bravomedia -- systemctl status`.
 
@@ -124,7 +123,7 @@ All of them refuse a missing or sensitive output. Plan files contain the variabl
 CI flow (terraflake's `apply-infra-and-deploy.yml`):
 
 ```bash
-plan -> infra-check --plan -> (approval) apply -> infra-check -> deploy
+plan -> (approval) apply -> infra-check -> deploy
 ```
 
 So any change, including changed node data of existing servers, goes in one commit and one CI run. Only a new server takes two rounds: its OpenTofu change first, then `infra-sync` and its NixOS host once CI has applied it.

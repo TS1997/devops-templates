@@ -11,17 +11,17 @@
       readOnly = true;
       # Switches to postgres, which authenticates over the socket.
       default = pkgs.writeShellApplication {
-        name = "pgsql-dump";
+        name = "pgsql-database-dump";
         runtimeInputs = [
           config.package
           pkgs.util-linux
         ];
         text = ''
-          db="''${1:?Usage: pgsql-dump DATABASE > FILE}"
+          db="''${1:?Usage: pgsql-database-dump DATABASE > PATH_TO_FILE}"
           exec runuser -u postgres -- pg_dump "$db"
         '';
       };
-      description = "`pgsql-dump DATABASE`: writes an SQL dump of a local database to stdout. Run as root.";
+      description = "`pgsql-database-dump DATABASE`: writes an SQL dump of a local database to stdout. Run as root.";
     };
 
     databases = lib.mkOption {

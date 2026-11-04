@@ -156,21 +156,32 @@ in
     name = "infra-check";
     runtimeInputs = commonRuntimeInputs ++ [
       get-value-from-state
+      get-output-from-plan
       render-infra-file
       print-message
     ];
     text = ''
-      if (( $# > 0 )); then
-        echo "Usage: infra-check" >&2
-        exit 2
-      fi
-
       root="$(git rev-parse --show-toplevel)"
       tofu_output_name=${tofuOutputNameArg}
       nix_file=${nixFileArg}
 
-      value=$(get-value-from-state)
-      source="the applied OpenTofu output $tofu_output_name"
+      if (( $# == 0 )); then
+        value=$(get-value-from-state)
+        source="the applied OpenTofu output $tofu_output_name"
+      elif (( $# == 2 )) && [[ "$1" == --plan ]]; then
+        plan=$(get-output-from-plan "$2")
+        source="the OpenTofu output $tofu_output_name in the plan"
+        # Attribute paths in the output (for example nix.nodes.web.ip).
+        attr_paths_known_after_apply=$(jq -r '.attr_paths_known_after_apply | join(" ")' <<< "$plan")
+        if [[ -n "$attr_paths_known_after_apply" ]]; then
+          print-message warning "Not checking $nix_file: the plan has values that are only known after apply ($attr_paths_known_after_apply). Run infra-sync after the apply and commit $nix_file."
+          exit 0
+        fi
+        value=$(jq '.planned_state_after_apply' <<< "$plan")
+      else
+        echo "Usage: infra-check [--plan PLAN-FILE]" >&2
+        exit 2
+      fi
 
       rendered=$(render-infra-file "$value")
       if ! diff -uN --label "$nix_file (committed)" --label "$nix_file (OpenTofu)" "$root/$nix_file" <(printf '%s\n' "$rendered"); then

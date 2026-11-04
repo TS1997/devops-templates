@@ -12,14 +12,16 @@ let
       "wordpressSite"
     else
       null;
+  backupManager = import ../lib/backup-manager.nix { inherit pkgs lib; };
 in
 {
   config = lib.mkIf (site != null) {
     packages = [
-      (import ../lib/backup-manager.nix { inherit pkgs lib; } {
+      backupManager.pullBackup
+      (backupManager.mkPullDevenvBackup {
         devenvRoot = config.devenv.root;
         hostsAttr = "services.ts1997.${site}.hosts";
-      }).pullBackup
+      })
     ];
   };
 }

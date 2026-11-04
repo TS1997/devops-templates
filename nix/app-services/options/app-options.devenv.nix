@@ -128,7 +128,7 @@ in
       description = ''
         Remote environments, keyed like the deploy workflows' `environment`
         input (production, staging). Read with `devenv eval` by the deploy
-        workflows and `pull-backup`.
+        workflows and `pull-devenv-backup`.
       '';
     };
   };

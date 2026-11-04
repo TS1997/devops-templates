@@ -1,9 +1,29 @@
 {
+  config,
   lib,
+  pkgs,
   ...
 }:
 {
   options = {
+    dumpScript = lib.mkOption {
+      type = lib.types.package;
+      readOnly = true;
+      # Switches to postgres, which authenticates over the socket.
+      default = pkgs.writeShellApplication {
+        name = "pgsql-dump";
+        runtimeInputs = [
+          config.package
+          pkgs.util-linux
+        ];
+        text = ''
+          db="''${1:?Usage: pgsql-dump DATABASE > FILE}"
+          exec runuser -u postgres -- pg_dump "$db"
+        '';
+      };
+      description = "`pgsql-dump DATABASE`: writes an SQL dump of a local database to stdout. Run as root.";
+    };
+
     databases = lib.mkOption {
       # Use lib.types.submodule here instead of util.submodule to avoid circular dependency
       type = lib.types.listOf (

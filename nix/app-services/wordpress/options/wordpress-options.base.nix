@@ -6,7 +6,8 @@
 }:
 {
   options = {
-    tablePrefix = lib.mkOption { # Should be moved to database.<some-attr>
+    # Should be moved to database.<some-attr>
+    tablePrefix = lib.mkOption {
       type = lib.types.str;
       default = "wp_";
       description = "The WordPress database table prefix.";
@@ -73,7 +74,9 @@
   };
 
   config = {
-    database.driver = lib.mkDefault "mysql";
-    database.package = lib.mkDefault pkgs.mysql84;
+    database = {
+      driver = lib.mkDefault "mysql";
+      package = lib.mkDefault pkgs.mariadb_114;
+    };
   };
 }

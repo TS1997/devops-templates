@@ -13,14 +13,9 @@ let
 
   dumpCommand =
     name: db:
-    let
-      file = lib.escapeShellArg "${dumpDir name}/${db.name}.${db.driver}.sql";
-      dbName = lib.escapeShellArg db.name;
-    in
-    if db.driver == "mysql" then
-      "${config.services.mysql.package}/bin/mysqldump --single-transaction --routines --triggers -u root ${dbName} > ${file}"
-    else
-      "${pkgs.util-linux}/bin/runuser -u postgres -- ${config.services.postgresql.package}/bin/pg_dump ${dbName} > ${file}";
+    "${
+      lib.getExe config.services.ts1997.${db.driver}.dumpScript
+    } ${lib.escapeShellArg db.name} > ${lib.escapeShellArg "${dumpDir name}/${db.name}.${db.driver}.sql"}";
 
   jobOptions = {
     options = {
@@ -118,6 +113,16 @@ in
   };
 
   config = lib.mkIf (cfg.jobs != { }) {
+    assertions = lib.concatLists (
+      lib.mapAttrsToList (
+        name: job:
+        map (db: {
+          assertion = config.services.ts1997.${db.driver}.enable;
+          message = "services.ts1997.restic.jobs.${name}: database ${db.name} needs services.ts1997.${db.driver}.enable.";
+        }) job.databases
+      ) cfg.jobs
+    );
+
     services.restic.backups = lib.mapAttrs (
       name: job:
       let

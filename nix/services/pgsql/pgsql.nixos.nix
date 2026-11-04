@@ -46,7 +46,9 @@ in
     description = "PostgreSQL service configuration.";
   };
 
-  config = lib.mkIf (cfg.enable) {
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ cfg.dumpScript ];
+
     services.postgresql = {
       enable = cfg.enable;
       package = cfg.package;

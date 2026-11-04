@@ -169,7 +169,7 @@ in
 
       package = mkOption {
         type = types.package;
-        default = pkgs.mariadb;
+        default = pkgs.mariadb_114;
         description = "The MySQL/MariaDB package to use.";
       };
 

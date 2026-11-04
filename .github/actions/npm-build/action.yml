@@ -1,0 +1,40 @@
+name: npm build
+description: Install npm dependencies and build the assets in the devenv shell, with the npm cache restored
+
+inputs:
+  npm-build-script:
+    description: >
+      npm script that builds the assets. It may install and build nested
+      packages (e.g. npm --prefix packages/themes/x ...).
+    required: false
+    default: build
+  node-options:
+    description: NODE_OPTIONS for the asset build
+    required: false
+    default: --max-old-space-size=4096
+
+runs:
+  using: composite
+  steps:
+    - name: Locate npm cache
+      id: cache-dir
+      shell: devenv-run {0}
+      run: echo "dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
+
+    - name: Restore npm cache
+      uses: actions/cache@v6
+      with:
+        path: ${{ steps.cache-dir.outputs.dir }}
+        key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json', '!**/node_modules/**') }}
+        restore-keys: npm-${{ runner.os }}-
+
+    - name: Install npm dependencies
+      shell: devenv-run {0}
+      run: npm ci --prefer-offline --no-audit --no-fund
+
+    - name: Build assets
+      shell: devenv-run {0}
+      env:
+        NODE_OPTIONS: ${{ inputs.node-options }}
+        NPM_BUILD_SCRIPT: ${{ inputs.npm-build-script }}
+      run: npm run "$NPM_BUILD_SCRIPT"

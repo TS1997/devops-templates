@@ -92,33 +92,36 @@ in
 
     hosts = mkOption {
       type = types.attrsOf (
-        types.submodule {
-          options = {
-            host = mkOption {
-              type = types.str;
-              description = "DNS name or IP of the server.";
+        types.submodule (
+          { config, ... }:
+          {
+            options = {
+              host = mkOption {
+                type = types.str;
+                description = "DNS name or IP of the server.";
+              };
+              siteName = mkOption {
+                type = types.str;
+                description = "Name of the site on the server; backups are pulled with its `restic-<siteName>` command.";
+              };
+              user = mkOption {
+                type = types.str;
+                default = config.siteName;
+                defaultText = lib.literalExpression "siteName";
+                description = "SSH user the deploy workflows deploy as. The server creates the site's user with the site name unless overridden there.";
+              };
             };
-            user = mkOption {
-              type = types.str;
-              description = "SSH user the deploy workflows deploy as.";
-            };
-            siteName = mkOption {
-              type = types.str;
-              description = "Name of the site on the server; backups are pulled with its `restic-<siteName>` command.";
-            };
-          };
-        }
+          }
+        )
       );
       default = { };
       example = {
         production = {
           host = "example.com";
-          user = "example";
           siteName = "example";
         };
         staging = {
           host = "stage.example.com";
-          user = "example_stage";
           siteName = "example_stage";
         };
       };
@@ -146,7 +149,10 @@ in
     ) config.extraDomains;
 
     appEnv = lib.mkDefault "local";
-    composer.install.enable = lib.mkDefault true;
+    composer = {
+      install.enable = lib.mkDefault true;
+      auth.enable = lib.mkDefault true;
+    };
     workingDir = lib.mkDefault util.values.devenvRoot;
     database.user = lib.mkDefault "admin";
     mailpit.enable = lib.mkDefault true;

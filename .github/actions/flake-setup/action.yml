@@ -1,13 +1,14 @@
 # Setup for the jobs of a deploy repo (e.g. terraflake's
 # OpenTofu plan/apply/deploy): Nix with access to the private flake
 # inputs, an optional /nix/store cache, an optional OpenTofu provider cache and
-# the CI secrets (.tokens.sh, masked; optionally the deploy SSH key in an
-# ssh-agent). Run it after actions/checkout:
+# the CI secrets (masked environment variables for the following steps;
+# optionally the deploy SSH key in an ssh-agent). Run it after actions/checkout:
 #
 #   - uses: TS1997/devops-templates/.github/actions/flake-setup@master
 #
 # The deploy repo's flake must expose <secrets-package>, which reads
-# $CI_AGE_KEY_FILE, writes .tokens.sh and loads the deploy SSH key into the
+# $CI_AGE_KEY_FILE, exports the tokens with mkTokenScripts' `tokens --github-env`
+# and loads the deploy SSH key into the
 # running ssh-agent when SSH_AUTH_SOCK is set.
 
 name: Flake setup
@@ -38,7 +39,7 @@ inputs:
   nix-cache:
     description: >
       Restore /nix/store from the Actions cache; it is saved after a successful
-      job. The job must remove store paths containing terraform.tfstate first.
+      job, so the job must not put secrets in the store.
     required: false
     default: "false"
   tofu-lock-file:
@@ -72,7 +73,7 @@ runs:
 
     - name: Create GitHub App token for private flake inputs
       id: app-token
-      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+      uses: actions/create-github-app-token@v3
       with:
         app-id: ${{ inputs.app-id }}
         private-key: ${{ inputs.app-private-key }}
@@ -80,7 +81,7 @@ runs:
         permission-contents: read
 
     - name: Install Nix
-      uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      uses: cachix/install-nix-action@v31
       with:
         github_access_token: ${{ steps.app-token.outputs.token }}
         # Some packages (e.g. Laravel apps) build with __noChroot to download
@@ -94,7 +95,7 @@ runs:
     # Every caller shares the flake-deploy-* keys.
     - name: Restore Nix store
       if: inputs.nix-cache == 'true'
-      uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7.0.2
+      uses: nix-community/cache-nix-action@v7
       with:
         primary-key: flake-deploy-${{ runner.os }}-${{ hashFiles('flake.lock') }}
         restore-prefixes-first-match: flake-deploy-${{ runner.os }}-
@@ -112,7 +113,7 @@ runs:
 
     - name: Restore OpenTofu providers
       if: inputs.tofu-lock-file != ''
-      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      uses: actions/cache@v6
       with:
         path: ${{ runner.temp }}/tofu-plugin-cache
         key: tofu-providers-${{ runner.os }}-${{ hashFiles(inputs.tofu-lock-file) }}

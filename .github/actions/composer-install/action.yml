@@ -1,0 +1,31 @@
+name: Composer install
+description: Install Composer dependencies in the devenv shell, with the Composer cache restored
+
+inputs:
+  composer-args:
+    description: Arguments for composer install
+    required: false
+    default: --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
+runs:
+  using: composite
+  steps:
+    - name: Locate Composer cache
+      id: cache-dir
+      shell: devenv-run {0}
+      run: echo "dir=$(composer config cache-dir)" >> "$GITHUB_OUTPUT"
+
+    - name: Restore Composer cache
+      uses: actions/cache@v6
+      with:
+        path: ${{ steps.cache-dir.outputs.dir }}
+        key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+        restore-keys: composer-${{ runner.os }}-
+
+    - name: Install Composer dependencies
+      shell: devenv-run {0}
+      env:
+        COMPOSER_ARGS: ${{ inputs.composer-args }}
+      run: |
+        read -ra args <<< "$COMPOSER_ARGS"
+        composer install "${args[@]}"

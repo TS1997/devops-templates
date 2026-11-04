@@ -1,0 +1,48 @@
+name: Health check
+description: Fail unless the URL responds with 200, retrying while the deploy settles
+
+inputs:
+  url:
+    description: URL that must respond with 200 (redirects are followed)
+    required: true
+  attempts:
+    description: Number of attempts before failing
+    required: false
+    default: "5"
+  interval:
+    description: Seconds to wait between attempts
+    required: false
+    default: "10"
+
+runs:
+  using: composite
+  steps:
+    - name: Health check
+      shell: bash
+      env:
+        URL: ${{ inputs.url }}
+        ATTEMPTS: ${{ inputs.attempts }}
+        INTERVAL: ${{ inputs.interval }}
+      run: |
+        echo "🔍 Starting health check of $URL..."
+
+        for attempt in $(seq 1 "$ATTEMPTS"); do
+          echo "Attempt $attempt of $ATTEMPTS"
+
+          response=$(curl -L -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+
+          if [ "$response" = "200" ]; then
+            echo "✅ Health check passed! Server responded with 200"
+            exit 0
+          fi
+
+          echo "⚠️  Server responded with status code: $response"
+
+          if [ "$attempt" -lt "$ATTEMPTS" ]; then
+            echo "Waiting $INTERVAL seconds before retry..."
+            sleep "$INTERVAL"
+          fi
+        done
+
+        echo "❌ Health check failed after $ATTEMPTS attempts"
+        exit 1

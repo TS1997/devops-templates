@@ -10,7 +10,7 @@
 
     package = lib.mkOption {
       type = lib.types.package;
-      default = pkgs.mysql84;
+      default = pkgs.mariadb_114;
       description = "The MySQL package to use.";
     };
 
@@ -50,7 +50,7 @@
           };
         }
       );
-      default = [];
+      default = [ ];
       description = "Configuration for individual MySQL databases.";
     };
   };

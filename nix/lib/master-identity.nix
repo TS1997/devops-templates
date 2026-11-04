@@ -1,18 +1,3 @@
-# Everyone listed here can decrypt every secret encrypted to the master identity:
-# terraflake/deploy repo sources, devops-templates secrets/build-pipeline/* and anything
-# else using lib.masterIdentity.
-#
-#   age.rekey = {
-#     inherit (devops-templates.lib.masterIdentity) masterIdentities extraEncryptionPubkeys;
-#     ...
-#   };
-#
-# Format must be exactly "<type> <base64>" (no comment).
-# After changing this list:
-#   - here:       agenix update-masterkeys
-#   - terraflake: nix flake update devops-templates, then
-#                 tofuage update-masterkeys && tofuage rekey -a
-# When removing someone, also rotate the actual secret values.
 let
   # Break-glass backup: secrets/master.age (passphrase protected age key).
   # Never remove it, otherwise the next re-encryption drops the backup.

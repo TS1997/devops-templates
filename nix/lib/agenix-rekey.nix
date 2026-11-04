@@ -1,5 +1,3 @@
-# Same flow as terraflake: `agenix edit`, `agenix view`, and
-# `agenix update-masterkeys` after changing nix/lib/master-identity.nix.
 { self, agenix-rekey }:
 agenix-rekey.configure {
   userFlake = self;

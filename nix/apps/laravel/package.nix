@@ -4,7 +4,7 @@
   flake-utils,
 }:
 let
-  templateDir = "${self}/nix/templates/laravel-package";
+  templateDir = "${self}/app-templates/laravel-package";
 
   bootstrap = pkgs.writeShellApplication {
     name = "laravel-package-setup";

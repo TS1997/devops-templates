@@ -19,7 +19,9 @@ in
     description = "MySQL service configuration.";
   };
 
-  config = lib.mkIf (cfg.enable) {
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ cfg.dumpScript ];
+
     services.mysql = {
       enable = cfg.enable;
       package = cfg.package;

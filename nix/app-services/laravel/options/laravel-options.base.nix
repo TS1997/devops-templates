@@ -92,7 +92,7 @@
     scheduler.enable = lib.mkDefault true;
     queue.enable = lib.mkDefault true;
     database.package = lib.mkDefault (
-      if config.database.driver == "pgsql" then pkgs.postgresql_18 else pkgs.mysql84
+      if config.database.driver == "pgsql" then pkgs.postgresql_18 else pkgs.mariadb_114
     );
   };
 }

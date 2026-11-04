@@ -17,12 +17,12 @@ let
   # Read from the working tree, so tokens-edit changes apply without a rebuild
   projectFilePath = "$DEVENV_ROOT/${cfg.projectFile}";
 
+  variableNames = map (pair: lib.last (lib.splitString ":" pair)) cfg.variables;
+
   tokenScripts = import ../lib/mkTokenScripts.nixos.nix { inherit pkgs lib; } (
     {
       ageKey = ''"$AGE_IDENTITY"'';
       variablePairs = cfg.variables;
-      # .devenv is gitignored in every project
-      tokensFile = ''"$DEVENV_STATE/tokens.sh"'';
     }
     # The project file wins over the shared one on conflicting keys
     // (
@@ -99,7 +99,9 @@ in
         Shared dev secrets to export when entering the shell, as
         "json_key:ENV_VAR_NAME". Values come from `file`, which is encrypted to
         everyone in devops-templates nix/lib/master-identity.nix, and are decrypted with
-        your ssh key (see select-age-identity) into .devenv/state/tokens.sh.
+        your ssh key (see select-age-identity) on every shell entry; nothing
+        is written to disk. Re-enter the shell (`direnv reload`) after the
+        encrypted files change. In GitHub Actions the values are masked.
         Edit the secrets in the devops-templates dev shell with
         `agenix edit secrets/build-pipeline/tokens.json.age`.
       '';
@@ -126,7 +128,6 @@ in
   config = lib.mkIf (cfg.variables != [ ]) {
     packages = [
       tokenScripts.selectAgeIdentity
-      tokenScripts.tokens
     ]
     ++ lib.optional (cfg.projectFile != null) tokensEdit;
 
@@ -134,11 +135,25 @@ in
     enterShell = lib.mkBefore ''
       if _age_identity="$(${tokenScripts.selectAgeIdentity}/bin/select-age-identity)"; then
         export AGE_IDENTITY="$_age_identity"
-        source ${tokenScripts.setEnvironment}/bin/set-environment
+        if _tokens_exports="$(${lib.getExe tokenScripts.tokens})"; then
+          eval "$_tokens_exports"
+          # Before any step can print them; masks are per line
+          if [[ -n "''${GITHUB_ACTIONS:-}" ]]; then
+            for _tokens_var in ${lib.escapeShellArgs variableNames}; do
+              while IFS= read -r _tokens_line; do
+                if [[ -n "$_tokens_line" ]]; then
+                  echo "::add-mask::$_tokens_line"
+                fi
+              done <<< "''${!_tokens_var:-}"
+            done
+          fi
+        else
+          echo "Could not load the shared tokens (${lib.concatStringsSep ", " cfg.variables})." >&2
+        fi
       else
         echo "Skipping shared tokens (${lib.concatStringsSep ", " cfg.variables})." >&2
       fi
-      unset _age_identity
+      unset _age_identity _tokens_exports _tokens_var _tokens_line
     '';
   };
 }

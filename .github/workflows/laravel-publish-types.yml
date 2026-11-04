@@ -22,8 +22,6 @@ on:
         description: "Environment to run workflow in."
 
     secrets:
-      # Decrypts the common secrets (services.ts1997.tokens.variables),
-      # e.g. COMPOSER_AUTH and BRAVO_NPM_TOKEN used by the package's .npmrc
       CI_AGE_KEY:
         required: true
 permissions:
@@ -47,21 +45,10 @@ jobs:
             services.ts1997.laravelPackage.composer.install.enable:bool false
             languages.javascript.npm.install.enable:bool false
 
-      - name: Locate Composer cache
-        id: composer-cache
-        shell: devenv-run {0}
-        run: echo "dir=$(composer config cache-dir)" >> "$GITHUB_OUTPUT"
-
-      - name: Restore Composer cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: composer-${{ runner.os }}-${{ hashFiles('composer.json', 'composer.lock') }}
-          restore-keys: composer-${{ runner.os }}-
-
       - name: Install Composer dependencies
-        shell: devenv-run {0}
-        run: composer install --no-interaction --prefer-dist --no-progress
+        uses: TS1997/devops-templates/.github/actions/composer-install@master
+        with:
+          composer-args: --no-interaction --prefer-dist --no-progress
 
       - name: Generate types package
         shell: devenv-run {0}
@@ -110,8 +97,6 @@ jobs:
           version="${GITHUB_REF_NAME#v}"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      # npm reads the .npmrc next to the package.json it runs in, so the
-      # package directory needs its own committed .npmrc.
       - name: Publish types package
         if: steps.package.outputs.changed == 'true'
         shell: devenv-run {0}

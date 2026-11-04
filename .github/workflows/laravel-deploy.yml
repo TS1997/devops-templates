@@ -31,14 +31,9 @@ on:
         type: string
         description: "Environment to run workflow in."
 
-    # The server (host, user) comes from laravelSite.hosts.<environment> in
-    # the project's devenv.nix.
     secrets:
       SSH_KEY:
         required: true
-
-      # Decrypts the common secrets (services.ts1997.tokens.variables),
-      # e.g. COMPOSER_AUTH and BRAVO_NPM_TOKEN
       CI_AGE_KEY:
         required: true
 
@@ -73,8 +68,11 @@ jobs:
           echo "host=$host" >> "$GITHUB_OUTPUT"
           echo "user=$user" >> "$GITHUB_OUTPUT"
 
-      - name: Build
-        uses: TS1997/devops-templates/.github/actions/laravel-build@master
+      - name: Install Composer dependencies
+        uses: TS1997/devops-templates/.github/actions/composer-install@master
+
+      - name: Build assets
+        uses: TS1997/devops-templates/.github/actions/npm-build@master
 
       - name: Activate maintenance mode
         uses: appleboy/ssh-action@v1
@@ -134,43 +132,6 @@ jobs:
             ${{ inputs.post_deploy_commands }}
 
       - name: Health check
-        run: |
-          echo "🔍 Starting health check..."
-          max_attempts=5
-          attempt=1
-
-          while [ $attempt -le $max_attempts ]; do
-            echo "Attempt $attempt of $max_attempts"
-            
-            response=$(curl -L -s -o /dev/null -w "%{http_code}" ${{ inputs.domain }}/up || echo "000")
-            
-            if [ "$response" = "200" ]; then
-              echo "✅ Health check passed! Server responded with 200"
-              exit 0
-            fi
-            
-            echo "⚠️  Server responded with status code: $response"
-            
-            if [ $attempt -lt $max_attempts ]; then
-              echo "Waiting 10 seconds before retry..."
-              sleep 10
-            fi
-            
-            attempt=$((attempt + 1))
-          done
-
-          echo "❌ Health check failed after $max_attempts attempts"
-          exit 1
-
-      - name: Notify deployment
-        if: always()
-        run: |
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "✅ Deployment successful to ${{ inputs.domain }}"
-            echo "📦 Deployed commit: ${{ github.sha }}"
-            echo "🕐 Deployment time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-          else
-            echo "❌ Deployment failed!"
-            echo "💥 Failed commit: ${{ github.sha }}"
-            echo "🕐 Failure time: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-          fi
+        uses: TS1997/devops-templates/.github/actions/health-check@master
+        with:
+          url: ${{ inputs.domain }}/up

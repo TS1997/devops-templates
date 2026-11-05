@@ -106,10 +106,10 @@ runs:
           release="releases/${{ inputs.id }}"
           cd "$HOME/$release"
 
-          for path in ${{ inputs.shared-paths }}; do
-            rm -rf "$path"
-            mkdir -p "$(dirname "$path")"
-            ln -s "$HOME/shared/$path" "$path"
+          for shared in ${{ inputs.shared-paths }}; do
+            rm -rf "$shared"
+            mkdir -p "$(dirname "$shared")"
+            ln -s "$HOME/shared/$shared" "$shared"
           done
 
           (

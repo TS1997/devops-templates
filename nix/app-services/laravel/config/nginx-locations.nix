@@ -37,7 +37,8 @@ in
   };
 
   "/storage/" = {
-    alias = "${siteCfg.sharedDir}/storage/app/public/";
+    # sharedDir only exists on NixOS sites; devenv serves from workingDir.
+    alias = "${siteCfg.sharedDir or siteCfg.workingDir}/storage/app/public/";
     extraConfig = ''
       expires 1y;
     '';

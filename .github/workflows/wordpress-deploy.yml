@@ -69,7 +69,7 @@ jobs:
             cancel-in-progress: false
         steps:
             - name: Checkout code
-              uses: actions/checkout@v6
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
             - name: Setup devenv
               uses: TS1997/devops-templates/.github/actions/devenv-setup@master
@@ -108,7 +108,7 @@ jobs:
 
             - name: Execute pre-deploy commands
               if: inputs.pre_deploy_commands != ''
-              uses: appleboy/ssh-action@v1
+              uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
               with:
                   host: ${{ steps.target.outputs.host }}
                   username: ${{ steps.target.outputs.user }}
@@ -118,7 +118,7 @@ jobs:
             # Uploads, caches and the server-generated .env live on the server only;
             # excluded paths are neither overwritten nor deleted.
             - name: Deploy to server via rsync
-              uses: burnett01/rsync-deployments@v8
+              uses: burnett01/rsync-deployments@2cbb5ed94b73d111d07a40b071b1c7d3c0272435 # 9.0.2
               with:
                   switches: >-
                       -avzr --delete --exclude='.zsh_history' --exclude='.git*'
@@ -152,7 +152,7 @@ jobs:
 
             - name: Execute post-deploy commands
               if: steps.release.outputs.id == '' && inputs.post_deploy_commands != ''
-              uses: appleboy/ssh-action@v1
+              uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
               with:
                   host: ${{ steps.target.outputs.host }}
                   username: ${{ steps.target.outputs.user }}

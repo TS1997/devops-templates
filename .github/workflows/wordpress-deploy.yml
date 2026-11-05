@@ -75,9 +75,6 @@ jobs:
               uses: TS1997/devops-templates/.github/actions/devenv-setup@master
               with:
                   age-key: ${{ secrets.CI_AGE_KEY }}
-                  devenv-options: |
-                      services.ts1997.phpfpm.composer.install.enable:bool false
-                      languages.javascript.npm.install.enable:bool false
 
             - name: Resolve deploy target
               id: target

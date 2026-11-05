@@ -12,11 +12,16 @@ let
 
   fallbackLocationName = "@assetFallback";
 
-  defaultFallback = lib.findFirst (fallback: (fallback.hosts or [ ]) == [ ]) (builtins.head fallbacks) fallbacks;
+  defaultFallback = lib.findFirst (
+    fallback: (fallback.hosts or [ ]) == [ ]
+  ) (builtins.head fallbacks) fallbacks;
   hostFallbacks = builtins.filter (fallback: (fallback.hosts or [ ]) != [ ]) fallbacks;
 
   hostDispatchConfig = lib.concatMapStringsSep "\n" (
-    fallback: lib.concatMapStringsSep "\n" (host: ''if ($host = "${host}") { set $assetFallbackUrl "${fallback.url}"; }'') fallback.hosts
+    fallback:
+    lib.concatMapStringsSep "\n" (
+      host: ''if ($host = "${host}") { set $assetFallbackUrl "${fallback.url}"; }''
+    ) fallback.hosts
   ) hostFallbacks;
 in
 {
@@ -27,11 +32,14 @@ in
   "~ \\.php$" = {
     extraConfig = ''
       fastcgi_pass unix:${phpSocket};
-      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      include ${nginxPackage}/conf/fastcgi_params;
+      # Resolved path, so PHP (and OPcache) see the live release after a
+      # switch of the `current` symlink.
+      fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+      fastcgi_param DOCUMENT_ROOT $realpath_root;
       fastcgi_index index.php;
       fastcgi_hide_header X-Powered-By;
       fastcgi_read_timeout ${toString (siteCfg.maxExecutionTime + 60)}s;
-      include ${nginxPackage}/conf/fastcgi_params;
     '';
   };
 

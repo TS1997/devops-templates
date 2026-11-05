@@ -3,7 +3,15 @@
   options = {
     uploadsDir = lib.mkOption {
       type = lib.types.str;
-      default = "${config.webRoot}/content/uploads";
+      default =
+        # Releases link public/content/uploads to the same path in sharedDir.
+        if config.releases.enable then
+          "${config.sharedDir}/public/content/uploads"
+        else
+          "${config.webRoot}/content/uploads";
+      defaultText = lib.literalExpression ''
+        if releases.enable then "''${sharedDir}/public/content/uploads" else "''${webRoot}/content/uploads"
+      '';
       description = "Absolute path to the WordPress uploads directory. Must match the path set in the site's .env (e.g. via UPLOADS_PATH or a custom wp-config value).";
     };
 
@@ -17,5 +25,7 @@
 
   config = {
     backup.paths = lib.mkDefault [ config.uploadsDir ];
+
+    webRoot = lib.mkDefault "${config.currentDir}/public";
   };
 }

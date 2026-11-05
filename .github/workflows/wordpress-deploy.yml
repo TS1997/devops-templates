@@ -20,14 +20,29 @@ on:
                 required: false
                 default: ""
                 type: string
-                description: "Commands to run on the server after the files are synced."
+                description: "Commands to run on the server after the files are synced (with releases: in the new release, after it went live)."
             additional_excludes:
                 required: false
                 default: ""
                 type: string
                 description:
                     "Additional rsync switches, e.g. --exclude='/config/bankid'
-                    (space-separated). Excluded paths are also kept on the server."
+                    (space-separated). Excluded paths are also kept on the server;
+                    with releases, list them in shared_paths too."
+            shared_paths:
+                required: false
+                default: ""
+                type: string
+                description:
+                    "With releases: extra paths (relative, space-separated, e.g.
+                    config/bankid) linked from ~/shared into every release,
+                    for server-only files. .env and public/content/uploads are
+                    always shared."
+            keep_releases:
+                required: false
+                default: 5
+                type: number
+                description: "With releases: number of releases to keep on the server."
             environment:
                 required: false
                 default: "production"
@@ -80,6 +95,17 @@ jobs:
             - name: Build assets
               uses: TS1997/devops-templates/.github/actions/npm-build@master
 
+            # Servers with releases.enable get a new release and an atomic
+            # switch of ~/current; others are deployed in place.
+            - name: Prepare release
+              id: release
+              uses: TS1997/devops-templates/.github/actions/release@master
+              with:
+                  command: prepare
+                  host: ${{ steps.target.outputs.host }}
+                  user: ${{ steps.target.outputs.user }}
+                  key: ${{ secrets.SSH_KEY }}
+
             - name: Execute pre-deploy commands
               if: inputs.pre_deploy_commands != ''
               uses: appleboy/ssh-action@v1
@@ -102,16 +128,30 @@ jobs:
                       --exclude='README.md' --exclude='readme.md' --exclude='*.sql'
                       --exclude='wp-cli.local.yml'
                       --exclude='/public/content/uploads' --exclude='/public/content/cache'
-                      --exclude='/public/content/upgrade' ${{ inputs.additional_excludes }}
+                      --exclude='/public/content/upgrade'
+                      ${{ steps.release.outputs.rsync-args }} ${{ inputs.additional_excludes }}
 
                   path: ./
-                  remote_path: ./
+                  remote_path: ${{ steps.release.outputs.remote-path }}
                   remote_host: ${{ steps.target.outputs.host }}
                   remote_user: ${{ steps.target.outputs.user }}
                   remote_key: ${{ secrets.SSH_KEY }}
 
+            - name: Activate release
+              if: steps.release.outputs.id != ''
+              uses: TS1997/devops-templates/.github/actions/release@master
+              with:
+                  command: activate
+                  host: ${{ steps.target.outputs.host }}
+                  user: ${{ steps.target.outputs.user }}
+                  key: ${{ secrets.SSH_KEY }}
+                  id: ${{ steps.release.outputs.id }}
+                  shared-paths: .env public/content/uploads ${{ inputs.shared_paths }}
+                  keep: ${{ inputs.keep_releases }}
+                  after-switch: ${{ inputs.post_deploy_commands }}
+
             - name: Execute post-deploy commands
-              if: inputs.post_deploy_commands != ''
+              if: steps.release.outputs.id == '' && inputs.post_deploy_commands != ''
               uses: appleboy/ssh-action@v1
               with:
                   host: ${{ steps.target.outputs.host }}
@@ -123,3 +163,13 @@ jobs:
               uses: TS1997/devops-templates/.github/actions/health-check@master
               with:
                   url: ${{ inputs.domain }}${{ inputs.health_check_path }}
+
+            - name: Roll back release
+              if: failure() && steps.release.outputs.id != ''
+              uses: TS1997/devops-templates/.github/actions/release@master
+              with:
+                  command: rollback
+                  host: ${{ steps.target.outputs.host }}
+                  user: ${{ steps.target.outputs.user }}
+                  key: ${{ secrets.SSH_KEY }}
+                  id: ${{ steps.release.outputs.id }}

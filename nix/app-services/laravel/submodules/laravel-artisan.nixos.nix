@@ -12,7 +12,7 @@ let
     pkgs.writeShellScriptBin "artisan-${name}" ''
       set -euo pipefail
 
-      cd "${siteCfg.workingDir}"
+      cd "${siteCfg.currentDir}"
       exec "${siteCfg.phpPool.fullPackage}/bin/php" artisan "$@"
     '';
 in

@@ -46,12 +46,12 @@ in
 
         path = mkPackages siteCfg;
 
-        unitConfig.ConditionPathExists = "${siteCfg.workingDir}/artisan";
+        unitConfig.ConditionPathExists = "${siteCfg.currentDir}/artisan";
 
         serviceConfig = {
           Type = "oneshot";
           User = siteCfg.user;
-          WorkingDirectory = siteCfg.workingDir;
+          WorkingDirectory = siteCfg.currentDir;
           ExecStart = "${siteCfg.phpPool.fullPackage}/bin/php artisan schedule:run";
         };
       }

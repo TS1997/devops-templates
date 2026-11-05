@@ -30,6 +30,24 @@ To create a new Laravel package:
 nix run "github:ts1997/devops-templates?ref=master#laravel-package"
 ```
 
+## Atomic deploys
+
+Enabled by default for `laravelSites`/`wordpressSites` entries (`releases.enable = false` deploys in place). The deploy workflows notice `~/releases` on the server and then:
+
+1. rsync the build to `~/releases/<timestamp>-<sha>/` (unchanged files hardlinked from the live release),
+2. link `.env`, `storage` (Laravel) or `public/content/uploads` (WordPress) and `shared_paths` from `~/shared` into it,
+3. Laravel: `php artisan optimize` and `php artisan migrate --force` inside the new release,
+4. switch `~/current` to it atomically, then `queue:restart` and `inertia:stop-ssr` (systemd restarts both in the new release),
+5. keep `keep_releases` (5) releases, and switch back to the previous one if the health check fails.
+
+nginx passes the resolved path (`$realpath_root`) to PHP-FPM, so new requests use the new release right away.
+
+Switching `releases.enable` doesn't move any data; do it by hand. When enabling it, NixOS writes `.env` to `~/shared` and creates `~/releases` and `~/current -> .`, so the in-place code keeps serving until the first atomic deploy. Before that deploy, copy `storage` (Laravel), `public/content/uploads` (WordPress) and any `shared_paths` into `~/shared` (e.g. `rsync -a ~/storage/ ~/shared/storage/`). Afterwards everything in `~` except `shared`, `releases` and `current` can be removed. When disabling it, move the data back from `~/shared` and deploy again.
+
+Migrations only run forward; a rollback switches the code only. Since the old release runs against the migrated database until the switch (and again after a rollback), migrations must be backwards compatible: add columns/tables in one release, and drop or rename them in a later release, once no deployed code uses them.
+
+Manual rollback on the server: `ln -sfn "$(cat ~/current/.previous)" ~/current.tmp && mv -Tf ~/current.tmp ~/current`, then `artisan queue:restart` for Laravel.
+
 ## Shared secrets
 
 The `people` list and `masterPubkey` (the passphrase protected break-glass key `secrets/master.age`) in `nix/lib/master-identity.nix` are the recipients for all team secrets. Deploy repos such as terraflake use them through `devops-templates.lib.masterIdentity` and do the host rekeying themselves.

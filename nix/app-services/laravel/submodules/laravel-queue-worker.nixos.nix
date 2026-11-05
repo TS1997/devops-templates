@@ -54,13 +54,15 @@ in
 
               path = mkPackages siteCfg;
 
-              unitConfig.ConditionPathExists = "${siteCfg.workingDir}/artisan";
+              unitConfig.ConditionPathExists = "${siteCfg.currentDir}/artisan";
 
               serviceConfig = {
                 Type = "simple";
                 User = siteCfg.user;
                 Group = siteCfg.user;
-                WorkingDirectory = siteCfg.workingDir;
+                # A symlink with releases; resolved on each (re)start, so
+                # workers pick up a new release after `queue:restart`.
+                WorkingDirectory = siteCfg.currentDir;
                 Restart = "always";
                 RestartSec = 10;
 

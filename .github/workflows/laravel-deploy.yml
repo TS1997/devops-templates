@@ -11,20 +11,33 @@ on:
         default: ""
         type: string
         description:
-          "Additional deployment commands to run on the server before php
-          artisan up."
+          "Additional deployment commands to run on the server before the
+          release goes live (php artisan up, or the switch with releases)."
       post_deploy_commands:
         required: false
         default: ""
         type: string
         description:
-          "Additional deployment commands to run on the server after php
-          artisan up."
+          "Additional deployment commands to run on the server after the
+          release went live."
       additional_excludes:
         required: false
         default: ""
         type: string
         description: "Additional patterns to exclude from deployment (space-separated)."
+      shared_paths:
+        required: false
+        default: ""
+        type: string
+        description:
+          "With releases: extra paths (relative, space-separated) linked from
+          ~/shared into every release, for server-only files. .env and
+          storage are always shared."
+      keep_releases:
+        required: false
+        default: 5
+        type: number
+        description: "With releases: number of releases to keep on the server."
       environment:
         required: false
         default: "production"
@@ -74,7 +87,19 @@ jobs:
       - name: Build assets
         uses: TS1997/devops-templates/.github/actions/npm-build@master
 
+      # Servers with releases.enable get a new release and an atomic switch of
+      # ~/current; others are deployed in place behind maintenance mode.
+      - name: Prepare release
+        id: release
+        uses: TS1997/devops-templates/.github/actions/release@master
+        with:
+          command: prepare
+          host: ${{ steps.target.outputs.host }}
+          user: ${{ steps.target.outputs.user }}
+          key: ${{ secrets.SSH_KEY }}
+
       - name: Activate maintenance mode
+        if: steps.release.outputs.id == ''
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ steps.target.outputs.host }}
@@ -98,16 +123,17 @@ jobs:
             --exclude='public/storage' --exclude='.env*'
             --exclude='phpunit.xml' --exclude='README.md'
             --exclude='.editorconfig' --exclude='.eslintrc.json'
-            --exclude='.prettierrc' --exclude='.devenv*' ${{
-            inputs.additional_excludes }}
+            --exclude='.prettierrc' --exclude='.devenv*'
+            ${{ steps.release.outputs.rsync-args }} ${{ inputs.additional_excludes }}
 
           path: ./
-          remote_path: ./
+          remote_path: ${{ steps.release.outputs.remote-path }}
           remote_host: ${{ steps.target.outputs.host }}
           remote_user: ${{ steps.target.outputs.user }}
           remote_key: ${{ secrets.SSH_KEY }}
 
       - name: Execute deployment commands
+        if: steps.release.outputs.id == ''
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ steps.target.outputs.host }}
@@ -131,7 +157,55 @@ jobs:
             php artisan up
             ${{ inputs.post_deploy_commands }}
 
+      # Migrations only run forward and are never rolled back: they must work
+      # with the live release's code too (expand/contract), since it keeps
+      # serving until the switch and again after a rollback.
+      - name: Activate release
+        if: steps.release.outputs.id != ''
+        uses: TS1997/devops-templates/.github/actions/release@master
+        with:
+          command: activate
+          host: ${{ steps.target.outputs.host }}
+          user: ${{ steps.target.outputs.user }}
+          key: ${{ secrets.SSH_KEY }}
+          id: ${{ steps.release.outputs.id }}
+          shared-paths: .env storage ${{ inputs.shared_paths }}
+          keep: ${{ inputs.keep_releases }}
+          before-switch: |
+            mkdir -p storage/app/public storage/framework/cache storage/framework/sessions storage/framework/testing storage/framework/views storage/logs bootstrap/cache
+
+            cat > bootstrap/cache/release-info.json <<EOF
+            {
+              "release": "${{ steps.release.outputs.id }}",
+              "released_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+              "git_sha": "${{ github.sha }}",
+              "deployed_by": "${{ github.actor }}",
+              "build_number": "${{ github.run_number }}"
+            }
+            EOF
+
+            php artisan optimize
+            php artisan migrate --force
+            ${{ inputs.additional_commands }}
+          after-switch: |
+            php artisan queue:restart
+            php artisan inertia:stop-ssr 2>/dev/null || true
+            ${{ inputs.post_deploy_commands }}
+
       - name: Health check
         uses: TS1997/devops-templates/.github/actions/health-check@master
         with:
           url: ${{ inputs.domain }}/up
+
+      - name: Roll back release
+        if: failure() && steps.release.outputs.id != ''
+        uses: TS1997/devops-templates/.github/actions/release@master
+        with:
+          command: rollback
+          host: ${{ steps.target.outputs.host }}
+          user: ${{ steps.target.outputs.user }}
+          key: ${{ secrets.SSH_KEY }}
+          id: ${{ steps.release.outputs.id }}
+          after-switch: |
+            php artisan queue:restart
+            php artisan inertia:stop-ssr 2>/dev/null || true

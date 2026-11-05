@@ -1,0 +1,161 @@
+name: Release
+description: >
+  Atomic deploys to servers with releases.enable (they have ~/releases).
+  prepare: decide the deploy mode and the release id. activate: link the shared
+  paths, run before-switch, switch ~/current, run after-switch and remove old
+  releases. rollback: switch ~/current back to the release before id (code
+  only, the database is never rolled back).
+
+inputs:
+  command:
+    description: prepare, activate or rollback
+    required: true
+  host:
+    description: SSH host
+    required: true
+  user:
+    description: SSH user (the site user)
+    required: true
+  key:
+    description: SSH private key
+    required: true
+  id:
+    description: Release id from prepare (activate, rollback)
+    required: false
+    default: ""
+  shared-paths:
+    description: Paths (relative, space-separated) linked from ~/shared into the release (activate)
+    required: false
+    default: ""
+  keep:
+    description: Number of releases to keep (activate)
+    required: false
+    default: "5"
+  before-switch:
+    description: Commands run in the new release before it goes live (activate)
+    required: false
+    default: ""
+  after-switch:
+    description: Commands run in ~/current after a switch (activate, rollback)
+    required: false
+    default: ""
+
+outputs:
+  id:
+    description: Release id; empty when the server deploys in place
+    value: ${{ steps.prepare.outputs.id }}
+  remote-path:
+    description: rsync destination below the home directory
+    value: ${{ steps.prepare.outputs.remote-path }}
+  rsync-args:
+    description: Extra rsync arguments for the upload
+    value: ${{ steps.prepare.outputs.rsync-args }}
+
+runs:
+  using: composite
+  steps:
+    - name: Detect deploy mode
+      id: mode
+      if: inputs.command == 'prepare'
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ inputs.host }}
+        username: ${{ inputs.user }}
+        key: ${{ inputs.key }}
+        capture_stdout: true
+        script: if [ -d releases ]; then echo mode=releases; else echo mode=in-place; fi
+
+    - name: Prepare
+      id: prepare
+      if: inputs.command == 'prepare'
+      shell: bash
+      env:
+        MODE: ${{ steps.mode.outputs.stdout }}
+      run: |
+        set -euo pipefail
+        # Never fall back to in place on an unexpected answer: an in-place
+        # rsync --delete would remove releases/ and current.
+        case "$MODE" in
+          *mode=releases*)
+            id="$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA::7}"
+            echo "Deploying release $id"
+            echo "id=$id" >> "$GITHUB_OUTPUT"
+            echo "remote-path=releases/$id/" >> "$GITHUB_OUTPUT"
+            # Hardlink unchanged files from the live release.
+            echo "rsync-args=--link-dest=../../current/" >> "$GITHUB_OUTPUT"
+            ;;
+          *mode=in-place*)
+            echo "Deploying in place"
+            echo "remote-path=./" >> "$GITHUB_OUTPUT"
+            ;;
+          *)
+            echo "Could not detect the deploy mode: $MODE" >&2
+            exit 1
+            ;;
+        esac
+
+    - name: Activate
+      if: inputs.command == 'activate'
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ inputs.host }}
+        username: ${{ inputs.user }}
+        key: ${{ inputs.key }}
+        script: |
+          set -euo pipefail
+          release="releases/${{ inputs.id }}"
+          cd "$HOME/$release"
+
+          for path in ${{ inputs.shared-paths }}; do
+            rm -rf "$path"
+            mkdir -p "$(dirname "$path")"
+            ln -s "$HOME/shared/$path" "$path"
+          done
+
+          (
+            :
+            ${{ inputs.before-switch }}
+          )
+
+          # Atomic switch; rollback returns to .previous.
+          readlink "$HOME/current" > "$HOME/$release/.previous"
+          ln -sfn "$release" "$HOME/current.tmp"
+          mv -Tf "$HOME/current.tmp" "$HOME/current"
+          echo "Release ${{ inputs.id }} is live."
+
+          (
+            cd "$HOME/current"
+            ${{ inputs.after-switch }}
+          )
+
+          # Remove old releases, except the rollback target.
+          previous="$(basename "$(cat "$HOME/$release/.previous")")"
+          cd "$HOME/releases"
+          for old in $(ls -1 | sort | head -n -${{ inputs.keep }}); do
+            [ "$old" = "$previous" ] || rm -rf -- "$old"
+          done
+
+    - name: Roll back
+      if: inputs.command == 'rollback'
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ inputs.host }}
+        username: ${{ inputs.user }}
+        key: ${{ inputs.key }}
+        script: |
+          set -euo pipefail
+          cd "$HOME"
+          release="releases/${{ inputs.id }}"
+          if [ "$(readlink current)" != "$release" ]; then
+            echo "$release never went live; nothing to roll back."
+            exit 0
+          fi
+          previous="$(cat "$release/.previous")"
+          ln -sfn "$previous" current.tmp
+          mv -Tf current.tmp current
+          echo "Rolled back to $previous. The database is not rolled back."
+
+          (
+            cd "$HOME/current"
+            ${{ inputs.after-switch }}
+          )

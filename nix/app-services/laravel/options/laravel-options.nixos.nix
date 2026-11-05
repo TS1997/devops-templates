@@ -52,8 +52,8 @@
   };
 
   config = {
-    backup.paths = lib.mkDefault [ "${config.workingDir}/storage/app" ];
+    backup.paths = lib.mkDefault [ "${config.sharedDir}/storage/app" ];
 
-    webRoot = lib.mkDefault "${config.workingDir}/public";
+    webRoot = lib.mkDefault "${config.currentDir}/public";
   };
 }

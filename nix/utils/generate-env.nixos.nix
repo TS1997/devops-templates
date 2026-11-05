@@ -15,9 +15,11 @@ let
     else
       toString value;
 
-  envFile = "${siteCfg.workingDir}/.env";
+  envFile = "${siteCfg.sharedDir}/.env";
 in
 lib.stringAfter [ "agenix" ] ''
+  mkdir -p ${siteCfg.sharedDir}
+
   # Start with regular env vars
   cat > ${envFile} << 'EOF'
   ${lib.concatStringsSep "\n" (

@@ -14,6 +14,25 @@
 
     generateEnv = lib.mkEnableOption "Whether to generate the .env file for this application.";
 
+    currentDir = lib.mkOption {
+      type = lib.types.str;
+      readOnly = true;
+      description = "Directory holding the live code: `<workingDir>/current` with `releases.enable`, otherwise `workingDir`.";
+    };
+
+    sharedDir = lib.mkOption {
+      type = lib.types.str;
+      readOnly = true;
+      description = "Directory holding data shared by all releases (.env, storage, uploads): `<workingDir>/shared` with `releases.enable`, otherwise `workingDir`.";
+    };
+
+    releases.enable = lib.mkEnableOption ''
+      atomic (zero-downtime) deploys: the deploy workflows upload each deploy
+      to `<workingDir>/releases/<id>` and switch the `<workingDir>/current`
+      symlink to it. Until the first such deploy `current` points at
+      `workingDir`, so the code deployed in place keeps serving
+    '';
+
     user = lib.mkOption {
       type = lib.types.str;
       default = name;
@@ -121,7 +140,10 @@
 
     appEnv = lib.mkDefault "production";
     generateEnv = lib.mkDefault true;
+    releases.enable = lib.mkDefault true;
     workingDir = lib.mkDefault "/var/lib/${name}";
+    currentDir = if config.releases.enable then "${config.workingDir}/current" else config.workingDir;
+    sharedDir = if config.releases.enable then "${config.workingDir}/shared" else config.workingDir;
     database = {
       name = lib.mkDefault name;
       user = lib.mkDefault name;

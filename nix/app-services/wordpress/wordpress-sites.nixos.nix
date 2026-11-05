@@ -47,18 +47,22 @@ let
       owner = "${siteCfg.user} ${siteCfg.user}";
       inWorkingDir = lib.hasPrefix "${siteCfg.workingDir}/" siteCfg.uploadsDir;
       dirs = lib.unique (
-        dirsBelow siteCfg.workingDir siteCfg.webRoot
+        # With releases the web root is inside the `current` symlink.
+        lib.optionals (!siteCfg.releases.enable) (dirsBelow siteCfg.workingDir siteCfg.webRoot)
         ++ dirsBelow siteCfg.workingDir (dirOf siteCfg.uploadsDir)
       );
     in
-    [ "d ${siteCfg.workingDir} 0750 ${owner} -" ]
-    ++ map (dir: "d ${dir} 0750 ${owner} -") dirs
-    # Persistent uploads directory - path must match the site's .env
-    ++ [ "d ${siteCfg.uploadsDir} 0755 ${owner} -" ]
-    # Re-own everything on boot and on every switch (sysinit-reactivation),
-    # leaving file modes untouched.
-    ++ [ "Z ${siteCfg.workingDir} - ${owner} -" ]
-    ++ lib.optional (!inWorkingDir) "Z ${siteCfg.uploadsDir} - ${owner} -";
+    lib.unique (
+      [ "d ${siteCfg.workingDir} 0750 ${owner} -" ]
+      ++ map (dir: "d ${dir} 0750 ${owner} -") dirs
+      # Persistent uploads directory - path must match the site's .env
+      ++ [ "d ${siteCfg.uploadsDir} 0755 ${owner} -" ]
+      # Re-own everything on boot and on every switch (sysinit-reactivation),
+      # leaving file modes untouched.
+      ++ [ "Z ${siteCfg.workingDir} - ${owner} -" ]
+      ++ lib.optional (!inWorkingDir) "Z ${siteCfg.uploadsDir} - ${owner} -"
+      ++ import ../../utils/release-dirs.nixos.nix { inherit siteCfg; }
+    );
 in
 {
   imports = [

@@ -37,6 +37,28 @@ let
       inherit config siteCfg;
       phpSocket = config.services.phpfpm.pools.${name}.socket;
     };
+
+  # Applied on boot and on every switch. `Z` re-owns (and re-modes) recursively;
+  # bootstrap/ gets its own rule so it isn't created as root.
+  mkTmpfilesRules =
+    siteCfg:
+    let
+      dir = siteCfg.workingDir;
+      shared = siteCfg.sharedDir;
+      owner = "${siteCfg.user} ${siteCfg.user}";
+    in
+    import ../../utils/release-dirs.nixos.nix { inherit siteCfg; }
+    ++ [
+      "d ${shared}/storage 0770 ${owner} -"
+      "Z ${shared}/storage 0770 ${owner} -"
+    ]
+    # With releases every release has its own bootstrap/cache.
+    ++ lib.optionals (!siteCfg.releases.enable) [
+      "d ${dir}/bootstrap - ${owner} -"
+      "Z ${dir}/bootstrap - ${owner} -"
+      "d ${dir}/bootstrap/cache 0770 ${owner} -"
+      "Z ${dir}/bootstrap/cache 0770 ${owner} -"
+    ];
 in
 {
   imports = [
@@ -65,19 +87,10 @@ in
   };
 
   config = lib.mkIf (sites != { }) {
-    system.activationScripts = lib.mkMerge (
-      (lib.mapAttrsToList (name: siteCfg: {
-        "setup-laravel-dirs-${name}" = lib.stringAfter [ "users" "groups" ] ''
-          mkdir -p ${siteCfg.workingDir}/storage
-          chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}/storage
-          chmod -R 0770 ${siteCfg.workingDir}/storage
+    systemd.tmpfiles.rules = lib.concatMap mkTmpfilesRules (lib.attrValues sites);
 
-          mkdir -p ${siteCfg.workingDir}/bootstrap/cache
-          chown -R ${siteCfg.user}:${siteCfg.user} ${siteCfg.workingDir}/bootstrap
-          chmod -R 0770 ${siteCfg.workingDir}/bootstrap/cache
-        '';
-      }) sites)
-      ++ (lib.mapAttrsToList (
+    system.activationScripts = lib.mkMerge (
+      lib.mapAttrsToList (
         name: siteCfg:
         lib.mkIf (siteCfg.generateEnv) {
           "generate-env-${name}" = (
@@ -87,7 +100,7 @@ in
             }
           );
         }
-      ) sites)
+      ) sites
     );
 
     services.ts1997.nginx = {

@@ -73,13 +73,16 @@ jobs:
 
       - name: Resolve deploy target
         id: target
+        shell: bash
         env:
           HOSTS: services.ts1997.laravelSite.hosts.${{ inputs.environment }}
         run: |
-          host="$(devenv eval "$HOSTS.host" | jq -r '.[]')"
-          user="$(devenv eval "$HOSTS.user" | jq -r '.[]')"
-          echo "host=$host" >> "$GITHUB_OUTPUT"
-          echo "user=$user" >> "$GITHUB_OUTPUT"
+          if ! target="$(devenv eval "$HOSTS" | jq -c '.[]')"; then
+            echo "::error::Set $HOSTS (host, siteName) in devenv.nix."
+            exit 1
+          fi
+          echo "host=$(jq -r .host <<<"$target")" >> "$GITHUB_OUTPUT"
+          echo "user=$(jq -r .user <<<"$target")" >> "$GITHUB_OUTPUT"
 
       - name: Install Composer dependencies
         uses: TS1997/devops-templates/.github/actions/composer-install@master

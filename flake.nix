@@ -19,13 +19,19 @@
 
       apps = import ./nix/apps/apps.nix { inherit nixpkgs self flake-utils; };
 
-      packages = flake-utils.lib.eachDefaultSystemMap (system: {
-        pull-backup =
-          (import ./nix/lib/backup-manager.nix {
+      packages = flake-utils.lib.eachDefaultSystemMap (
+        system:
+        let
+          backupManager = import ./nix/lib/backup-manager.nix {
             pkgs = nixpkgs.legacyPackages.${system};
             inherit (nixpkgs) lib;
-          }).pullBackup;
-      });
+          };
+        in
+        {
+          pull-backup = backupManager.pullBackup;
+          pull-db = backupManager.pullDb;
+        }
+      );
 
       agenix-rekey = import ./nix/lib/agenix-rekey.nix { inherit self agenix-rekey; };
 

@@ -48,6 +48,31 @@ Migrations only run forward; a rollback switches the code only. Since the old re
 
 Manual rollback on the server: `ln -sfn "$(cat ~/current/.previous)" ~/current.tmp && mv -Tf ~/current.tmp ~/current`, then `artisan queue:restart` for Laravel.
 
+## Backups and database dumps
+
+On a server, `backup.enable = true` on a `laravelSites`/`wordpressSites` entry adds a nightly restic job to `<services.ts1997.restic.repositoryBase>/<site>`. It backs up `backup.paths` (Laravel: `shared/storage/app`, WordPress: the uploads directory) and, unless `backup.database = false`, a fresh dump of the site's database. Each site gets two root-only commands:
+
+- `restic-<site>`: restic with the job's repository and credentials, e.g. `restic-<site> snapshots`.
+- `db-dump-<site>`: dumps the site's database now and writes it as a gzipped tar to stdout. Installed for every site with a database, also without `backup.enable`.
+
+The dumps don't lock the site: `mysqldump` runs with `--single-transaction --skip-lock-tables`, and `pg_dump` reads from a snapshot. A schema change (e.g. a migration) that starts during a dump waits for it to finish, so don't pull while deploying migrations.
+
+To pull from a project's devenv shell, set its remote environments:
+
+```nix
+services.ts1997.laravelSite.hosts = {
+  production = { host = "example.com"; siteName = "example"; };
+  staging = { host = "stage.example.com"; siteName = "example_stage"; };
+};
+```
+
+| Command                                                          | Pulls                                        | Into                                  |
+| ---------------------------------------------------------------- | -------------------------------------------- | ------------------------------------- |
+| `pull-app-db [ENV=production]`                                   | A fresh database dump                        | `backups/<env>/dump-<UTC timestamp>/` |
+| `pull-app-backup [--db-only] [ENV=production] [SNAPSHOT=latest]` | A restic snapshot, or only its database dump | `backups/<env>/<snapshot>/`           |
+
+Both look up `host` and `siteName` for `ENV` and connect as `root@host`. For other servers use `pull-db HOST SITENAME [ENV]` and `pull-backup [--db-only] HOST SITENAME [ENV] [SNAPSHOT]` (also available as `nix run github:ts1997/devops-templates#pull-db`/`#pull-backup`). Dumps are named `<database>.<driver>.sql`. In a restored snapshot they are under `var/backup/restic-dumps/<site>/`. `backups/` gets a `.gitignore` so nothing is committed.
+
 ## Shared secrets
 
 The `people` list and `masterPubkey` (the passphrase protected break-glass key `secrets/master.age`) in `nix/lib/master-identity.nix` are the recipients for all team secrets. Deploy repos such as terraflake use them through `devops-templates.lib.masterIdentity` and do the host rekeying themselves.

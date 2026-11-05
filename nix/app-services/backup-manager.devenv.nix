@@ -18,7 +18,12 @@ in
   config = lib.mkIf (site != null) {
     packages = [
       backupManager.pullBackup
-      (backupManager.mkPullDevenvBackup {
+      backupManager.pullDb
+      (backupManager.mkPullAppBackup {
+        devenvRoot = config.devenv.root;
+        hostsAttr = "services.ts1997.${site}.hosts";
+      })
+      (backupManager.mkPullAppDb {
         devenvRoot = config.devenv.root;
         hostsAttr = "services.ts1997.${site}.hosts";
       })

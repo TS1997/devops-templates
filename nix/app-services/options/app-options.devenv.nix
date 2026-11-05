@@ -102,7 +102,7 @@ in
               };
               siteName = mkOption {
                 type = types.str;
-                description = "Name of the site on the server; backups are pulled with its `restic-<siteName>` command.";
+                description = "Name of the site on the server; backups are pulled with its `restic-<siteName>` command and fresh database dumps with `db-dump-<siteName>`.";
               };
               user = mkOption {
                 type = types.str;
@@ -128,7 +128,7 @@ in
       description = ''
         Remote environments, keyed like the deploy workflows' `environment`
         input (production, staging). Read with `devenv eval` by the deploy
-        workflows and `pull-devenv-backup`.
+        workflows, `pull-app-backup` and `pull-app-db`.
       '';
     };
   };

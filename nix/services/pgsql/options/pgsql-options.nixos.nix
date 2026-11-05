@@ -9,7 +9,6 @@
     dumpScript = lib.mkOption {
       type = lib.types.package;
       readOnly = true;
-      # Switches to postgres, which authenticates over the socket.
       default = pkgs.writeShellApplication {
         name = "pgsql-database-dump";
         runtimeInputs = [

@@ -148,5 +148,18 @@ in
         inherit (siteCfg.database) driver name;
       };
     }) backupSites;
+
+    environment.systemPackages = lib.mapAttrsToList (
+      name: siteCfg:
+      import ../../utils/db-dump.nixos.nix {
+        inherit
+          config
+          lib
+          pkgs
+          name
+          ;
+        databases = [ { inherit (siteCfg.database) driver name; } ];
+      }
+    ) mysqlSites;
   };
 }

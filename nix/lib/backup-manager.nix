@@ -22,7 +22,7 @@ let
       env="''${3:-production}"
       snapshot="''${4:-latest}"
       database_dump_dir="/var/backup/restic-dumps/$site_name"
-      
+
       if [[ -n "$db_only" ]]; then
         path="$database_dump_dir"
       else
@@ -51,17 +51,72 @@ let
       echo "Done. Database dumps are in $out$database_dump_dir/." >&2
     '';
   };
+
+  pullDb = pkgs.writeShellApplication {
+    name = "pull-db";
+    runtimeInputs = [
+      pkgs.openssh
+      pkgs.gnutar
+      pkgs.gzip
+    ];
+    text = ''
+      if (( $# < 2 || $# > 3 )); then
+        echo "Usage: pull-db HOST SITENAME [ENV=production]" >&2
+        exit 1
+      fi
+
+      host="$1"
+      site_name="$2"
+      env="''${3:-production}"
+
+      backups="$PWD/backups"
+      out="$backups/$env/dump-$(date -u +%Y%m%d%H%M%S)"
+      mkdir -p "$out"
+      # Keep pulled dumps out of git.
+      [[ -f "$backups/.gitignore" ]] || echo '*' > "$backups/.gitignore"
+
+      # db-dump-<siteName> is the root-only script NixOS installs for each
+      # site with a database.
+      printf -v remote '%q' "db-dump-$site_name"
+      echo "Dumping the databases of $site_name on root@$host into $out ..." >&2
+      # shellcheck disable=SC2029 # $remote is quoted above for the remote shell
+      if ! ssh "root@$host" "$remote" | tar -xz -C "$out"; then
+        rm -rf "$out"
+        exit 1
+      fi
+      echo "Done. Database dumps are in $out/." >&2
+    '';
+  };
+
+  # Bash that looks up $env in the devenv hosts option and sets $host and
+  # $site_name. Changes to the devenv root, so pulls land in its backups/.
+  resolveHost =
+    {
+      devenvRoot,
+      hostsAttr,
+      fallback,
+    }:
+    ''
+      cd ${lib.escapeShellArg devenvRoot}
+      hosts="$(devenv eval ${lib.escapeShellArg hostsAttr} | jq -c '.[]')"
+      if ! jq -e --arg env "$env" 'has($env)' <<<"$hosts" >/dev/null; then
+        echo "${hostsAttr} has no $env; use ${fallback} HOST SITENAME for other hosts." >&2
+        exit 1
+      fi
+      host="$(jq -r --arg env "$env" '.[$env].host' <<<"$hosts")"
+      site_name="$(jq -r --arg env "$env" '.[$env].siteName' <<<"$hosts")"
+    '';
 in
 {
-  inherit pullBackup;
+  inherit pullBackup pullDb;
 
-  mkPullDevenvBackup =
+  mkPullAppBackup =
     {
       devenvRoot,
       hostsAttr,
     }:
     pkgs.writeShellApplication {
-      name = "pull-devenv-backup";
+      name = "pull-app-backup";
       runtimeInputs = [ pkgs.jq ];
       text = ''
         flags=()
@@ -70,22 +125,40 @@ in
           shift
         fi
         if (( $# > 2 )); then
-          echo "Usage: pull-devenv-backup [--db-only] [ENV=production] [SNAPSHOT=latest]" >&2
+          echo "Usage: pull-app-backup [--db-only] [ENV=production] [SNAPSHOT=latest]" >&2
           exit 1
         fi
         env="''${1:-production}"
         snapshot="''${2:-latest}"
 
-        cd ${lib.escapeShellArg devenvRoot}
-        hosts="$(devenv eval ${lib.escapeShellArg hostsAttr} | jq -c '.[]')"
-        if ! jq -e --arg env "$env" 'has($env)' <<<"$hosts" >/dev/null; then
-          echo "${hostsAttr} has no $env; use pull-backup HOST SITENAME for other hosts." >&2
+        ${resolveHost {
+          inherit devenvRoot hostsAttr;
+          fallback = "pull-backup";
+        }}
+        exec ${lib.getExe pullBackup} "''${flags[@]}" "$host" "$site_name" "$env" "$snapshot"
+      '';
+    };
+
+  mkPullAppDb =
+    {
+      devenvRoot,
+      hostsAttr,
+    }:
+    pkgs.writeShellApplication {
+      name = "pull-app-db";
+      runtimeInputs = [ pkgs.jq ];
+      text = ''
+        if (( $# > 1 )); then
+          echo "Usage: pull-app-db [ENV=production]" >&2
           exit 1
         fi
-        exec ${lib.getExe pullBackup} "''${flags[@]}" \
-          "$(jq -r --arg env "$env" '.[$env].host' <<<"$hosts")" \
-          "$(jq -r --arg env "$env" '.[$env].siteName' <<<"$hosts")" \
-          "$env" "$snapshot"
+        env="''${1:-production}"
+
+        ${resolveHost {
+          inherit devenvRoot hostsAttr;
+          fallback = "pull-db";
+        }}
+        exec ${lib.getExe pullDb} "$host" "$site_name" "$env"
       '';
     };
 }

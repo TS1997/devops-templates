@@ -18,6 +18,8 @@ let
 
   redisSites = lib.filterAttrs (name: siteCfg: siteCfg.redis.enable) sites;
 
+  databaseSites = lib.filterAttrs (name: siteCfg: siteCfg.database.enable) sites;
+
   backupSites = lib.filterAttrs (name: siteCfg: siteCfg.backup.enable) sites;
 
   mkDefaultEnv =
@@ -152,5 +154,18 @@ in
         inherit (siteCfg.database) driver name;
       };
     }) backupSites;
+
+    environment.systemPackages = lib.mapAttrsToList (
+      name: siteCfg:
+      import ../../utils/db-dump.nixos.nix {
+        inherit
+          config
+          lib
+          pkgs
+          name
+          ;
+        databases = [ { inherit (siteCfg.database) driver name; } ];
+      }
+    ) databaseSites;
   };
 }

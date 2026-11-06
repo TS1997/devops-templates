@@ -127,6 +127,15 @@ jobs:
             --exclude='phpunit.xml' --exclude='README.md'
             --exclude='.editorconfig' --exclude='.eslintrc.json'
             --exclude='.prettierrc' --exclude='.devenv*'
+            --exclude='.vscode' --exclude='.ai'
+            --exclude='/secrets' --exclude='/.npmrc' --exclude='/.envrc'
+            --exclude='/devenv.*' --exclude='/*.nix'
+            --exclude='/AGENTS.md' --exclude='/CLAUDE.md' --exclude='/boost.json'
+            --exclude='/.mcp.json' --exclude='/.cursor' --exclude='/.junie'
+            --exclude='/.claude' --exclude='/pint.json' --exclude='/.prettierignore'
+            --exclude='/eslint.config.js' --exclude='/tsconfig.json'
+            --exclude='/vite.config.*' --exclude='/postcss.config.js'
+            --exclude='/components.json' --exclude='/composer.local.example.json'
             ${{ steps.release.outputs.rsync-args }} ${{ inputs.additional_excludes }}
 
           path: ./

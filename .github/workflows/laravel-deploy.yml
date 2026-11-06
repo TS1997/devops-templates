@@ -154,8 +154,8 @@ jobs:
             }
             EOF
 
-            php artisan optimize
             php artisan migrate --force
+            php artisan optimize
             ${{ inputs.additional_commands }}
             php artisan up
             ${{ inputs.post_deploy_commands }}
@@ -187,8 +187,8 @@ jobs:
             }
             EOF
 
-            php artisan optimize
             php artisan migrate --force
+            php artisan optimize
             ${{ inputs.additional_commands }}
           after-switch: |
             php artisan queue:restart

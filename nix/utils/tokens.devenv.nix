@@ -131,6 +131,9 @@ in
     ]
     ++ lib.optional (cfg.projectFile != null) tokensEdit;
 
+    # The devenv-setup action runs `tokens --github-env`
+    services.ts1997.ci.packages = [ tokenScripts.tokens ];
+
     # Before anything else in enterShell (e.g. composer install) needs them
     enterShell = lib.mkBefore ''
       if _age_identity="$(${tokenScripts.selectAgeIdentity}/bin/select-age-identity)"; then

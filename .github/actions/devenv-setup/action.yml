@@ -1,5 +1,5 @@
 name: Devenv setup
-description: Install Nix and devenv and build the project's devenv shell
+description: Install Nix and devenv and build the project's CI tools (devenv outputs.ci)
 
 inputs:
   devenv-version:
@@ -8,14 +8,10 @@ inputs:
     default: v2.4.0
   devenv-options:
     description: >
-      devenv option overrides applied to every devenv-run step, one
-      "<attribute>:<type> <value>" per line (see devenv --option). The default
-      turns off the Composer and npm installs the dev shell runs on entry, since
-      the build actions install production dependencies themselves.
+      devenv option overrides used to build the CI tools, one
+      "<attribute>:<type> <value>" per line (see devenv --option).
     required: false
-    default: |
-      services.ts1997.phpfpm.composer.install.enable:bool false
-      languages.javascript.npm.install.enable:bool false
+    default: ""
   nix-cache:
     description: >
       Restore /nix/store from the Actions cache, keyed on the devenv files; it
@@ -24,9 +20,9 @@ inputs:
     default: "true"
   age-key:
     description: >
-      age identity for the common secrets (secret CI_AGE_KEY). When set, the
-      devenv shell exports services.ts1997.tokens.variables like it does
-      locally, and their values are masked in the log.
+      age identity for the common secrets (secret CI_AGE_KEY). When set,
+      services.ts1997.tokens.variables are exported to the following steps
+      like the dev shell does locally, and their values are masked in the log.
     required: false
     default: ""
 
@@ -64,31 +60,30 @@ runs:
           [[ -n "$option" ]] && args+=(--option "$option" "$value")
         done <<< "$DEVENV_OPTIONS"
 
-        # Every step shell enters the devenv shell with the same options.
-        bin="$RUNNER_TEMP/devenv-bin"
-        mkdir -p "$bin"
-        {
-          echo '#!/usr/bin/env bash'
-          printf 'exec devenv'
-          if (( ${#args[@]} )); then printf ' %q' "${args[@]}"; fi
-          printf ' shell -- bash -euo pipefail "$@"\n'
-        } > "$bin/devenv-run"
-        chmod +x "$bin/devenv-run"
-        echo "$bin" >> "$GITHUB_PATH"
+        # Only the tools the build steps need (outputs.ci,
+        # nix/utils/ci.devenv.nix), not the dev shell.
+        tools="$(devenv "${args[@]}" build outputs.ci | jq -r '.["outputs.ci"]')"
+        echo "$tools/bin" >> "$GITHUB_PATH"
 
-    # The tokens module in the devenv shell decrypts with $AGE_IDENTITY on
-    # every devenv-run step and masks the values (::add-mask::) first.
-    - name: Load age key
+    - name: Load tokens
       if: inputs.age-key != ''
       shell: bash
       env:
         AGE_KEY: ${{ inputs.age-key }}
       run: |
-        key_file="$RUNNER_TEMP/ci-age-key"
-        (umask 077 && printf '%s\n' "$AGE_KEY" > "$key_file")
-        echo "AGE_IDENTITY=$key_file" >> "$GITHUB_ENV"
+        if ! command -v tokens > /dev/null; then
+          echo "No services.ts1997.tokens.variables set; skipping tokens."
+          exit 0
+        fi
 
-    - name: Build devenv shell
+        key_file="$RUNNER_TEMP/ci-age-key"
+        trap 'rm -f "$key_file"' EXIT
+        (umask 077 && printf '%s\n' "$AGE_KEY" > "$key_file")
+        # Masks the values and appends them to $GITHUB_ENV. DEVENV_ROOT
+        # locates services.ts1997.tokens.projectFile.
+        DEVENV_ROOT="$PWD" AGE_IDENTITY="$key_file" tokens --github-env
+
+    - name: Show CI tools
       shell: devenv-run {0}
       run: |
         php --version

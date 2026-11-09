@@ -17,6 +17,7 @@
       redisSocket = config.env.REDIS_UNIX_SOCKET;
     })
     ./nix/utils/app-urls.devenv.nix
+    ./nix/utils/ci.devenv.nix
     ./nix/utils/tokens.devenv.nix
     ./nix/utils/backup-manager.devenv.nix
     ./nix/services/devenv.nix

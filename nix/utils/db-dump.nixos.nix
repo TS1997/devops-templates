@@ -5,6 +5,17 @@
   name,
   databases,
 }:
+let
+  dumpArgs = {
+    pgsql = [
+      "--clean"
+      "--if-exists"
+      "--no-owner"
+      "--no-privileges"
+      "--exclude-extension=*"
+    ];
+  };
+in
 pkgs.writeShellApplication {
   name = "db-dump-${name}";
   runtimeInputs = [
@@ -17,9 +28,9 @@ pkgs.writeShellApplication {
     trap 'rm -rf "$dir"' EXIT
     ${lib.concatMapStringsSep "\n" (
       db:
-      "${
-        lib.getExe config.services.ts1997.${db.driver}.dumpScript
-      } ${lib.escapeShellArg db.name} > \"$dir\"/${lib.escapeShellArg "${db.name}.${db.driver}.sql"}"
+      "${lib.getExe config.services.ts1997.${db.driver}.dumpScript} ${
+        lib.escapeShellArgs ([ db.name ] ++ dumpArgs.${db.driver} or [ ])
+      } > \"$dir\"/${lib.escapeShellArg "${db.name}.${db.driver}.sql"}"
     ) databases}
     tar -cz -C "$dir" .
   '';

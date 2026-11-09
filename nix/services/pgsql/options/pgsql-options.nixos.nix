@@ -16,11 +16,12 @@
           pkgs.util-linux
         ];
         text = ''
-          db="''${1:?Usage: pgsql-database-dump DATABASE > PATH_TO_FILE}"
-          exec runuser -u postgres -- pg_dump "$db"
+          db="''${1:?Usage: pgsql-database-dump DATABASE [PG_DUMP_ARGS...] > PATH_TO_FILE}"
+          shift
+          exec runuser -u postgres -- pg_dump "$@" "$db"
         '';
       };
-      description = "`pgsql-database-dump DATABASE`: writes an SQL dump of a local database to stdout. Run as root.";
+      description = "`pgsql-database-dump DATABASE [PG_DUMP_ARGS...]`: writes an SQL dump of a local database to stdout. Run as root.";
     };
 
     databases = lib.mkOption {

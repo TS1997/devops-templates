@@ -24,7 +24,7 @@
 
     phpPackage = lib.mkOption {
       type = lib.types.package;
-      default = pkgs.php;
+      default = pkgs.php84;
       description = "The PHP package to use for package development.";
     };
 

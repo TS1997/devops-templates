@@ -13,9 +13,9 @@ let
       coreutils
       gnused
       laravel
-      nodejs
+      nodejs_24
       openssl
-      php.packages.composer
+      php84.packages.composer
       rsync
     ];
 

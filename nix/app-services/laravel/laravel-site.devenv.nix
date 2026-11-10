@@ -53,6 +53,8 @@ in
   };
 
   config = lib.mkIf (siteCfg.enable) {
+    dotenv.disableHint = true;
+
     env = defaultEnv // siteCfg.env;
 
     services.ts1997.nodejs = siteCfg.nodejs;

@@ -7,8 +7,7 @@
 let
   nginxCfg = config.services.ts1997.nginx;
   sslEnabled =
-    nginxCfg.enable
-    && lib.any (vhostCfg: vhostCfg.enableSsl) (lib.attrValues nginxCfg.virtualHosts);
+    nginxCfg.enable && lib.any (vhostCfg: vhostCfg.enableSsl) (lib.attrValues nginxCfg.virtualHosts);
 
   caFile = "${config.env.DEVENV_STATE}/mkcert/rootCA.pem";
   caNickname = "mkcert ${baseNameOf config.env.DEVENV_ROOT}";
@@ -35,6 +34,13 @@ let
         exit 1
       fi
 
+      # Chrome/Chromium on Linux only read ~/.pki/nssdb and don't always create it
+      if [[ "$(uname -s)" == Linux && ! -f "$HOME/.pki/nssdb/cert9.db" ]]; then
+        mkdir -p "$HOME/.pki/nssdb"
+        certutil -N -d "sql:$HOME/.pki/nssdb" --empty-password
+        echo "Created NSS database: $HOME/.pki/nssdb"
+      fi
+
       declare -A handled_profiles=()
       trusted_count=0
 
@@ -52,8 +58,12 @@ let
         "$mac_support"/zen/Profiles/*/cert9.db \
         "$mac_support"/librewolf/Profiles/*/cert9.db \
         "$HOME"/.pki/nssdb/cert9.db \
+        "$HOME"/.var/app/*/.pki/nssdb/cert9.db \
+        "$HOME"/snap/*/current/.pki/nssdb/cert9.db \
         "$data_home"/pki/nssdb/cert9.db
       do
+        # nullglob doesn't drop literal (non-glob) paths
+        [[ -f "$cert_db" ]] || continue
         profile_dir=$(realpath "$(dirname "$cert_db")")
         [[ -n "''${handled_profiles[$profile_dir]:-}" ]] && continue
         handled_profiles[$profile_dir]=1

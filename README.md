@@ -32,7 +32,7 @@ nix run "github:ts1997/devops-templates?ref=master#laravel-package"
 
 ## Atomic deploys
 
-Enabled by default for `laravelSites`/`wordpressSites` entries (`releases.enable = false` deploys in place). The deploy workflows notice `~/releases` on the server and then:
+Enabled by default for `laravelSites`/`wordpressSites`/`staticSites` entries (`releases.enable = false` deploys in place). The deploy workflows notice `~/releases` on the server and then:
 
 1. rsync the build to `~/releases/<timestamp>-<sha>/` (unchanged files hardlinked from the live release),
 2. link `.env`, `storage` (Laravel) or `public/content/uploads` (WordPress) and `shared_paths` from `~/shared` into it,
@@ -47,6 +47,10 @@ Switching `releases.enable` doesn't move any data; do it by hand. When enabling 
 Migrations only run forward; a rollback switches the code only. Since the old release runs against the migrated database until the switch (and again after a rollback), migrations must be backwards compatible: add columns/tables in one release, and drop or rename them in a later release, once no deployed code uses them.
 
 Manual rollback on the server: `ln -sfn "$(cat ~/current/.previous)" ~/current.tmp && mv -Tf ~/current.tmp ~/current`, then `artisan queue:restart` for Laravel.
+
+### Static sites
+
+`services.ts1997.staticSites.<name>` on the server serves `~/current` with nginx. In the site repo, `services.ts1997.staticSite` (devenv) sets up Node.js and `hosts`, and `static-deploy.yml` runs `npm run build` and deploys only `build_dir` (default `dist`) as a release. Nothing is shared between releases.
 
 ## Backups and database dumps
 

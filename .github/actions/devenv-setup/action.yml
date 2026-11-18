@@ -86,6 +86,9 @@ runs:
     - name: Show CI tools
       shell: devenv-run {0}
       run: |
-        php --version
-        composer --version
+        # Static sites have no PHP.
+        if command -v php > /dev/null; then
+          php --version
+          composer --version
+        fi
         echo "node $(node --version), npm $(npm --version)"

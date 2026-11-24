@@ -12,7 +12,7 @@ on:
         type: string
         description:
           "Path on the domain that must respond with 200 after the deploy.
-          Empty skips the check (e.g. behind basic auth)."
+          Empty skips the check. Behind basic auth, set the BASIC_AUTH secret."
       build_assets:
         required: false
         default: false
@@ -63,6 +63,9 @@ on:
         required: true
       CI_AGE_KEY:
         required: true
+      BASIC_AUTH:
+        required: false
+        description: "user:password for the health check on sites behind basic auth."
 
 jobs:
   deploy:
@@ -184,6 +187,7 @@ jobs:
         uses: TS1997/devops-templates/.github/actions/health-check@master
         with:
           url: ${{ inputs.domain }}${{ inputs.health_check_path }}
+          basic-auth: ${{ secrets.BASIC_AUTH }}
 
       - name: Roll back release
         if: failure() && steps.release.outputs.id != ''

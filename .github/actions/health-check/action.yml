@@ -13,6 +13,10 @@ inputs:
     description: Seconds to wait between attempts
     required: false
     default: "10"
+  basic-auth:
+    description: Optional "user:password" for sites behind basic auth
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -23,13 +27,19 @@ runs:
         URL: ${{ inputs.url }}
         ATTEMPTS: ${{ inputs.attempts }}
         INTERVAL: ${{ inputs.interval }}
+        BASIC_AUTH: ${{ inputs.basic-auth }}
       run: |
         echo "🔍 Starting health check of $URL..."
+
+        auth_args=()
+        if [ -n "$BASIC_AUTH" ]; then
+          auth_args=(-u "$BASIC_AUTH")
+        fi
 
         for attempt in $(seq 1 "$ATTEMPTS"); do
           echo "Attempt $attempt of $ATTEMPTS"
 
-          response=$(curl -L -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+          response=$(curl -L -s -o /dev/null -w "%{http_code}" "${auth_args[@]}" "$URL" || echo "000")
 
           if [ "$response" = "200" ]; then
             echo "✅ Health check passed! Server responded with 200"

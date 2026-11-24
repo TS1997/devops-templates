@@ -62,7 +62,7 @@ In the app repo, `services.ts1997.symfonySite` (devenv) sets `hosts`, PHP (`php.
 services.ts1997.symfonySite = {
   enable = true;
   php.basePackage = pkgs.php84;
-  hosts.production = { host = "bravomedia.se"; siteName = "bravo_packages"; };
+  hosts.production = { host = "46.246.110.79"; siteName = "bravo_packages"; };
 };
 ```
 
@@ -72,12 +72,12 @@ jobs:
     uses: TS1997/devops-templates/.github/workflows/symfony-deploy.yml@master
     with:
       domain: https://packages.bravomedia.se
-      health_check_path: "" # behind basic auth
+      health_check_path: /packages.json # with the BASIC_AUTH secret
       shared_paths: satis.json var/satis public/dist
     secrets: inherit
 ```
 
-`symfony-deploy.yml` runs `composer install --no-dev --no-scripts` (and `npm run build` with `build_assets`), rsyncs the app without `.env*` and `var/`, then runs `cache:clear`, `assets:install` and `additional_commands` in the new release before the switch. The server's `.env` is the only env file, since the repo's `.env` isn't deployed, so every variable the app needs must be set in `env`/`envSecretsFile`. `health_check_path` (default `/`) must return 200.
+`symfony-deploy.yml` runs `composer install --no-dev --no-scripts` (and `npm run build` with `build_assets`), rsyncs the app without `.env*` and `var/`, then runs `cache:clear`, `assets:install` and `additional_commands` in the new release before the switch. The server's `.env` is the only env file, since the repo's `.env` isn't deployed, so every variable the app needs must be set in `env`/`envSecretsFile`. `health_check_path` (default `/`) must return 200; sites behind basic auth pass `user:password` as the `BASIC_AUTH` secret.
 
 ## Backups and database dumps
 

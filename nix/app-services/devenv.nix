@@ -4,6 +4,7 @@
     ./laravel/laravel-package.devenv.nix
     ./laravel/laravel-site.devenv.nix
     ./static/static-site.devenv.nix
+    ./symfony/symfony-site.devenv.nix
     ./wordpress/wordpress-site.devenv.nix
   ];
 }

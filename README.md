@@ -32,11 +32,11 @@ nix run "github:ts1997/devops-templates?ref=master#laravel-package"
 
 ## Atomic deploys
 
-Enabled by default for `laravelSites`/`wordpressSites`/`staticSites` entries (`releases.enable = false` deploys in place). The deploy workflows notice `~/releases` on the server and then:
+Enabled by default for `laravelSites`/`wordpressSites`/`staticSites`/`symfonySites` entries (`releases.enable = false` deploys in place). The deploy workflows notice `~/releases` on the server and then:
 
 1. rsync the build to `~/releases/<timestamp>-<sha>/` (unchanged files hardlinked from the live release),
 2. link `.env`, `storage` (Laravel) or `public/content/uploads` (WordPress) and `shared_paths` from `~/shared` into it,
-3. Laravel: `php artisan optimize` and `php artisan migrate --force` inside the new release,
+3. Laravel: `php artisan optimize` and `php artisan migrate --force` inside the new release; Symfony: `cache:clear`, `assets:install` and `additional_commands`,
 4. switch `~/current` to it atomically, then `queue:restart` and `inertia:stop-ssr` (systemd restarts both in the new release),
 5. keep `keep_releases` (5) releases, and switch back to the previous one if the health check fails.
 
@@ -51,6 +51,33 @@ Manual rollback on the server: `ln -sfn "$(cat ~/current/.previous)" ~/current.t
 ### Static sites
 
 `services.ts1997.staticSites.<name>` on the server serves `~/current` with nginx. In the site repo, `services.ts1997.staticSite` (devenv) sets up Node.js and `hosts`, and `static-deploy.yml` runs `npm run build` and deploys only `build_dir` (default `dist`) as a release. Nothing is shared between releases.
+
+### Symfony sites
+
+`services.ts1997.symfonySites.<name>` on the server serves `~/current/public` with PHP-FPM, where only `index.php` is executable. `.env` (`APP_ENV`/`APP_DEBUG` plus `env` and `envSecretsFile`) is written to `~/shared`, and `sharedDirs` creates directories in `~/shared` for the deploy's `shared_paths`. Database and Redis provisioning isn't supported yet.
+
+In the app repo, `services.ts1997.symfonySite` (devenv) sets `hosts`, PHP (`php.basePackage`/`php.extensions`), Composer and optionally Node.js (`nodejs.enable`). It starts no web server.
+
+```nix
+services.ts1997.symfonySite = {
+  enable = true;
+  php.basePackage = pkgs.php84;
+  hosts.production = { host = "bravomedia.se"; siteName = "bravo_packages"; };
+};
+```
+
+```yaml
+jobs:
+  deploy:
+    uses: TS1997/devops-templates/.github/workflows/symfony-deploy.yml@master
+    with:
+      domain: https://packages.bravomedia.se
+      health_check_path: "" # behind basic auth
+      shared_paths: satis.json var/satis public/dist
+    secrets: inherit
+```
+
+`symfony-deploy.yml` runs `composer install --no-dev --no-scripts` (and `npm run build` with `build_assets`), rsyncs the app without `.env*` and `var/`, then runs `cache:clear`, `assets:install` and `additional_commands` in the new release before the switch. The server's `.env` is the only env file, since the repo's `.env` isn't deployed, so every variable the app needs must be set in `env`/`envSecretsFile`. `health_check_path` (default `/`) must return 200.
 
 ## Backups and database dumps
 
@@ -140,7 +167,7 @@ Use the same key (`composer_auth`) to get this merge. A different key mapped to 
 
 The shared file is also encrypted to the CI key (`ciPubkey`, GitHub secret `CI_AGE_KEY`):
 
-- `laravel-deploy.yml` / `wordpress-deploy.yml` / `laravel-publish-types.yml`: require `CI_AGE_KEY`. `devenv-setup` then exports the same variables in CI and masks them. There is no separate `AUTH_JSON` secret; `COMPOSER_AUTH` comes from `composer_auth`.
+- `laravel-deploy.yml` / `wordpress-deploy.yml` / `symfony-deploy.yml` / `laravel-publish-types.yml`: require `CI_AGE_KEY`. `devenv-setup` then exports the same variables in CI and masks them. There is no separate `AUTH_JSON` secret; `COMPOSER_AUTH` comes from `composer_auth`.
 - terraflake: `mkTokenScripts { extraTokensJsonAgeFilePaths = [ devops-templates.lib.sharedTokensFile ]; ... }` merges it with terraflake's own bundle, so `tokenVariablePairs` can use its keys. Its `tokens` script prints `export` lines (the dev shell runs `eval "$(tokens)"`), or with `--github-env` masks the values and appends them to `$GITHUB_ENV` (CI).
 
 After changing `nix/lib/master-identity.nix`, run `agenix update-masterkeys`, push, and run `nix flake update devops-templates` followed by `agenix update-masterkeys && agenix rekey -a` in terraflake.

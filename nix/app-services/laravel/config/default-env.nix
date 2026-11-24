@@ -50,7 +50,10 @@ in
   DB_CONNECTION = "${siteCfg.database.driver}";
   DB_HOST = if siteCfg.database.driver == "pgsql" then "${dbCfg.socket}" else "${dbCfg.host}";
   DB_PORT =
-    if siteCfg.database.driver == "pgsql" then dbCfg.port else config.processes.mysql.ports.main.value;
+    if siteCfg.database.driver == "pgsql" then
+      dbCfg.port
+    else
+      config.processes.mysql.ports.main.value or dbCfg.port;
   DB_SOCKET = if siteCfg.database.driver == "pgsql" then null else "${dbCfg.socket}";
   DB_DATABASE = "${siteCfg.database.name}";
   DB_USERNAME = "${siteCfg.database.user}";

@@ -29,7 +29,8 @@ in
     tryFiles = "$uri $uri/ /index.php?$args";
   };
 
-  "~ \\.php$" = {
+  # Excludes uploads since NixOS sorts locations by name, which would shadow the deny below.
+  "~ ^(?!/wp-content/uploads/).*\\.php$" = {
     extraConfig = ''
       fastcgi_pass unix:${phpSocket};
       include ${nginxPackage}/conf/fastcgi_params;

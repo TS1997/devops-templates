@@ -28,8 +28,8 @@ in
     '';
   };
 
-  # Only the front controller is executable.
-  "~ \\.php$" = {
+  # Only the front controller is executable; excludes it since NixOS sorts locations by name.
+  "~ ^/(?!index\\.php(/|$)).*\\.php$" = {
     extraConfig = "return 404;";
   };
 }

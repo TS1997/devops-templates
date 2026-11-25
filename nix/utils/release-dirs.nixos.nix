@@ -11,7 +11,7 @@ if siteCfg.releases.enable then
     "d ${dir}/releases 0750 ${owner} -"
     "d ${siteCfg.sharedDir} 0750 ${owner} -"
     # Only created when missing, so a switched link is never overwritten.
-    "L ${dir}/current - - - - ."
+    "L ${dir}/current - ${owner} - ."
   ]
 else
   [ ]

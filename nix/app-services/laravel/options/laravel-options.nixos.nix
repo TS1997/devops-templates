@@ -55,5 +55,14 @@
     backup.paths = lib.mkDefault [ "${config.sharedDir}/storage/app" ];
 
     webRoot = lib.mkDefault "${config.currentDir}/public";
+
+    log.level = lib.mkDefault (
+      if config.appEnv == "production" then
+        "error"
+      else if config.appEnv == "staging" then
+        "warning"
+      else
+        "debug"
+    );
   };
 }

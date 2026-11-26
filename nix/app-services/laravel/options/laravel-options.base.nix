@@ -85,6 +85,34 @@
       default = { };
       description = "Inertia.js SSR configuration.";
     };
+
+    log = lib.mkOption {
+      type = util.submodule {
+        options = {
+          channel = lib.mkOption {
+            type = lib.types.str;
+            default = "daily";
+            description = "The default Laravel log channel (LOG_CHANNEL).";
+          };
+
+          level = lib.mkOption {
+            type = lib.types.enum [
+              "debug"
+              "info"
+              "notice"
+              "warning"
+              "error"
+              "critical"
+              "alert"
+              "emergency"
+            ];
+            description = "The minimum log level (LOG_LEVEL).";
+          };
+        };
+      };
+      default = { };
+      description = "Laravel logging configuration.";
+    };
   };
 
   config = {

@@ -10,5 +10,6 @@
   config = {
     generate-types.enable = lib.mkDefault true;
     nodejs.auth.enable = lib.mkDefault true;
+    log.level = lib.mkDefault "debug";
   };
 }

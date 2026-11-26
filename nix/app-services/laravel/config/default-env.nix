@@ -41,10 +41,10 @@ in
 
   BCRYPT_ROUNDS = 12;
 
-  LOG_CHANNEL = "stack";
+  LOG_CHANNEL = siteCfg.log.channel;
   LOG_STACK = "single";
   LOG_DEPRECATIONS_CHANNEL = null;
-  LOG_LEVEL = "debug";
+  LOG_LEVEL = siteCfg.log.level;
 
   # Laravel requires PostgreSQL socket as db_host rather than db_socket compared to MySQL
   DB_CONNECTION = "${siteCfg.database.driver}";

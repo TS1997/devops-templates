@@ -38,6 +38,9 @@ in
             https = nginxPorts."${name}-https".value;
           };
         }
+        {
+          appEnv = lib.mkOverride 900 "development";
+        }
       ];
     };
     default = { };

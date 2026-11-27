@@ -3,9 +3,11 @@ name: Static Site Deploy
 on:
     workflow_call:
         inputs:
-            domain:
-                required: true
+            health_check_domain:
+                required: false
+                default: ""
                 type: string
+                description: "Hostname to health-check, e.g. example.com. Defaults to the resolved hosts.<environment>.host from devenv.nix; only set this if the public domain differs from the deploy host. Defaults to https://; pass an explicit http:// or https:// prefix to override."
             health_check_path:
                 required: false
                 default: "/"
@@ -60,13 +62,16 @@ jobs:
               shell: bash
               env:
                   HOSTS: services.ts1997.staticSite.hosts.${{ inputs.environment }}
+                  HEALTH_CHECK_DOMAIN_INPUT: ${{ inputs.health_check_domain }}
               run: |
                   if ! target="$(devenv eval "$HOSTS" | jq -c '.[]')"; then
                     echo "::error::Set $HOSTS (host, siteName) in devenv.nix."
                     exit 1
                   fi
-                  echo "host=$(jq -r .host <<<"$target")" >> "$GITHUB_OUTPUT"
+                  host="$(jq -r .host <<<"$target")"
+                  echo "host=$host" >> "$GITHUB_OUTPUT"
                   echo "user=$(jq -r .user <<<"$target")" >> "$GITHUB_OUTPUT"
+                  echo "health_check_domain=${HEALTH_CHECK_DOMAIN_INPUT:-$host}" >> "$GITHUB_OUTPUT"
 
             - name: Build site
               uses: TS1997/devops-templates/.github/actions/npm-build@master
@@ -107,7 +112,7 @@ jobs:
             - name: Health check
               uses: TS1997/devops-templates/.github/actions/health-check@master
               with:
-                  url: ${{ inputs.domain }}${{ inputs.health_check_path }}
+                  url: ${{ startsWith(steps.target.outputs.health_check_domain, 'http') && steps.target.outputs.health_check_domain || format('https://{0}', steps.target.outputs.health_check_domain) }}${{ inputs.health_check_path }}
 
             - name: Roll back release
               if: failure() && steps.release.outputs.id != ''

@@ -14,8 +14,9 @@ inputs:
     default: ""
   nix-cache:
     description: >
-      Restore /nix/store from the Actions cache, keyed on the devenv files; it
-      is saved after a successful job.
+      Restore /nix and ~/.cache/nix (fetched flake inputs, eval cache) from
+      the Actions cache, keyed on devenv.yaml and devenv.lock; it is saved
+      after a successful job.
     required: false
     default: "true"
   age-key:
@@ -43,8 +44,9 @@ runs:
       if: inputs.nix-cache == 'true'
       uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7.0.2
       with:
-        primary-key: devenv-${{ runner.os }}-${{ hashFiles('devenv.yaml', 'devenv.lock', 'devenv.nix') }}
+        primary-key: devenv-${{ runner.os }}-${{ hashFiles('devenv.yaml', 'devenv.lock') }}
         restore-prefixes-first-match: devenv-${{ runner.os }}-
+        paths: ~/.cache/nix
         gc-max-store-size-linux: 6G
 
     - name: Install devenv

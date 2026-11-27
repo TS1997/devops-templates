@@ -124,7 +124,8 @@ jobs:
               uses: burnett01/rsync-deployments@2cbb5ed94b73d111d07a40b071b1c7d3c0272435 # 9.0.2
               with:
                   switches: >-
-                      -avzr --delete --exclude='.zsh_history' --exclude='.git*'
+                      -avz --checksum --no-times --delete 
+                      --exclude='.zsh_history' --exclude='.git*'
                       --exclude='node_modules' --exclude='.devenv*' --exclude='.direnv'
                       --exclude='.envrc' --exclude='.env*' --exclude='.vscode'
                       --exclude='.editorconfig' --exclude='.prettierrc'

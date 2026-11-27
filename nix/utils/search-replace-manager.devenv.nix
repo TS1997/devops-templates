@@ -16,6 +16,12 @@ in
           example = "production";
           description = "Environment whose home URL is read (never written to).";
         };
+        options.fromUrl = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "https://example.se";
+          description = "URL to replace, instead of reading the `from` environment's home URL.";
+        };
       }
     );
     default = { };
@@ -33,6 +39,7 @@ in
         devenvRoot = config.devenv.root;
         hostsAttr = "services.ts1997.wordpressSite.hosts";
         sourceEnvironment = searchReplace.from;
+        sourceUrl = searchReplace.fromUrl;
         inherit targetEnvironment;
       }
     ) config.services.ts1997.searchReplace;

@@ -8,6 +8,8 @@ let
       hostsAttr,
       sourceEnvironment,
       targetEnvironment,
+      # Used instead of the source's `home` option when set.
+      sourceUrl ? null,
       name ? "search-replace-${targetEnvironment}",
     }:
     assert lib.assertMsg (
@@ -28,6 +30,7 @@ let
         hosts_attr=${lib.escapeShellArg hostsAttr}
         source_env=${lib.escapeShellArg sourceEnvironment}
         target_env=${lib.escapeShellArg targetEnvironment}
+        source_url_override=${lib.escapeShellArg (if sourceUrl == null then "" else sourceUrl)}
 
         dry_run=
         confirmed=
@@ -66,8 +69,13 @@ let
         target_host="$(jq -r --arg env "$target_env" '.[$env].host' <<<"$hosts")"
         target_user="$(jq -r --arg env "$target_env" '.[$env].user' <<<"$hosts")"
 
-        echo "Reading the site URL from $source_env ($source_host) — read-only ..." >&2
-        source_url="$(remote_wp "$source_host" "$source_user" option get home)"
+        if [[ -n "$source_url_override" ]]; then
+          echo "Using the configured $source_env URL $source_url_override" >&2
+          source_url="$source_url_override"
+        else
+          echo "Reading the site URL from $source_env ($source_host) — read-only ..." >&2
+          source_url="$(remote_wp "$source_host" "$source_user" option get home)"
+        fi
         source_url="''${source_url%/}"
         echo "Reading the site URL from $target_env ($target_host) ..." >&2
         target_url="$(remote_wp "$target_host" "$target_user" option get home)"
@@ -105,6 +113,9 @@ let
           echo "  ''${search_terms[$term_index]}  ->  ''${replace_terms[$term_index]}" >&2
         done
         echo "$source_env ($source_host) is never written to by this script." >&2
+        if [[ -n "$dry_run" ]]; then
+          echo "DRY RUN: only counting matches, nothing will be written." >&2
+        fi
         echo >&2
 
         if [[ -z "$confirmed" && -z "$dry_run" ]]; then
@@ -127,7 +138,9 @@ let
             --all-tables --skip-columns=guid --report-changed-only "''${dry_run_flag[@]}"
         done
 
-        if [[ -z "$dry_run" ]]; then
+        if [[ -n "$dry_run" ]]; then
+          echo "Dry run finished: nothing was changed. Run without --dry-run to apply." >&2
+        else
           # The object cache (Redis) still holds the old URLs.
           if ! remote_wp "$target_host" "$target_user" cache flush; then
             echo "Warning: could not flush the object cache on $target_env; flush it manually." >&2

@@ -1,4 +1,5 @@
 {
+    "type": "module",
     "scripts": {
         "build": "vite build --mode production",
         "dev": "vite build --mode production --watch"
